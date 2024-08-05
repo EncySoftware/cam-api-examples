@@ -1,0 +1,14 @@
+{
+    "name": "Empty extension on C#",
+    "description": "Empty extension on C#",
+    "module_path": "${extensionJsonFolder}/ExtensionEmptyNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Empty extension on C#",
+                "caption": "Empty extension on C#",
+                "id": "Extension.Utility.Empty.Net"
+            }
+        }
+    ]
+}
