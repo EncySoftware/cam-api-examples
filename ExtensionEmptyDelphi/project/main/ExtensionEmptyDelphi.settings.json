@@ -1,0 +1,14 @@
+{
+    "name": "Empty extension on Delphi",
+    "description": "Empty extension on Delphi",
+    "module_path": "${extensionJsonFolder}/ExtensionEmptyDelphi.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Empty extension on Delphi",
+                "caption": "Empty extension on Delphi",
+                "id": "Extension.Utility.Empty.Delphi"
+            }
+        }
+    ]
+}
