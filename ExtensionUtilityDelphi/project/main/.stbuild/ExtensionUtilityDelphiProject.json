@@ -1,0 +1,10 @@
+{
+	"type": "Delphi",
+	"project_path": "../ExtensionUtilityDelphi.dproj",
+	"sources": [
+		"$native_project:sources$",
+		"../*.dpr",
+		"../*.dproj",
+		"*.json"
+	]
+}

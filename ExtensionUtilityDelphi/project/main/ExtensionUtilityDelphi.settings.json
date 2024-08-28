@@ -1,0 +1,14 @@
+{
+    "name": "Example utility extension on Delphi",
+    "description": "Example utility extension on Delphi",
+    "module_path": "${extensionJsonFolder}/ExtensionUtilityDelphi.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Example utility extension on Delphi",
+                "caption": "Example utility extension on Delphi",
+                "id": "Extension.Utility.Example.Delphi"
+            }
+        }
+    ]
+}

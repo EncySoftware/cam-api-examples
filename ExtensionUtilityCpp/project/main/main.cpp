@@ -55,24 +55,6 @@ std::string BSTRToString(BSTR bstr) {
     return str;
 }
 
-// Convert a std::string to a BSTR
-BSTR StringToBSTR(const char* str) {
-    int length = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
-    if (length == 0)
-        return NULL;
-
-    wchar_t* wstr = new wchar_t[length];
-    if (MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, length) == 0) {
-        delete[] wstr;
-        return NULL;
-    }
-
-    BSTR bstr = SysAllocString(wstr);
-    delete[] wstr;
-
-    return bstr;
-}
-
 class ExtensionUtilityExample :
     public IExtension,
     public IExtensionUtility
@@ -141,56 +123,40 @@ public:
         IExtensionUtilityContext* context,
         TResultStatus* ResultStatus
     ) override {
+        // get context
         ICamApiApplication* application = nullptr;
-        ICamApiProject* project = nullptr;
+        HRESULT hr = context->get_CamApplication(&application);
+        if (FAILED(hr) || !application)
+            throw std::runtime_error("Failed to get CamApplication from context");
 
-        try {
-            // get project
-            HRESULT hr = context->get_CamApplication(&application);
-            if (FAILED(hr) || !application)
-                throw std::runtime_error("Failed to get CamApplication from context");
+        ICamApiConstants* constants = nullptr;
+        hr = context->get_Constants(&constants);
+        if (FAILED(hr) || !constants)
+            throw std::runtime_error("Failed to get Constants from context");
 
-            project = application->GetActiveProject(ResultStatus);
-            if (FAILED(hr) || ResultStatus->Code == rsError)
-                throw std::runtime_error("Error getting project: " + BSTRToString(ResultStatus->Description));
+        BSTR installFolder;
+        hr = constants->get_InstallFolder(&installFolder);
+        if (FAILED(hr) || !installFolder)
+            throw std::runtime_error("Failed to get InstallFolder from Constants");
 
-            // save params in some temp file to show it later
-            fs::path tempDir = fs::temp_directory_path();
-            fs::path tempFilePath = tempDir / ("tempfile_41.txt");
-            if (fs::exists(tempFilePath))
-                fs::remove(tempFilePath);
+        fs::path currentFolder = fs::path((BSTR)installFolder).parent_path();
+        SysFreeString(installFolder);
+        if (currentFolder.empty())
+            throw std::runtime_error("Cannot get current folder");
 
-            {
-                std::ofstream file(tempFilePath, std::ios::trunc);
-                if (!file)
-                    throw std::runtime_error("Failed to open file for writing");
-
-                file << "Project file path: " << BSTRToString(project->FilePath) << "\n";
-                file << "Project id: " << BSTRToString(project->Id) << "\n";
-                file.close();
-            }
-
-            HINSTANCE result = ShellExecute(
-                NULL,
-                L"open",
-                L"notepad.exe",
-                tempFilePath.c_str(),
-                NULL,
-                SW_SHOWNORMAL
-            );
-
-            ResultStatus = {};
-        }
-        catch (const std::exception& e) {
-            ResultStatus->Code = rsError;
-            ResultStatus->Description = StringToBSTR(e.what());
-        }
+        // export
+        fs::path exportedFile = currentFolder / "exported.stcp";
+        BSTR exportedFilePath = SysAllocString(exportedFile.c_str());
+        OutputDebugString(exportedFilePath);
+        TResultStatus resultStatus;
+        hr = application->ExportCurrentProject(exportedFilePath, true, &resultStatus);
+        SysFreeString(exportedFilePath);
+        if (FAILED(hr) || resultStatus.Code == rsError)
+            throw std::runtime_error("Error exporting project: " + BSTRToString(resultStatus.Description));
 
         // Release the COM objects
-        if (application)
-            application->Release();
-
-        return S_OK;
+        if (application) application->Release();
+        if (constants) constants->Release();
     }
 };
 

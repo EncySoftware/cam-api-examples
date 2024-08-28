@@ -1,0 +1,11 @@
+{
+	"type": "Cpp",
+	"project_path": "../ExtensionUtilityCpp.vcxproj",
+	"sources": [
+		"$native_project:sources$",
+		"../*.cpp",
+		"../*.h",
+		"../*.vcxproj",
+		"*.json"
+	]
+}

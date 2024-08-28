@@ -17,8 +17,8 @@ function CreateInstanceOfExtension(PluginID: WideString): NativeUInt;
 begin
   var res: IExtension;
 
-  if SameText(PluginID, 'Extension.Utility.Empty.Delphi') then
-    res := TExtensionUtility.Create() as IExtension
+  if SameText(PluginID, 'Extension.Utility.Example.Delphi') then
+    res := TExtensionTest.Create() as IExtension
 
   else
     raise Exception.Create('Unknown ID ' + PluginID);

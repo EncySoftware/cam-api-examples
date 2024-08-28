@@ -1,0 +1,14 @@
+{
+    "name": "Example utility extension on C++",
+    "description": "Example utility extension on C++",
+    "module_path": "${extensionJsonFolder}/ExtensionUtilityCpp.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Example utility extension on C++",
+                "caption": "Example utility extension on C++",
+                "id": "Extension.Utility.Example.Cpp"
+            }
+        }
+    ]
+}

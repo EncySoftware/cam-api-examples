@@ -14,7 +14,7 @@ uses
 ;
 
 type
-  TExtensionUtility = class(TInterfacedObject
+  TExtensionTest = class(TInterfacedObject
     ,IExtension
     ,IExtensionUtility)
   private
@@ -36,52 +36,47 @@ type
 
 implementation
 
-{ TExtensionUtility }
+{ TExtensionTest }
 
-constructor TExtensionUtility.Create;
+constructor TExtensionTest.Create;
 begin
   inherited Create();
   FExtensionInfo := nil;
 end;
 
-destructor TExtensionUtility.Destroy;
+destructor TExtensionTest.Destroy;
 begin
   //
   inherited;
 end;
 
-function TExtensionUtility.Get_Info: IExtensionInfo;
+function TExtensionTest.Get_Info: IExtensionInfo;
 begin
   Exit(FExtensionInfo);
 end;
 
-procedure TExtensionUtility.Set_Info(const Value: IExtensionInfo);
+procedure TExtensionTest.Set_Info(const Value: IExtensionInfo);
 begin
   FExtensionInfo := Value;
 end;
 
-procedure TExtensionUtility.Run(const Context: IExtensionUtilityContext; out ResultStatus: TResultStatus);
+procedure TExtensionTest.Run(const Context: IExtensionUtilityContext; out ResultStatus: TResultStatus);
 begin
   ResultStatus := default(TResultStatus);
 
   try
-    // get project
-    var project := context.CamApplication.GetActiveProject(resultStatus);
-    if (resultStatus.Code = TResultStatusCode.rsError) then
-        raise Exception.Create('Error getting project: ' + resultStatus.Description);
+    // get context
+    var application := Context.CamApplication;
+    var currentFolder := TPath.GetDirectoryName(context.Constants.InstallFolder);
+    if currentFolder.IsEmpty then
+      raise Exception.Create('Cannot get current folder');
 
-    // save params in some temp file to show it later
-    var guid: TGUID;
-    CreateGUID(guid);
-    var tempFile := TPath.Combine(TPath.GetTempPath(), guid.ToString + '.txt');
-    TFile.WriteAllText(tempFile, 'Project file path: ' + project.FilePath + sLineBreak);
-    TFile.AppendAllText(tempFile, 'Project id: ' + project.Id);
-
-    // show temp file
-    ShellExecute(0, 'open', 'notepad.exe', PWideChar(tempFile), nil, SW_SHOWNORMAL);
-
-    // free memory
-    project := nil;
+    // export
+    var exportedFile := TPath.Combine(currentFolder, 'exported.stcp');
+    var ret := default(TResultStatus);
+    application.ExportCurrentProject(exportedFile, true, ret);
+    if (ret.Code = TResultStatusCode.rsError) then
+      raise Exception.Create(ret.Description);
   except
     on e: exception do begin
       ResultStatus.Code := TResultStatusCode.rsError;
