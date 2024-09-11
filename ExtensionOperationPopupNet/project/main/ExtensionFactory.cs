@@ -1,7 +1,8 @@
 ﻿// ReSharper disable once CheckNamespace
 
-using ExtensionNetProject;
+using ExtensionOperationPopupNet;
 
+// ReSharper disable once CheckNamespace
 namespace CAMAPI;
 
 using Extensions;
@@ -39,8 +40,8 @@ public class ExtensionFactory : IExtensionFactory
         try
         {
             ret = default;
-            if (extensionIdent == "Extension.Utility.Empty.Net")
-                return new ExtensionTest();
+            if (extensionIdent == "Extension.OperationPopup.Example.Net")
+                return new ExtensionOperationPopup();
             throw new Exception("Unknown extension identifier: " + extensionIdent);
         }
         catch (Exception e)

@@ -1,0 +1,13 @@
+{
+    "name": "Example operation popup extension on C#",
+    "description": "Example operation popup extension on C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionOperationPopupNet.dll",
+    "extensions": [
+        {
+            "operation_popup": {
+                "name": "Example operation popup extension on C#",
+                "id": "Extension.OperationPopup.Example.Net"
+            }
+        }
+    ]
+}
