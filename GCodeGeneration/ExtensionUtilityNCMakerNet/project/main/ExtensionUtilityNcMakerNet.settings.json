@@ -1,0 +1,14 @@
+{
+    "name": "Extension on C# to generate G code",
+    "description": "Extension on C# to generate G code",
+    "module_path": "${extensionJsonFolder}/ExtensionUtilityNcMakerNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Generate G code by C#",
+                "caption": "Generate G code by C#",
+                "id": "Extension.Utility.NcMaker.Net"
+            }
+        }
+    ]
+}
