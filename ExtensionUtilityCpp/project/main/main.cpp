@@ -12,7 +12,7 @@
 #import <CAMAPI.Logger.tlb> no_namespace, named_guids
 #import <CAMAPI.ResultStatus.tlb> no_namespace, named_guids
 #import "CAMAPI.Generic.List.tlb" no_namespace, named_guids
-#import "CAMAPI.Constants.tlb" no_namespace, named_guids
+#import "CAMAPI.Singletons.tlb" no_namespace, named_guids
 #import "CAMAPI.Extensions.tlb" no_namespace, named_guids
 #import "CAMAPI.NCMaker.tlb" no_namespace, named_guids
 #import "CAMAPI.Technologist.tlb" no_namespace, named_guids
@@ -53,6 +53,25 @@ std::string BSTRToString(BSTR bstr) {
     WideCharToMultiByte(CP_UTF8, 0, bstr, wslen, &str[0], len, nullptr, nullptr);
 
     return str;
+}
+
+BSTR StringToBSTR(const std::string& str) {
+    // Convert std::string (UTF-8) to wide string (UTF-16)
+    int wslen = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+    if (wslen == 0) {
+        return nullptr; // Conversion failed
+    }
+
+    // Allocate a wide string buffer to hold the converted string
+    BSTR bstr = SysAllocStringLen(nullptr, wslen - 1); // wslen includes null terminator, subtract 1
+    if (!bstr) {
+        return nullptr; // Memory allocation failed
+    }
+
+    // Perform the actual conversion
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, bstr, wslen);
+
+    return bstr;
 }
 
 class ExtensionUtilityExample :
@@ -123,40 +142,47 @@ public:
         IExtensionUtilityContext* context,
         TResultStatus* ResultStatus
     ) override {
-        // get context
         ICamApiApplication* application = nullptr;
-        HRESULT hr = context->get_CamApplication(&application);
-        if (FAILED(hr) || !application)
-            throw std::runtime_error("Failed to get CamApplication from context");
+        try
+        {
+            TResultStatus resultStatus;
+        
+            // get context
+            HRESULT hr = context->get_CamApplication(&application);
+            if (FAILED(hr) || !application)
+                throw std::runtime_error("Failed to get CamApplication from context");
 
-        ICamApiConstants* constants = nullptr;
-        hr = context->get_Constants(&constants);
-        if (FAILED(hr) || !constants)
-            throw std::runtime_error("Failed to get Constants from context");
+            // Get the current directory and check for success
+            BSTR folder;
+            char buffer[MAX_PATH];
+            DWORD result = GetCurrentDirectoryA(MAX_PATH, buffer);
+            if (result > 0 && result <= MAX_PATH)
+                folder = StringToBSTR(buffer);
+            else
+                throw std::runtime_error("Failed to get GetCurrentDirectoryA");
 
-        BSTR installFolder;
-        hr = constants->get_InstallFolder(&installFolder);
-        if (FAILED(hr) || !installFolder)
-            throw std::runtime_error("Failed to get InstallFolder from Constants");
+            fs::path currentFolder = fs::path((BSTR)folder).parent_path();
+            SysFreeString(folder);
+            if (currentFolder.empty())
+                throw std::runtime_error("Cannot get current folder");
 
-        fs::path currentFolder = fs::path((BSTR)installFolder).parent_path();
-        SysFreeString(installFolder);
-        if (currentFolder.empty())
-            throw std::runtime_error("Cannot get current folder");
-
-        // export
-        fs::path exportedFile = currentFolder / "exported.stcp";
-        BSTR exportedFilePath = SysAllocString(exportedFile.c_str());
-        OutputDebugString(exportedFilePath);
-        TResultStatus resultStatus;
-        hr = application->ExportCurrentProject(exportedFilePath, true, &resultStatus);
-        SysFreeString(exportedFilePath);
-        if (FAILED(hr) || resultStatus.Code == rsError)
-            throw std::runtime_error("Error exporting project: " + BSTRToString(resultStatus.Description));
+            // export
+            fs::path exportedFile = currentFolder / "exported.stcp";
+            BSTR exportedFilePath = SysAllocString(exportedFile.c_str());
+            OutputDebugString(exportedFilePath);
+            hr = application->ExportCurrentProject(exportedFilePath, true, &resultStatus);
+            SysFreeString(exportedFilePath);
+            if (FAILED(hr) || resultStatus.Code == rsError)
+                throw std::runtime_error("Error exporting project: " + BSTRToString(resultStatus.Description));
+        }
+        catch (const std::exception& ex)
+        {
+            ResultStatus->Code = TResultStatusCode::rsError;
+            ResultStatus->Description = StringToBSTR(ex.what());
+        }
 
         // Release the COM objects
         if (application) application->Release();
-        if (constants) constants->Release();
     }
 };
 

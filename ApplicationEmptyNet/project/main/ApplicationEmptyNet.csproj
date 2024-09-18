@@ -2,13 +2,13 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net6.0-windows</TargetFramework>
+        <TargetFramework>net8.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EncySoftware.CAMIPC.SDK.Net" Version="1.1.5" />
+        <PackageReference Include="EncySoftware.CAMIPC.SDK.Net" Version="1.1.6" />
         <Reference Include="C:\Program Files\ENCY Software\ENCY NB\Bin64\NativeLibUtils.dll" />
     </ItemGroup>
 </Project>

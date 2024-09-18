@@ -26,7 +26,7 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling target by default
     /// </summary>
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => x.Compile);
     
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
@@ -121,7 +121,7 @@ public class Build : NukeBuild
                         new()
                         {
                             PackageId = "EncySoftware.CAMAPI.SDK.tlb",
-                            Version = "1.1.0", 
+                            Version = "1.1.3",
                             OutDir = Path.Combine(RootDirectory.Parent, "SDK")
                         }
                     }

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using CAMAPI.Application;
+﻿using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
 
@@ -26,7 +24,7 @@ public class ExtensionUtility : IExtension, IExtensionUtility
         {
             // get context
             var application = context.CamApplication;
-            var currentFolder = Path.GetDirectoryName(context.Constants.InstallFolder);
+            var currentFolder = Path.GetDirectoryName(Directory.GetCurrentDirectory());
             if (currentFolder == null)
                 throw new Exception("Cannot get current folder");
 

@@ -11,6 +11,7 @@ uses
   ,IDL.CAMAPI.Extensions
   ,IDL.CAMAPI.Application
   ,IDL.CAMAPI.ResultStatus
+  ,IDL.CAMAPI.Singletons
 ;
 
 type
@@ -65,15 +66,16 @@ begin
   ResultStatus := default(TResultStatus);
 
   try
+    var ret := default(TResultStatus);
+
     // get context
-    var application := Context.CamApplication;
-    var currentFolder := TPath.GetDirectoryName(context.Constants.InstallFolder);
-    if currentFolder.IsEmpty then
-      raise Exception.Create('Cannot get current folder');
+    var currentFolder := TPath.Combine(GetCurrentDir(), '..\');
+    if currentFolder = '' then
+      raise Exception.Create('Cannot get MainProgramFolder');
 
     // export
+    var application := Context.CamApplication;
     var exportedFile := TPath.Combine(currentFolder, 'exported.stcp');
-    var ret := default(TResultStatus);
     application.ExportCurrentProject(exportedFile, true, ret);
     if (ret.Code = TResultStatusCode.rsError) then
       raise Exception.Create(ret.Description);
