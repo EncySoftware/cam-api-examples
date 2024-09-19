@@ -1,0 +1,13 @@
+{
+    "name": "Utility to import geometry by C#",
+    "description": "Utility to import geometry by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityGeometryImporterNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to import geometry by C#",
+                "id": "Extension.Utility.GeometryImporter.Net"
+            }
+        }
+    ]
+}

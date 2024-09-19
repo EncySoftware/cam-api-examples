@@ -1,0 +1,10 @@
+{
+	"type": "CSharp",
+	"project_path": "../ExtensionUtilityProjectMachineInfoNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"../json.cs",
+		"*.json"
+	]
+}
