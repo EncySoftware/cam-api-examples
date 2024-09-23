@@ -7,7 +7,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>ExtensionNetProject</RootNamespace>
-    <OutDir>bin</OutDir>
+    <OutDir>bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   
   <ItemGroup>

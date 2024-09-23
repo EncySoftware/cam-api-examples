@@ -6,7 +6,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <OutDir>bin</OutDir>
+    <OutDir>bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   
   <ItemGroup>

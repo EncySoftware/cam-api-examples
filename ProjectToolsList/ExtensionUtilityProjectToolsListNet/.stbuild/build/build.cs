@@ -3,15 +3,13 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.MsDelphi;
+using BuildSystem.Builder.Dotnet;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
 using BuildSystem.ManagerObject;
-using BuildSystem.ManagerObject.Interfaces;
-using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
 using BuildSystem.SettingsReader.Object;
 using BuildSystem.Variants;
@@ -77,7 +75,7 @@ public class Build : NukeBuild
         {
             Projects = new HashSet<string>
             {
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionEmptyDelphiProject.json")
+                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionUtilityProjectToolsListNetProject.json")
             },
             Variants = new VariantList
             {
@@ -90,7 +88,7 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
                     }
                 },
                 new()
@@ -102,36 +100,20 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
                     }
                 }
             },
             ManagerProps = new List<IManagerProp>
             {
-                new BuilderMsDelphiProps
+                new BuilderDotnetProps
                 {
-                    Name = "BuilderDelphi",
-                    MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe"
-                },
-                new RestorerNugetProps
-                {
-                    Name = "RestorerNuget",
-                    DepsProp = new List<RestorerDepProp>
-                    {
-                        new()
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
-                            Version = "1.1.3",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        }
-                    }
+                    Name = "BuilderDotnet"
                 }
             }
         };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderDelphi");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDelphi");
-        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
+        settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
+        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");
         
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(_logger, tempDir, SettingsReaderType.Object, settings);
@@ -144,22 +126,21 @@ public class Build : NukeBuild
     private Target Compile => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Restore(Variant);
             _buildSpace.Projects.Compile(Variant, true);
-
+            
             // copy settings file, if we want to debug
             foreach (var project in _buildSpace.Projects)
             {
                 var mainProjectFilePath = project.MainFilePath;
                 if (mainProjectFilePath == null)
                     continue;
-
+                
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
                               ?? throw new Exception("Build results with dll type not found");
                 var jsonPath = Path.ChangeExtension(mainProjectFilePath, ".settings.json");
                 if (!File.Exists(jsonPath))
                     throw new Exception("Settings file not found");
-
+                
                 File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);
             }
         });
@@ -190,14 +171,14 @@ public class Build : NukeBuild
 
                 // path to json, describing extension (to be included into dext)
                 var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
-
+                
                 // make new dext
                 var outputFolder = Path.GetDirectoryName(dllPath)
                                    ?? throw new Exception("Parent folder of dll path is null");
                 var dextPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(dllPath) + ".dext");
                 if (File.Exists(dextPath))
                     File.Delete(dextPath);
-
+                
                 using var zipToOpen = new FileStream(dextPath, FileMode.Create);
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));

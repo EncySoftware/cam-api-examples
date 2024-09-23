@@ -1,0 +1,13 @@
+{
+    "name": "Utility to show message by C#",
+    "description": "Utility to show message by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityMessageBoxNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to show message by C#",
+                "id": "Extension.Utility.MessageBox.Net"
+            }
+        }
+    ]
+}

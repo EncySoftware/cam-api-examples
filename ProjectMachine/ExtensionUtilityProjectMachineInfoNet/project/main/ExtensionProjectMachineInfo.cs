@@ -9,7 +9,7 @@ using CAMAPI.ResultStatus;
 namespace ExtensionUtilityProjectMachineInfoNet;
 
 /// <summary>
-/// Utility to import geometry from Milling_25D\Part1.igs into the active project
+/// Utility to get information about machine from the active project
 /// </summary>
 public class ExtensionProjectMachineInfo: IExtension, IExtensionUtility
 {
