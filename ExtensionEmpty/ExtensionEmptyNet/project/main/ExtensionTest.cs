@@ -6,6 +6,9 @@ using CAMAPI.ResultStatus;
 
 namespace ExtensionNetProject;
 
+/// <summary>
+/// Show parameters of project
+/// </summary>
 public class ExtensionTest : IExtension, IExtensionUtility
 {
     /// <inheritdoc />
