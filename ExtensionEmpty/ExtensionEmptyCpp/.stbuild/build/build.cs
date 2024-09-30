@@ -2,7 +2,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
-using BuildSystem.Builder.MsCpp;
+using BuildSystem.Builder.MsCpp;     
+using BuildSystem.Cleaner.Common;
 using Nuke.Common;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
@@ -113,6 +114,11 @@ public class Build : NukeBuild
                     Name = "BuilderCpp",
                     MsBuilderPath = "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
                 },
+                new CleanerCommonProps
+                {
+                    Name = "CleanerCommon",
+                    AllBuildResults = true
+                },
                 new RestorerNugetProps
                 {
                     Name = "RestorerNuget",
@@ -129,7 +135,9 @@ public class Build : NukeBuild
             }
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderCpp");
-        settings.ManagerNames.Add("builder", "Release", "BuilderCpp");
+        settings.ManagerNames.Add("builder", "Release", "BuilderCpp");  
+        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
+        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
         settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
         

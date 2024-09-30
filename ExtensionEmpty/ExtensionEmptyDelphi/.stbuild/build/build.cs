@@ -3,7 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.MsDelphi;
+using BuildSystem.Builder.MsDelphi;  
+using BuildSystem.Cleaner.Common;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Info;
@@ -113,6 +114,11 @@ public class Build : NukeBuild
                     Name = "BuilderDelphi",
                     MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe"
                 },
+                new CleanerCommonProps
+                {
+                    Name = "CleanerCommon",
+                    AllBuildResults = true
+                },
                 new RestorerNugetProps
                 {
                     Name = "RestorerNuget",
@@ -129,7 +135,9 @@ public class Build : NukeBuild
             }
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderDelphi");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDelphi");
+        settings.ManagerNames.Add("builder", "Release", "BuilderDelphi");  
+        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
+        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
         settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
         
