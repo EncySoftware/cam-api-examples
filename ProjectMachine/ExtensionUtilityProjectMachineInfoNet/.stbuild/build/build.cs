@@ -160,7 +160,8 @@ public class Build : NukeBuild
     private Target Clean => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Clean(Variant);
+            _buildSpace.Projects.Clean("Debug");
+            _buildSpace.Projects.Clean("Release");
         });
 
     /// <summary>
