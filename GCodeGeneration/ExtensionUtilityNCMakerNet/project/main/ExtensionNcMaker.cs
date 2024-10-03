@@ -4,7 +4,9 @@ using System.Runtime.InteropServices;
 using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.NCMaker;
+using CAMAPI.Project;
 using CAMAPI.ResultStatus;
+using CAMAPI.Singletons;
 using CAMAPI.Technologist;
 
 namespace ExtensionUtilityNcMakerNet;
@@ -23,13 +25,16 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
     public IExtensionInfo? Info { get; set; }
 
     /// <inheritdoc />
-    public void Run(IExtensionUtilityContext context, [UnscopedRef] out TResultStatus resultStatus)
+    public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
         var resultGCodeFile = "";
         resultStatus = default;
         
         try
         {
+            // global context
+            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
+
             // Make temp file name to write log
             _tempDir = Path.Combine(Path.GetTempPath(), "MakeNCUtilityExtension", Path.GetRandomFileName());
             Directory.CreateDirectory(_tempDir);
@@ -37,9 +42,15 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("MakeNCUtilityExtension log started");
 
             // catch active project
-            var project = context.CamApplication.GetActiveProject(out resultStatus);
+            using var projectCom = new ApiComObject<ICamApiProject>(context.CamApplication.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error getting active project: " + resultStatus.Description);
+            var project = projectCom.Instance;
+            
+            using var technologistCom = new ApiComObject<ICamApiTechnologist>(project.Technologist);
+            var technologist = technologistCom.Instance;
+            using var ncMakerCom = new ApiComObject<ICamApiNCMaker>(project.NCMaker);
+            var ncMaker = ncMakerCom.Instance;
             
             // no active project
             if (project == null)
@@ -49,9 +60,10 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("Active project file: " + project.FilePath);
             WriteLog("Active project ID: " + project.Id);
             
-            var operations = project.Technologist.GetOperations(TCamApiReorderingMode.rmReordered, out resultStatus);
+            using var operationCom = new ApiComObject<ICamApiTechOperationIterator>(technologist.GetOperations(TCamApiReorderingMode.rmReordered, out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error getting operations: " + resultStatus.Description);
+            var operations = operationCom.Instance;
 
             // Limit set of operations by substring inside full name
             operations.OperationsFilter = new OperationsFilterByName("Setup stage 1");
@@ -64,7 +76,7 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("CLData saved to file: " + clDataFile);
 
             // make settings for CNC generating
-            var settings = project.NCMaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, out resultStatus) as ICamApiMakeCncSppxSettings;
+            var settings = ncMaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, out resultStatus) as ICamApiMakeCncSppxSettings;
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error creating settings: " + resultStatus.Description);
             if (settings == null)
@@ -75,21 +87,17 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("Resulting G code file: " + Path.Combine(settings.OutputFolder, settings.NcFileName));
             
             // get postprocessor from all users documents folder
-            var postProcessor = Path.Combine(@"C:\Users\Public\Documents\ENCY\Version 1\PostProcessors", "Mill", "Sinumerik (840D)_Mill.sppx");
+            var postProcessor = Path.Combine(pathsHelper.Instance.PostprocessorsFolder, "Mill", "Sinumerik (840D)_Mill.sppx");
             if (!File.Exists(postProcessor))
                 throw new Exception("Postprocessor not found: " + postProcessor);
             WriteLog("Postprocessor found: " + postProcessor);
             
             // generate CNC
-            project.NCMaker.Generate(clDataFile, postProcessor, settings, out resultStatus);
+            ncMaker.Generate(clDataFile, postProcessor, settings, out resultStatus);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error generating CNC: " + resultStatus.Description);
             WriteLog("CNC successfully generated");
             WriteLog(resultStatus.Description);
-
-            Marshal.ReleaseComObject(settings);
-            Marshal.ReleaseComObject(operations);
-            Marshal.ReleaseComObject(project);
         }
         catch (Exception e)
         {

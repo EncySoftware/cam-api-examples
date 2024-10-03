@@ -4,6 +4,7 @@ using CAMAPI.Extensions;
 using CAMAPI.GeomImporter;
 using CAMAPI.Project;
 using CAMAPI.ResultStatus;
+using CAMAPI.Singletons;
 
 namespace ExtensionUtilityGeometryImporterNet;
 
@@ -19,33 +20,34 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
         resultStatus = default;
-        ICamApiProject? activeProject = null;
-        ICAMAPIGeometryImporter? importer = null;
         try
         {
+            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
+            using var applicationCom = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            var application = applicationCom.Instance;
+
             // active project
-            activeProject = context.CamApplication.GetActiveProject(out resultStatus);
+            using var activeProjectCom =
+                new ApiComObject<ICamApiProject>(application.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't get active project: " + resultStatus.Description);
-            if (activeProject == null)
+            if (activeProjectCom == null)
                 throw new Exception("Active project is not found");
-            
+            var activeProject = activeProjectCom.Instance;
+
             // geometry importer
-            importer = activeProject.GeomImporter;
-            var modelFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
-                    @"ENCY\Version 1\Models\Milling_25D\Part1.igs");
+            using var geomImporterCom = new ApiComObject<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
+            var importer = geomImporterCom.Instance;
+
+            var modelFileName = Path.Combine(pathsHelper.Instance.ModelsFolder, "Milling_25D", "Part1.igs");
             resultStatus = importer.ImportFile(modelFileName, @"", true);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't import file: " + resultStatus.Description);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
-        } finally {
-            // mandatory release of COM objects
-            if (importer != null)
-                Marshal.ReleaseComObject(importer);
-            if (activeProject != null)
-                Marshal.ReleaseComObject(activeProject);
         }
     }
 }

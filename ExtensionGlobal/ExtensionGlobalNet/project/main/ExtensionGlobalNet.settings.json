@@ -1,0 +1,13 @@
+{
+    "name": "Extension to be executed on main application start and finish by C#",
+    "description": "Extension to be executed on main application start and finish by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionGlobalNet.dll",
+    "extensions": [
+        {
+            "Global": {
+                "name": "Extension to be executed on main application start and finish by C#",
+                "id": "Extension.Global.Net"
+            }
+        }
+    ]
+}

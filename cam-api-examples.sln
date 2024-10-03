@@ -16,6 +16,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityProjectTool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityMessageBoxNet", "UI\ExtensionUtilityMessageBoxNet\project\main\ExtensionUtilityMessageBoxNet.csproj", "{9E7B9F4D-4832-49A4-8A58-0684F9C18AD3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionGlobalNet", "ExtensionGlobal\ExtensionGlobalNet\project\main\ExtensionGlobalNet.csproj", "{1F50F2B2-0B6A-4BA8-A009-17580376AEA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionOperationPopupNet", "ExtensionOperationPopup\ExtensionOperationPopupNet\project\main\ExtensionOperationPopupNet.csproj", "{C1E26D72-8C89-4B43-81CD-F791C0E87970}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityDialogWindowNet", "UI\ExtensionUtilityDialogWindowNet\project\main\ExtensionUtilityDialogWindowNet.csproj", "{528D7637-B59E-4A3A-A1A7-3EF031209BAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,5 +60,17 @@ Global
 		{9E7B9F4D-4832-49A4-8A58-0684F9C18AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E7B9F4D-4832-49A4-8A58-0684F9C18AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E7B9F4D-4832-49A4-8A58-0684F9C18AD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F50F2B2-0B6A-4BA8-A009-17580376AEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F50F2B2-0B6A-4BA8-A009-17580376AEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F50F2B2-0B6A-4BA8-A009-17580376AEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F50F2B2-0B6A-4BA8-A009-17580376AEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1E26D72-8C89-4B43-81CD-F791C0E87970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1E26D72-8C89-4B43-81CD-F791C0E87970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1E26D72-8C89-4B43-81CD-F791C0E87970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1E26D72-8C89-4B43-81CD-F791C0E87970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{528D7637-B59E-4A3A-A1A7-3EF031209BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{528D7637-B59E-4A3A-A1A7-3EF031209BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{528D7637-B59E-4A3A-A1A7-3EF031209BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{528D7637-B59E-4A3A-A1A7-3EF031209BAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

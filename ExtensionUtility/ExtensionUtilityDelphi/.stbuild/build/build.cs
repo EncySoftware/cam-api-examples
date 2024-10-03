@@ -3,10 +3,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.MsDelphi;  
-using BuildSystem.Cleaner.Common;
+using BuildSystem.Builder.MsDelphi;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
+using BuildSystem.Cleaner.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
@@ -114,11 +114,6 @@ public class Build : NukeBuild
                     Name = "BuilderDelphi",
                     MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe"
                 },
-                new CleanerCommonProps
-                {
-                    Name = "CleanerCommon",
-                    AllBuildResults = true
-                },
                 new RestorerNugetProps
                 {
                     Name = "RestorerNuget",
@@ -127,19 +122,23 @@ public class Build : NukeBuild
                         new()
                         {
                             PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
-                            Version = "1.1.3",
+                            Version = "1.2.1",
                             OutDir = Path.Combine(RootDirectory.Parent, "SDK")
                         }
                     }
+                },
+                new CleanerCommonProps
+                {
+                    Name = "CleanerCommon"
                 }
             }
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderDelphi");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDelphi"); 
+        settings.ManagerNames.Add("builder", "Release", "BuilderDelphi");
+        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
+        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget"); 
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
-        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
         
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(_logger, tempDir, SettingsReaderType.Object, settings);

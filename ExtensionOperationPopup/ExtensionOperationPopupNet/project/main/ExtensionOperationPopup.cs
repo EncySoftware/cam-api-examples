@@ -1,5 +1,6 @@
 ﻿using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
+using CAMAPI.Singletons;
 using CAMAPI.TechnologyForm;
 
 namespace ExtensionOperationPopupNet;
@@ -24,7 +25,7 @@ public class ExtensionOperationPopup : IExtension, IExtensionOperationPopup
         try
         {
             var popupItems = context.OperationPopup;
-            popupItems.AddItem("Calculate NC", "Calculate NC", true, new MakeNcOnClicked(), out resultStatus);
+            popupItems.AddItem("Calculate NC", "Calculate NC", true, new MakeNcOnClicked(Info), out resultStatus);
         }
         catch (Exception ex)
         {

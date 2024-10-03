@@ -20,18 +20,18 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
         resultStatus = default;
-        ICamApiProject? activeProject = null;
-        ICamApiMachiningToolsList? toolsList = null;
-        ICamApiMachiningToolInfo? toolInfo = null;
-        ICamApiMachiningToolOperationsIterator? operations = null;
         try
         {
+            using var applicationCom = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            var application = applicationCom.Instance;
+            
             // active project
-            activeProject = context.CamApplication.GetActiveProject(out resultStatus);
+            using var activeProjectCom = new ApiComObject<ICamApiProject>(application.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't get active project: " + resultStatus.Description);
-            if (activeProject == null)
+            if (activeProjectCom == null)
                 throw new Exception("Active project is not found");
+            var activeProject = activeProjectCom.Instance;
             
             var tmpFileName = Path.GetTempFileName();
             File.AppendAllText(tmpFileName,
@@ -40,10 +40,12 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
             );
             
             // tools list
-            toolsList = activeProject.ToolsList;
+            using var toolsListCom = new ApiComObject<ICamApiMachiningToolsList>(activeProject.ToolsList);
+            var toolsList = toolsListCom.Instance;
             for (var i = 0; i < toolsList.Count; i++)
             {
-                toolInfo = toolsList.ToolInfo[i];
+                using var toolInfoCom = new ApiComObject<ICamApiMachiningToolInfo>(toolsList.ToolInfo[i]);
+                var toolInfo = toolInfoCom.Instance;
                 File.AppendAllText(tmpFileName,
                     "    Tool caption: " + toolInfo.ToolCaption + Environment.NewLine +
                     "        Tool type: " + toolInfo.ToolType + Environment.NewLine +
@@ -55,18 +57,17 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
                     "        Magazine number: " + toolInfo.MagazineNumber + Environment.NewLine
                 );
 
-                operations = toolsList.GetOperationsUsingTheTool(toolInfo.ToolID);
+                using var operationCom = new ApiComObject<ICamApiMachiningToolOperationsIterator>(toolsList.GetOperationsUsingTheTool(toolInfo.ToolID));
+                var operations = operationCom.Instance;
+                
                 operations.Reset();
-                if (!operations.CurrentOperationIsEmpty())
+                if (operations.CurrentOperationIsEmpty())
+                    continue;
+                File.AppendAllText(tmpFileName, "        Operations using the tool: " + Environment.NewLine);
+                while (!operations.CurrentOperationIsEmpty())
                 {
-                    File.AppendAllText(tmpFileName,
-                        "        Operations using the tool: " + Environment.NewLine);
-                    while (!operations.CurrentOperationIsEmpty())
-                    {
-                        File.AppendAllText(tmpFileName,
-                            "               " + operations.GetCurrentOperationCaption() + Environment.NewLine);
-                        operations.MoveNext();
-                    }
+                    File.AppendAllText(tmpFileName, "               " + operations.GetCurrentOperationCaption() + Environment.NewLine);
+                    operations.MoveNext();
                 }
             }
 
@@ -75,16 +76,6 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
         } catch (Exception e) {
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
-        } finally {
-            // mandatory release of COM objects
-            if (operations != null)
-                Marshal.ReleaseComObject(operations);
-            if (toolInfo != null)
-                Marshal.ReleaseComObject(toolInfo);
-            if (toolsList != null)
-                Marshal.ReleaseComObject(toolsList);
-            if (activeProject != null)
-                Marshal.ReleaseComObject(activeProject);
         }
     }
 }
