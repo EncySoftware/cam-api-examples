@@ -4,11 +4,11 @@
     "module_path": "${extensionJsonFolder}/PLMExtensionNet.dll",
     "extensions": [
         {
-        "PLM": {
-            "id": "PLM.Extension.Net",
-            "name": "PLM Extension on C#",
-			"caption": "PLM Extension on C#"
-        }
+			"PLM": {
+				"id": "PLM.Extension.Net",
+				"name": "PLM Extension on C#",
+				"caption": "PLM Extension on C#"
+			}
         }
     ]
 }

@@ -4,10 +4,10 @@
     "module_path": "${extensionJsonFolder}/PLMExtensionDelphi.dll",
     "extensions": [
         {
-            "utility": {
-                "name": "PLM Extension on Delphi",
-                "caption": "PLM Extension on Delphi",
-                "id": "LM.Extension.Delphi"
+            "PLM": {
+				"id": "PLM.Extension.Delphi",
+				"name": "PLM Extension on Delphi",
+				"caption": "PLM Extension on Delphi"
             }
         }
     ]

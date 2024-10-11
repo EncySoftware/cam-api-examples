@@ -3,7 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.Dotnet;
+using BuildSystem.Builder.Dotnet;       
+using BuildSystem.Cleaner.Common;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Info;
@@ -109,11 +110,18 @@ public class Build : NukeBuild
                 new BuilderDotnetProps
                 {
                     Name = "BuilderDotnet"
+                },
+                new CleanerCommonProps
+                {
+                    Name = "CleanerCommon",
+                    AllBuildResults = true
                 }
             }
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");
+        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");     
+        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
+        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(_logger, tempDir, SettingsReaderType.Object, settings);
@@ -127,6 +135,22 @@ public class Build : NukeBuild
         .Executes(() =>
         {
             _buildSpace.Projects.Compile(Variant, true);
+
+            // copy settings file, if we want to debug
+            foreach (var project in _buildSpace.Projects)
+            {
+                var mainProjectFilePath = project.MainFilePath;
+                if (mainProjectFilePath == null)
+                    continue;
+
+                var dllPath = project.GetBuildResultPath(Variant, "dll")
+                              ?? throw new Exception("Build results with dll type not found");
+                var jsonPath = Path.ChangeExtension(mainProjectFilePath, ".settings.json");
+                if (!File.Exists(jsonPath))
+                    throw new Exception("Settings file not found");
+
+                File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);
+            }
         });
 
     /// <summary>
@@ -136,7 +160,8 @@ public class Build : NukeBuild
     private Target Clean => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Clean(Variant);
+            _buildSpace.Projects.Clean("Debug");
+            _buildSpace.Projects.Clean("Release");
         });
 
     /// <summary>
@@ -154,19 +179,15 @@ public class Build : NukeBuild
                               ?? throw new Exception("Build results with dll type not found");
 
                 // path to json, describing extension (to be included into dext)
-                var projectFolder = Path.GetDirectoryName(project.MainFilePath)
-                                    ?? throw new Exception("Main file path is null");
-                var jsonPath = Path.Combine(projectFolder, Path.GetFileNameWithoutExtension(dllPath) + ".settings.json");
-                
+                var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
 
-                
                 // make new dext
                 var outputFolder = Path.GetDirectoryName(dllPath)
                                    ?? throw new Exception("Parent folder of dll path is null");
                 var dextPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(dllPath) + ".dext");
                 if (File.Exists(dextPath))
                     File.Delete(dextPath);
-                
+
                 using var zipToOpen = new FileStream(dextPath, FileMode.Create);
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));

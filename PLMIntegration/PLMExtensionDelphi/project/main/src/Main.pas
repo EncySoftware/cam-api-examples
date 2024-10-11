@@ -7,11 +7,11 @@ uses
   IDL.CAMAPI.Extensions,
   TestPLMInterface;
 
-function CreateInstanceOfExtension(PluginID: WideString): NativeUInt; safecall;
+function CreateInstanceOfExtension(PluginID: WideString): NativeUInt; stdcall;
 
 implementation
 
-function CreateInstanceOfExtension(PluginID: WideString): NativeUInt; safecall;
+function CreateInstanceOfExtension(PluginID: WideString): NativeUInt;
 begin
   var res: IExtension;
 
