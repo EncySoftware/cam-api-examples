@@ -1,0 +1,29 @@
+{
+  "name": "Example of using geometry model",
+  "description": "Extension shows how to use geometrical model from CAM project",
+  "module_path": "${extensionJsonFolder}\\ExtensionUtilityGeometryModelNet.dll",
+  
+  "extensions": [    
+    {
+      "utility": {
+        "id": "GeometryModelExportExample",
+        "caption": "Export geometry node",
+        "hint_text": "Export geometry node to .osd file"
+      }
+    },
+    {
+      "utility": {
+        "id": "GeometryNodeTransformExample",
+        "caption": "Transform geometry node",
+        "hint_text": "Transform geometry node by one of matrixes"
+      }
+    },        
+    {
+      "utility": {
+        "id": "GeometryNodesIteratorExample",
+        "caption": "Select colored geometry nodes",
+        "hint_text": "Change color of geometry nodes and select them"
+      }
+    }
+  ]
+}
