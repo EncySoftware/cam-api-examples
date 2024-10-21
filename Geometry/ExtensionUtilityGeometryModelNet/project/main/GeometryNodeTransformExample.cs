@@ -1,80 +1,27 @@
-using CAMAPI.Extensions;
 using CAMAPI.Application;
 using CAMAPI.DotnetHelper;
+using CAMAPI.Extensions;
 using CAMAPI.GeomModel;
+using CAMAPI.GeomImporter;
 using CAMAPI.ResultStatus;
+using CAMAPI.Project;
 using STTypes;
 using System.Runtime.InteropServices;
-using System.Numerics;
+using Geometry.VecMatrLib;
 
 namespace ExtensionUtilityGeometryModelNet;
 
+/// <summary>
+/// Utility to transform geometry model using transformation matrices
+/// </summary>
 public class GeometryNodeTransformExample : IExtension, IExtensionUtility
 {
+    /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
-     private const string nodeFullName = "Part\\49-1.igs";
 
-    TST3DMatrix MakeUnitMatrix()
+    private static TST3DMatrix MakeScaleMatrix(double scaleValue, double shiftX, double shiftY, double shiftZ)
     {
-        TST3DMatrix matrix = new TST3DMatrix();
-        matrix.vT.X = 0;  
-        matrix.vT.Y = 0;
-        matrix.vT.Z = 0;
-        matrix.vX.X = 1;  
-        matrix.vX.Y = 0;
-        matrix.vX.Z = 0;
-        matrix.vY.X = 0;  
-        matrix.vY.Y = 1;
-        matrix.vY.Z = 0;
-        matrix.vZ.X = 0;  
-        matrix.vZ.Y = 0;
-        matrix.vZ.Z = 1;
-        matrix.D = 1;
-        return matrix;
-    }
-
-    TST3DMatrix MakeShiftMatrix(double shiftX, double shiftY, double shiftZ)
-    {
-        TST3DMatrix matrix = MakeUnitMatrix();
-        matrix.vT.X = shiftX;  
-        matrix.vT.Y = shiftY;
-        matrix.vT.Z = shiftZ;
-        return matrix;
-    }
-
-    TST3DMatrix MakeRotMatrix(double ang, int axis)
-    {
-        TST3DMatrix matrix = MakeUnitMatrix();
-        double cs = Math.Cos(ang);
-        double sn = Math.Sin(ang);
-        switch (axis) {
-            case 1: // on X axis
-                matrix.vY.Y = cs;           
-                matrix.vY.Z = sn;           
-                matrix.vZ.Y = -sn;          
-                matrix.vZ.Z = cs;           
-                break;
-            case 2: // on Y axis
-                matrix.vX.X = cs;           
-                matrix.vX.Z = -sn;          
-                matrix.vZ.X = sn;                
-                matrix.vZ.Z = cs;
-                break;
-            case 3: // on Z axis
-                matrix.vX.X = cs;        
-                matrix.vX.Y = sn;
-                matrix.vY.X = -sn;
-                matrix.vY.Y = cs;
-                break;
-            default:
-                throw new Exception("Invalid axis number");
-        }
-        return matrix;
-    }
-
-    TST3DMatrix MakeScaleMatrix(double scaleValue, double shiftX, double shiftY, double shiftZ)
-    {
-        TST3DMatrix matrix = MakeUnitMatrix();
+        TST3DMatrix matrix = T3DMatrix.Unit;
         matrix.vX.X *= scaleValue;
         matrix.vY.Y *= scaleValue;
         matrix.vZ.Z *= scaleValue;
@@ -84,27 +31,40 @@ public class GeometryNodeTransformExample : IExtension, IExtensionUtility
         return matrix;
     }
 
-    public void Run(IExtensionUtilityContext Context, out TResultStatus result)
-    {
-        result = default;      
-        var prj = Context.CamApplication.GetActiveProject(out TResultStatus r);
+    /// <inheritdoc />
+    public void Run(IExtensionUtilityContext Context, out TResultStatus resultStatus)
+    {        
+        resultStatus = default;
+        ICamApiProject? activeProject = null;
+
         try
         {
-            if (r.Code == TResultStatusCode.rsSuccess)
+            activeProject = Context.CamApplication.GetActiveProject(out resultStatus);
+            if (resultStatus.Code == TResultStatusCode.rsSuccess)
             {
-                using var fullModel = new ApiComObject<ICAMAPIGeometryModel>(prj.CAMAPIGeomModel);
-                var geomNode = new ApiComObject<ICAMAPIGeometryTreeNode>(fullModel.Instance.FindByFullName(nodeFullName, out result));
+                var nodeFullName = "Part\\49-1.igs";
+                var importFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
+                        @"ENCY\Version 1\Models\Milling_3D\49-1.igs");
+                using var fullModel = new ApiComObject<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
+                using var importer = new ApiComObject<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 
-                // TST3DMatrix matr = MakeShiftMatrix(100, 200, 0);
-                // TST3DMatrix matr = MakeRotMatrix(60, 1);
-                TST3DMatrix matr = MakeScaleMatrix(2, 100, 200, 0);
+                importer.Instance.ImportFile(importFileName, "", false);
+                var geomNode = new ApiComObject<ICAMAPIGeometryTreeNode>(fullModel.Instance.FindByFullName(nodeFullName, out resultStatus));
 
-                result = fullModel.Instance.Transform(geomNode.Instance, matr);
-                if (!(result.Code == TResultStatusCode.rsSuccess))
-                    throw new Exception(result.Description);
+                var shiftMatrix = T3DMatrix.MakeShiftMatrix(new T3DPoint { X = 100, Y = 200, Z = 0 });
+                var rotMatrix = T3DMatrix.MakeRotMatrix(60, 1, T3DPoint.Zero);
+                var scaleMatrix = MakeScaleMatrix(2, 100, 200, 0);
+
+                resultStatus = fullModel.Instance.Transform(geomNode.Instance, shiftMatrix);
+                // result = fullModel.Instance.Transform(geomNode.Instance, rotMatrix);
+                // result = fullModel.Instance.Transform(geomNode.Instance, scaleMatrix);
+
+                if (!(resultStatus.Code == TResultStatusCode.rsSuccess))
+                    throw new Exception(resultStatus.Description);
             }
         } finally {
-            Marshal.ReleaseComObject(prj);
+            if (activeProject != null)
+                Marshal.ReleaseComObject(activeProject);
         }
     }
 }

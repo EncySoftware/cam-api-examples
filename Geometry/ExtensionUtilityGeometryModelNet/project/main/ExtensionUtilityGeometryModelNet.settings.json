@@ -7,15 +7,15 @@
     {
       "utility": {
         "id": "GeometryModelExportExample",
-        "caption": "Export geometry node",
-        "hint_text": "Export geometry node to .osd file"
+        "caption": "Export geometry model",
+        "hint_text": "Export geometry model to .osd file"
       }
     },
     {
       "utility": {
         "id": "GeometryNodeTransformExample",
-        "caption": "Transform geometry node",
-        "hint_text": "Transform geometry node by one of matrixes"
+        "caption": "Transform geometry model",
+        "hint_text": "Transform geometry model using transformation matrices"
       }
     },        
     {
@@ -23,6 +23,13 @@
         "id": "GeometryNodesIteratorExample",
         "caption": "Select colored geometry nodes",
         "hint_text": "Change color of geometry nodes and select them"
+      }
+    },    
+    {
+      "utility": {
+        "id": "OSDMakerExample",
+        "caption": "Export geometry model using OSDMaker",
+        "hint_text": "Export geometry model to .osd file using OSDMaker"
       }
     }
   ]

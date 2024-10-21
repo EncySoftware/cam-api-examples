@@ -4,7 +4,8 @@ using CAMAPI.ResultStatus;
 namespace CAMAPI;
 
 /// <summary>
-/// Singleton factory for creating extensions
+/// Factory for creating extensions. Namespace and class name always should be CAMAPI.ExtensionFactory,
+/// so CAMAPI will find it
 /// </summary>
 public class ExtensionFactory : IExtensionFactory
 {
@@ -12,13 +13,13 @@ public class ExtensionFactory : IExtensionFactory
     /// Create extension by identifier from json-file
     /// </summary>
     /// <param name="extensionIdent">Identifier from json-file</param>
-    /// <param name="ret">Structure to provide error text</param>
+    /// <param name="resultStatus">Structure to provide error text</param>
     /// <returns>New instance of extension</returns>
-    public IExtension? Create(string extensionIdent, out TResultStatus result)
+    public IExtension? Create(string extensionIdent, out TResultStatus resultStatus)
     {
         try
         {
-            result = default;
+            resultStatus = default;
 
             switch (extensionIdent)
             {
@@ -28,27 +29,31 @@ public class ExtensionFactory : IExtensionFactory
                     return new ExtensionUtilityGeometryModelNet.GeometryNodeTransformExample();
                 case "GeometryNodesIteratorExample":
                     return new ExtensionUtilityGeometryModelNet.GeometryNodesIteratorExample();
+                case "OSDMakerExample":
+                    return new ExtensionUtilityGeometryModelNet.OSDMakerExample();
                 default:
-                    result.Code = TResultStatusCode.rsError;
-                    result.Description = "Unknown extension identifier: " + extensionIdent;
+                    resultStatus.Code = TResultStatusCode.rsError;
+                    resultStatus.Description = "Unknown extension identifier: " + extensionIdent;
                     return null;
             }
         }
         catch (Exception e)
         {
-            result.Code = TResultStatusCode.rsError;
-            result.Description = e.Message;
+            resultStatus.Code = TResultStatusCode.rsError;
+            resultStatus.Description = e.Message;
         }
         return null;
     }
 
-    public void OnLibraryRegistered(IExtensionFactoryContext Context, out TResultStatus result)
+    /// <inheritdoc />
+    public void OnLibraryRegistered(IExtensionFactoryContext Context, out TResultStatus resultStatus)
     {
-        result = default; 
+        resultStatus = default; 
     }
 
-    public void OnLibraryUnRegistered(IExtensionFactoryContext Context, out TResultStatus result)
+    /// <inheritdoc />
+    public void OnLibraryUnRegistered(IExtensionFactoryContext Context, out TResultStatus resultStatus)
     {
-        result = default; 
+        resultStatus = default; 
     }
 }
