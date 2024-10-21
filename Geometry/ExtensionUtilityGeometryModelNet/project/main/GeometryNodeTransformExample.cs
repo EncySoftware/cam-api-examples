@@ -5,6 +5,7 @@ using CAMAPI.GeomModel;
 using CAMAPI.GeomImporter;
 using CAMAPI.ResultStatus;
 using CAMAPI.Project;
+using CAMAPI.Singletons;
 using STTypes;
 using System.Runtime.InteropServices;
 using Geometry.VecMatrLib;
@@ -39,12 +40,19 @@ public class GeometryNodeTransformExample : IExtension, IExtensionUtility
 
         try
         {
+            // get global context
+            var extension = Info?.InstanceInfo.ExtensionManager.GetSingletonExtension("Extension.Global.Singletons.Paths", out resultStatus)
+                            ?? throw new Exception("Info is null");
+            if (resultStatus.Code == TResultStatusCode.rsError)
+                throw new Exception("Error getting global context: " + resultStatus.Description);
+            if (extension is not ICamApiPaths paths)
+                throw new Exception("Cannot get global context");
+
             activeProject = Context.CamApplication.GetActiveProject(out resultStatus);
             if (resultStatus.Code == TResultStatusCode.rsSuccess)
             {
+                var importFileName = Path.Combine(paths.ModelsFolder, "Milling_3D", "49-1.igs");
                 var nodeFullName = "Part\\49-1.igs";
-                var importFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
-                        @"ENCY\Version 1\Models\Milling_3D\49-1.igs");
                 using var fullModel = new ApiComObject<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
                 using var importer = new ApiComObject<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 

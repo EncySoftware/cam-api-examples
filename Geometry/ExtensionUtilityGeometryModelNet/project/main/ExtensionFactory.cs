@@ -29,8 +29,6 @@ public class ExtensionFactory : IExtensionFactory
                     return new ExtensionUtilityGeometryModelNet.GeometryNodeTransformExample();
                 case "GeometryNodesIteratorExample":
                     return new ExtensionUtilityGeometryModelNet.GeometryNodesIteratorExample();
-                case "OSDMakerExample":
-                    return new ExtensionUtilityGeometryModelNet.OSDMakerExample();
                 default:
                     resultStatus.Code = TResultStatusCode.rsError;
                     resultStatus.Description = "Unknown extension identifier: " + extensionIdent;

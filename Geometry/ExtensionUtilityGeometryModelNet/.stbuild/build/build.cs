@@ -3,8 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.Dotnet;    
 using BuildSystem.Cleaner.Common;
+using BuildSystem.Builder.Dotnet;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Info;
@@ -107,19 +107,19 @@ public class Build : NukeBuild
             },
             ManagerProps = new List<IManagerProp>
             {
-                new BuilderDotnetProps
-                {
-                    Name = "BuilderDotnet"
-                },
                 new CleanerCommonProps
                 {
                     Name = "CleanerCommon",
                     AllBuildResults = true
+                },
+                new BuilderDotnetProps
+                {
+                    Name = "BuilderDotnet"
                 }
             }
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");   
+        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");  
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         
@@ -134,6 +134,7 @@ public class Build : NukeBuild
     private Target Compile => _ => _
         .Executes(() =>
         {
+            _buildSpace.Projects.Restore(Variant);
             _buildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
