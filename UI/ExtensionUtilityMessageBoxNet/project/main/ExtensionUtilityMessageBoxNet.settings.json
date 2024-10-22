@@ -2,6 +2,9 @@
     "name": "Utility to show message by C#",
     "description": "Utility to show message by C#",
     "module_path": "${extensionJsonFolder}\\ExtensionUtilityMessageBoxNet.dll",
+    "unload_mode": "umJustAfterExecution",
+    "unload_mode_": "umBeforeProgramFinalization",
+    "unload_mode__": "umManuallyFromUI",
     "extensions": [
         {
             "Utility": {
