@@ -1,0 +1,10 @@
+{
+	"type": "CSharp",
+	"project_path": "../ExtensionUtilityDialogWindowNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"../json.cs",
+		"*.json"
+	]
+}

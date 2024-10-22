@@ -9,16 +9,18 @@
 
 #pragma comment(lib, "Shell32.lib")
 
+#import "STTypes.tlb" no_namespace, named_guids
 #import <CAMAPI.Logger.tlb> no_namespace, named_guids
 #import <CAMAPI.ResultStatus.tlb> no_namespace, named_guids
 #import "CAMAPI.Generic.List.tlb" no_namespace, named_guids
 #import "CAMAPI.Singletons.tlb" no_namespace, named_guids
 #import "CAMAPI.Extensions.tlb" no_namespace, named_guids
 #import "CAMAPI.NCMaker.tlb" no_namespace, named_guids
+#import "CAMAPI.Machine.tlb" no_namespace, named_guids
+#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
 #import "CAMAPI.Technologist.tlb" no_namespace, named_guids
 #import "CAMAPI.Snapshot.tlb" no_namespace, named_guids
 #import "CAMAPI.GeomImporter.tlb" no_namespace, named_guids
-#import "CAMAPI.Machine.tlb" no_namespace, named_guids
 #import "CAMAPI.ToolsList.tlb" no_namespace, named_guids
 #import "CAMAPI.Project.tlb" no_namespace, named_guids
 #import "CAMAPI.TechnologyForm.tlb" no_namespace, named_guids
@@ -142,36 +144,33 @@ public:
         IExtensionUtilityContext* context,
         TResultStatus* ResultStatus
     ) override {
-        ICamApiApplication* application = nullptr;
+        ICamApiPaths* paths = nullptr;
         try
         {
             TResultStatus resultStatus;
         
-            // get context
-            HRESULT hr = context->get_CamApplication(&application);
-            if (FAILED(hr) || !application)
-                throw std::runtime_error("Failed to get CamApplication from context");
-
-            // Get the current directory and check for success
-            BSTR folder;
-            char buffer[MAX_PATH];
-            DWORD result = GetCurrentDirectoryA(MAX_PATH, buffer);
-            if (result > 0 && result <= MAX_PATH)
-                folder = StringToBSTR(buffer);
-            else
-                throw std::runtime_error("Failed to get GetCurrentDirectoryA");
-
-            fs::path currentFolder = fs::path((BSTR)folder).parent_path();
-            SysFreeString(folder);
-            if (currentFolder.empty())
-                throw std::runtime_error("Cannot get current folder");
+			// get global context
+			if (!Info)
+				throw std::runtime_error("Info is null");
+			IUnknown* extension = Info->InstanceInfo->ExtensionManager->GetSingletonExtension(
+				"Extension.Global.Singletons.Paths", &resultStatus);
+			if (resultStatus.Code == TResultStatusCode::rsError)
+				throw std::runtime_error("Error getting global context: " + BSTRToString(resultStatus.Description));
+            if (!extension)
+                throw std::runtime_error("Error: extension is nullptr");
+            HRESULT hr = extension->QueryInterface(__uuidof(ICamApiPaths), (void**)&paths);
+            if (FAILED(hr) || !paths)
+                throw std::runtime_error("Error querying ICamApiPaths interface");
+			if (!paths)
+				throw std::runtime_error("Error casting to ICamApiPaths");
 
             // export
-            fs::path exportedFile = currentFolder / "exported.stcp";
-            BSTR exportedFilePath = SysAllocString(exportedFile.c_str());
-            OutputDebugString(exportedFilePath);
-            hr = application->ExportCurrentProject(exportedFilePath, true, &resultStatus);
-            SysFreeString(exportedFilePath);
+            _bstr_t currentFolder = paths->GetMainProgramFolder();
+            if (currentFolder.length() == 0)
+                throw std::runtime_error("Cannot get MainProgramFolder");
+            _bstr_t exportedFile = (_bstr_t)currentFolder + L"\\exported.stcp";
+            ICamApiApplication* application = context->CamApplication;
+            hr = application->ExportCurrentProject(exportedFile, true, &resultStatus);
             if (FAILED(hr) || resultStatus.Code == rsError)
                 throw std::runtime_error("Error exporting project: " + BSTRToString(resultStatus.Description));
         }
@@ -182,7 +181,8 @@ public:
         }
 
         // Release the COM objects
-        if (application) application->Release();
+        if (paths)
+            paths->Release();
     }
 };
 

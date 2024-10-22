@@ -3,10 +3,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.Dotnet;    
-using BuildSystem.Cleaner.Common;
+using BuildSystem.Builder.Dotnet;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
+using BuildSystem.Cleaner.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
@@ -113,8 +113,7 @@ public class Build : NukeBuild
                 },
                 new CleanerCommonProps
                 {
-                    Name = "CleanerCommon",
-                    AllBuildResults = true
+                    Name = "CleanerCommon"
                 }
             }
         };

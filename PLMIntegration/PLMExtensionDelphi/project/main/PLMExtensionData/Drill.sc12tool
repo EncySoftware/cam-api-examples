@@ -1,0 +1,154 @@
+                <TSTMillAxisTool Version="1" ToolGUID="{A6CF32B8-C792-4FD4-B712-18BCA8A17DAE}">
+                    <ToolLibrary/>
+                    <Comment>Switch(
+		[Properties.ToolType],
+		[Properties.ToolType.Torus],
+			'Ø'+[Properties.Diameter]+' R'+[Properties.Radius]+' '+[LinearUnits$]+' '+[Properties.ToolType.EnumValue.Attribute(Caption)],
+		[Properties.ToolType.SawBlade],
+			'Ø'+[Properties.Length]+[LinearUnits$]+' '+[Properties.ToolType.EnumValue.Attribute(Caption)],
+		[Properties.ToolType.KnifeTool],
+			[Properties.Length]+[LinearUnits$]+' '+[Properties.ToolType.EnumValue.Attribute(Caption)],
+		IF(
+			[Properties.ShapeTool.Attribute(Count)] GT 0,
+			[Properties.Diameter]+[LinearUnits$]+' '+[Properties.ShapeTool(0).Attribute(ComputedCaption)],
+			[Properties.Diameter]+[LinearUnits$]+' '+[Properties.ToolType.EnumValue.Attribute(Caption)]
+		)
+		)</Comment>
+                    <ToolID>Drill</ToolID>
+                    <ToolConnectorPlaceholder/>
+                    <ToolBlockPlaceholder/>
+                    <Number>1</Number>
+                    <Store>0</Store>
+                    <Durability>60</Durability>
+                    <ToolMaterialName/>
+                    <ToolMaterialID>0</ToolMaterialID>
+                    <WorkpieceMaterialGroup>0</WorkpieceMaterialGroup>
+                    <FromMaterial>1</FromMaterial>
+                    <BestMaterial>25</BestMaterial>
+                    <ToMaterial>50</ToMaterial>
+                    <MinFeed>0.01</MinFeed>
+                    <MaxFeed>1</MaxFeed>
+                    <Feed>0.1</Feed>
+                    <FeedUnits>1</FeedUnits>
+                    <MinCutDepth>0.001</MinCutDepth>
+                    <MaxCutDepth>10</MaxCutDepth>
+                    <CutDepth>0.1</CutDepth>
+                    <CutDepthUnits>0</CutDepthUnits>
+                    <FeedSpeed/>
+                    <RaFN/>
+                    <APxFNVC/>
+                    <MillHolderSelector/>
+                    <Properties Version="2">
+                        <ToolType>Drill</ToolType>
+                        <ShapeToolSelector/>
+                        <ShapeTool/>
+                        <Diameter>6</Diameter>
+                        <Length>36</Length>
+                        <Angle>118</Angle>
+                        <ShapeLength>4</ShapeLength>
+                        <EndRadius>0.6000000000000001</EndRadius>
+                        <Radius>1.4</Radius>
+                        <EndDiameter>1</EndDiameter>
+                        <RightDistance>5</RightDistance>
+                        <LeftDistance>5</LeftDistance>
+                        <RightAngle>5</RightAngle>
+                        <LeftAngle>5</LeftAngle>
+                        <AutoDepth>7</AutoDepth>
+                        <InclAngle>0</InclAngle>
+                        <SawThickness>2</SawThickness>
+                        <SawRoundingRadius>0</SawRoundingRadius>
+                        <ShoulderLength>24</ShoulderLength>
+                        <ShankDiameter>10</ShankDiameter>
+                        <ShankTaperAngle>30</ShankTaperAngle>
+                        <WorkingLength Version="2">IF([ToolType] != 24, [ShoulderLength], [ShoulderLength]/4)</WorkingLength>
+                        <CustomProfile>
+                            <ProfileFile/>
+                            <ProfileParameters/>
+                            <ProfileGeometry/>
+                        </CustomProfile>
+                        <TeethCount>2</TeethCount>
+                        <ThreadPitch>1</ThreadPitch>
+                        <Toolings Version="2">
+                            <Tooling>
+                                <ToolingPoint>End</ToolingPoint>
+                                <DeltaZ>0</DeltaZ>
+                                <LengthCorrector>[Number] + 100*([$ParentNode.Attribute(ItemIndex)]-1)</LengthCorrector>
+                                <RadiusCorrector>[Number] + 100*([$ParentNode.Attribute(ItemIndex)]-1)</RadiusCorrector>
+                            </Tooling>
+                        </Toolings>
+                        <ContactPoints>
+                            <ContactPoint>
+                                <ContactPointType>cpExtRadius</ContactPointType>
+                                <DeltaZ>0</DeltaZ>
+                            </ContactPoint>
+                        </ContactPoints>
+                        <HolderName>392.272HMD-40 12 052</HolderName>
+                        <HolderSteps>
+                            <HolderStep>
+                                <Length>0</Length>
+                                <Diameter>34</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>7.5</Length>
+                                <Diameter>36</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>24.5</Length>
+                                <Diameter>36</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>0</Length>
+                                <Diameter>40</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>4</Length>
+                                <Diameter>40</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>2</Length>
+                                <Diameter>36</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>3</Length>
+                                <Diameter>36</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>2</Length>
+                                <Diameter>40</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>6</Length>
+                                <Diameter>40</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>0</Length>
+                                <Diameter>34</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>2.1</Length>
+                                <Diameter>34</Diameter>
+                            </HolderStep>
+                            <HolderStep>
+                                <Length>51</Length>
+                                <Diameter>15</Diameter>
+                            </HolderStep>
+                        </HolderSteps>
+                        <ToolCode/>
+                    </Properties>
+                    <ToolUnits>0</ToolUnits>
+                    <Rotation>
+                        <IsRPM>False</IsRPM>
+                        <RPM>0</RPM>
+                        <Velocity>0</Velocity>
+                        <Direction>CCW</Direction>
+                    </Rotation>
+                    <MaxPlungeAngle>90</MaxPlungeAngle>
+                    <ConnectPoint>
+                        <X>0</X>
+                        <Y>0</Y>
+                        <Z>53</Z>
+                    </ConnectPoint>
+                    <AxialOverhang Version="2">IF([Properties.ToolType] = 24, [Properties.Length]/2, [Properties.Length]+[TechTool.HolderOverhang])</AxialOverhang>
+                    <MountingAngle>0</MountingAngle>
+                    <HolderFile/>
+                </TSTMillAxisTool>

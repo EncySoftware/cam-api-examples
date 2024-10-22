@@ -1,8 +1,9 @@
 ﻿using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
+using CAMAPI.Singletons;
 
-namespace ExtensionNetProject;
+namespace ExtensionUtilityNet;
 
 /// <summary>
 /// Extension to demonstrate entry point "utility" 
@@ -20,17 +21,16 @@ public class ExtensionUtility : IExtension, IExtensionUtility
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
         resultStatus = default;
+        
         try
         {
-            // get context
-            var application = context.CamApplication;
-            var currentFolder = Path.GetDirectoryName(Directory.GetCurrentDirectory());
-            if (currentFolder == null)
-                throw new Exception("Cannot get current folder");
-
+            // get global context
+            var paths = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
+            
             // export
-            var exportedFile = Path.Combine(currentFolder, "exported.stcp");
-            application.ExportCurrentProject(exportedFile, true, out resultStatus);
+            using var application = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            var exportedFile = Path.Combine(paths.Instance.MainProgramFolder, "exported.stcp");
+            application.Instance.ExportCurrentProject(exportedFile, true, out resultStatus);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error exporting project: " + resultStatus.Description);
         }

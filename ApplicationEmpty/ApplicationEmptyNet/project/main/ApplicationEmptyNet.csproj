@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
@@ -8,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EncySoftware.CAMIPC.SDK.Net" Version="1.1.6" />
-        <Reference Include="C:\Program Files\ENCY Software\ENCY NB\Bin64\NativeLibUtils.dll" />
+        <PackageReference Include="EncySoftware.CAMIPC.SDK.Net" Version="1.1.8" />
     </ItemGroup>
 </Project>

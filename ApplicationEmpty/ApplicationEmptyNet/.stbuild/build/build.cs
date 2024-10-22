@@ -10,6 +10,9 @@ using BuildSystem.Cleaner.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
+using BuildSystem.ManagerObject;
+using BuildSystem.ManagerObject.Interfaces;
+using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
 using BuildSystem.SettingsReader.Object;
 using BuildSystem.Variants;
@@ -73,13 +76,13 @@ public class Build : NukeBuild
         
         var settings = new SettingsObject
         {
-            Projects =
-            [
+            Projects = new HashSet<string>
+            {
                 Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionEmptyNetProject.json")
-            ],
-            Variants =
-            [
-                new Variant
+            },
+            Variants = new VariantList
+            {
+                new()
                 {
                     Name = "Debug",
                     Configurations = new Dictionary<string, string>
@@ -91,8 +94,7 @@ public class Build : NukeBuild
                         [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
                     }
                 },
-
-                new Variant
+                new()
                 {
                     Name = "Release",
                     Configurations = new Dictionary<string, string>
@@ -104,22 +106,21 @@ public class Build : NukeBuild
                         [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
                     }
                 }
-            ],
-            ManagerProps =
-            [
+            },
+            ManagerProps = new List<IManagerProp>
+            {
                 new BuilderDotnetProps
                 {
                     Name = "BuilderDotnet"
                 },
                 new CleanerCommonProps
                 {
-                    Name = "CleanerCommon",
-                    AllBuildResults = true
+                    Name = "CleanerCommon"
                 }
-            ]
+            }
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");
+        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet"); 
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         

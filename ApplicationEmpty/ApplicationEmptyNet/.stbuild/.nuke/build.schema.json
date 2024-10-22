@@ -82,7 +82,7 @@
             ]
           }
         },
-        "Variant": {
+        "VariantName": {
           "type": "string",
           "description": "Settings provided for running build space"
         },

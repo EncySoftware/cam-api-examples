@@ -68,8 +68,16 @@ begin
   try
     var ret := default(TResultStatus);
 
+    // get global context
+    if (FExtensionInfo = nil) then
+      raise Exception.Create('Info is null');
+    var extension := FExtensionInfo.InstanceInfo.ExtensionManager.GetSingletonExtension('Extension.Global.Singletons.Paths', ret);
+    if (ret.Code = TResultStatusCode.rsError) then
+      raise Exception.Create('Error getting global context: ' + ret.Description);
+    var paths := extension as ICamApiPaths;
+
     // get context
-    var currentFolder := TPath.Combine(GetCurrentDir(), '..\');
+    var currentFolder := paths.Get_MainProgramFolder;
     if currentFolder = '' then
       raise Exception.Create('Cannot get MainProgramFolder');
 
