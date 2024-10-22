@@ -25,7 +25,7 @@ public static class CamHelper
         if (_helper != null)
             return _helper;
 
-        const string camFolder = @"C:\Program Files\ENCY Software\ENC\Bin64";
+        const string camFolder = @"C:\Program Files\ENCY Software\ENCY\Bin64";
         var helperPath = Path.Combine(camFolder, "CAMIPC.Helper.Common.dll");
         if (!File.Exists(helperPath))
             throw new Exception($"{helperPath} not found");
