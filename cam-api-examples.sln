@@ -22,6 +22,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityDialogWindo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PLMExtensionNet", "PLMIntegration\PLMExtensionNet\project\main\PLMExtensionNet.csproj", "{F51B459F-2012-4977-846A-FBFF0E7D00C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityGeometryModelNet", "Geometry\ExtensionUtilityGeometryModelNet\project\main\ExtensionUtilityGeometryModelNet.csproj", "{6C62BDB4-0586-452C-85D0-8C4361A200FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OSDMakerExampleNet", "Geometry\OSDMakerExampleNet\OSDMakerExampleNet.csproj", "{99793959-8247-409C-AFFD-267DF4D867C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,5 +76,13 @@ Global
 		{F51B459F-2012-4977-846A-FBFF0E7D00C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F51B459F-2012-4977-846A-FBFF0E7D00C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F51B459F-2012-4977-846A-FBFF0E7D00C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C62BDB4-0586-452C-85D0-8C4361A200FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C62BDB4-0586-452C-85D0-8C4361A200FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C62BDB4-0586-452C-85D0-8C4361A200FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C62BDB4-0586-452C-85D0-8C4361A200FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99793959-8247-409C-AFFD-267DF4D867C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99793959-8247-409C-AFFD-267DF4D867C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99793959-8247-409C-AFFD-267DF4D867C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99793959-8247-409C-AFFD-267DF4D867C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
