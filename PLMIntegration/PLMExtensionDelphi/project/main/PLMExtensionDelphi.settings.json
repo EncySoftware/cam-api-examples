@@ -1,0 +1,14 @@
+{
+    "name": "PLM Extension on Delphi",
+    "description": "PLM Extension on Delphi",
+    "module_path": "${extensionJsonFolder}/PLMExtensionDelphi.dll",
+    "extensions": [
+        {
+            "PLM": {
+				"id": "PLM.Extension.Delphi",
+				"name": "PLM Extension on Delphi",
+				"caption": "PLM Extension on Delphi"
+            }
+        }
+    ]
+}
