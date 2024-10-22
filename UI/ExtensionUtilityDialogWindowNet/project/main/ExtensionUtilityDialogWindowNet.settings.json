@@ -1,0 +1,13 @@
+{
+    "name": "Utility to show dialog window by C#",
+    "description": "Utility to show dialog window by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityDialogWindowNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to show dialog window by C#",
+                "id": "Extension.Utility.DialogWindow.Net"
+            }
+        }
+    ]
+}

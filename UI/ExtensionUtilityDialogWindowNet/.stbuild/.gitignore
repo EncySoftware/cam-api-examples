@@ -1,0 +1,6 @@
+﻿build/.idea/**
+build/bin/**
+build/obj/**
+.nuke/temp/**
+logs/**
+temp/**

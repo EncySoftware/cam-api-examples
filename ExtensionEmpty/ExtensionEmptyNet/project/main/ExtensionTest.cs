@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 using CAMAPI.Application;
 using CAMAPI.Extensions;
+using CAMAPI.Project;
 using CAMAPI.ResultStatus;
 
 namespace ExtensionNetProject;
@@ -25,10 +25,11 @@ public class ExtensionTest : IExtension, IExtensionUtility
         try
         {
             // get project
-            var project = context.CamApplication.GetActiveProject(out resultStatus);
+            using var projectCom = new ApiComObject<ICamApiProject>(context.CamApplication.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error getting project: " + resultStatus.Description);
-
+            var project = projectCom.Instance;
+            
             // save params in some temp file to show it later
             var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".txt");
             File.WriteAllText(tempFile, "Project file path: " + project.FilePath + Environment.NewLine);
@@ -36,9 +37,6 @@ public class ExtensionTest : IExtension, IExtensionUtility
             
             // show temp file
             Process.Start("notepad.exe", tempFile);
-            
-            // free memory
-            Marshal.ReleaseComObject(project);
         }
         catch (Exception e)
         {

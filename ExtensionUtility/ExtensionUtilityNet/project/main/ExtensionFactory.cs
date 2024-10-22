@@ -1,7 +1,6 @@
-﻿// ReSharper disable once CheckNamespace
+﻿using ExtensionUtilityNet;
 
-using ExtensionNetProject;
-
+// ReSharper disable once CheckNamespace
 namespace CAMAPI;
 
 using Extensions;

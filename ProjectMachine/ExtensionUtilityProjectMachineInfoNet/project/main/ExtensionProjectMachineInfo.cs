@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
 using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.Machine;
@@ -20,19 +19,23 @@ public class ExtensionProjectMachineInfo: IExtension, IExtensionUtility
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
         resultStatus = default;
-        ICamApiProject? activeProject = null;
-        ICamApiMachineInfo? machineInfo = null;
         try
         {
+            using var applicationCom = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            var application = applicationCom.Instance;
+            
             // active project
-            activeProject = context.CamApplication.GetActiveProject(out resultStatus);
+            using var activeProjectCom = new ApiComObject<ICamApiProject>(application.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't get active project: " + resultStatus.Description);
-            if (activeProject == null)
+            if (activeProjectCom == null)
                 throw new Exception("Active project is not found");
+            var activeProject = activeProjectCom.Instance;
             
             // machine information
-            machineInfo = activeProject.MachineInformation;
+            using var machineInfoCom = new ApiComObject<ICamApiMachineInfo>(activeProject.MachineInformation);
+            var machineInfo = machineInfoCom.Instance;
+            
             var tmpFileName = Path.GetTempFileName();
             File.WriteAllText(tmpFileName,
                 "Current project: " + activeProject.FilePath + Environment.NewLine +
@@ -45,12 +48,6 @@ public class ExtensionProjectMachineInfo: IExtension, IExtensionUtility
         } catch (Exception e) {
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
-        } finally {
-            // mandatory release of COM objects
-            if (machineInfo != null)
-                Marshal.ReleaseComObject(machineInfo);
-            if (activeProject != null)
-                Marshal.ReleaseComObject(activeProject);
         }
     }
 }

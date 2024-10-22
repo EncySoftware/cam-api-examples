@@ -6,20 +6,24 @@ using TIDT = MachinigToolsImportTypes.TMTI_TurnToolInsertDimensionTypes;
 
 namespace STConsoleApp
 {
-    class Program
+    partial class Program
     {
         private static string _myToolStorageFilePath = "TestStorage.db";
         private static string _binCAMDir = @"C:\Program Files\ENCY Software\ENCY\Bin64"; // Path to the installed ENCY folder
 
         static void Main(string[] args)
         {
-            if (args.Length>0)
-                _myToolStorageFilePath = args[0];
+            _myToolStorageFilePath = Path.Combine(Path.GetDirectoryName(Environment.GetCommandLineArgs()[0]), _myToolStorageFilePath);
             try {
                 Environment.CurrentDirectory = _binCAMDir;
+                
+                if (File.Exists(_myToolStorageFilePath))
+                    File.Delete(_myToolStorageFilePath);
+
                 CreateNewMillTool();
                 CreateNewTurnTool();
                 CreateNewCustomAxialShapedTool();
+                CreateNew3DTool();
             } finally {
                 MTIMachiningToolsImportHelper.FinalizeImporter();
             }
