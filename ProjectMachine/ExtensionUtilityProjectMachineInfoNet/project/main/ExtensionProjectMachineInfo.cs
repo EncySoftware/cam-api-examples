@@ -4,6 +4,7 @@ using CAMAPI.Extensions;
 using CAMAPI.Machine;
 using CAMAPI.Project;
 using CAMAPI.ResultStatus;
+using CAMAPI.DotnetHelper;
 
 namespace ExtensionUtilityProjectMachineInfoNet;
 

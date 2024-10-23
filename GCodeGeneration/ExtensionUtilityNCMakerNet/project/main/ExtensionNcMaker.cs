@@ -8,6 +8,7 @@ using CAMAPI.Project;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;
 using CAMAPI.Technologist;
+using CAMAPI.DotnetHelper;
 
 namespace ExtensionUtilityNcMakerNet;
 

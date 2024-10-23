@@ -5,6 +5,7 @@ using CAMAPI.Extensions;
 using CAMAPI.Project;
 using CAMAPI.ResultStatus;
 using CAMAPI.ToolsList;
+using CAMAPI.DotnetHelper;
 
 namespace ExtensionUtilityProjectToolsListNet;
 

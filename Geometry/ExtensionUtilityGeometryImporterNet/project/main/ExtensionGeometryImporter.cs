@@ -5,6 +5,7 @@ using CAMAPI.GeomImporter;
 using CAMAPI.Project;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;
+using CAMAPI.DotnetHelper;
 
 namespace ExtensionUtilityGeometryImporterNet;
 
