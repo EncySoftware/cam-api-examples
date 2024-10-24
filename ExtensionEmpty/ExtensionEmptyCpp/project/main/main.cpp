@@ -19,6 +19,7 @@
 #import "CAMAPI.Machine.tlb" no_namespace, named_guids
 #import "CAMAPI.Technologist.tlb" no_namespace, named_guids
 #import "CAMAPI.Snapshot.tlb" no_namespace, named_guids
+#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
 #import "CAMAPI.GeomImporter.tlb" no_namespace, named_guids
 #import "CAMAPI.ToolsList.tlb" no_namespace, named_guids
 #import "CAMAPI.Project.tlb" no_namespace, named_guids

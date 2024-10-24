@@ -1,9 +1,12 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Compression;
+using BuildSystem.Builder.Dotnet;
 using BuildSystem.Builder.MsCpp;
 using Nuke.Common;
+using BuildSystem.Builder.MsDelphi;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Cleaner.Common;
@@ -26,7 +29,7 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling target by default
     /// </summary>
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => x.Inject);
     
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
@@ -77,7 +80,23 @@ public class Build : NukeBuild
         {
             Projects =
             [
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionEmptyCppProject.json")
+                // Path.Combine(RootDirectory.Parent, "ApplicationEmpty", "ApplicationEmptyNet", "project", "main", ".stbuild", "ApplicationEmptyNetProject.json")
+                Path.Combine(RootDirectory.Parent, "ExtensionEmpty", "ExtensionEmptyCpp", "project", "main", ".stbuild", "ExtensionEmptyCppProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionEmptyDelphi", "ExtensionEmptyDelphi", "project", "main", ".stbuild", "ExtensionEmptyDelphiProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionEmptyNet", "ExtensionEmptyNet", "project", "main", ".stbuild", "ExtensionEmptyNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionGlobal", "ExtensionGlobalNet", "project", "main", ".stbuild", "ExtensionGlobalNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionOperationPopup", "ExtensionOperationPopupNet", "project", "main", ".stbuild", "ExtensionOperationPopupNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionUtility", "ExtensionUtilityCpp", "project", "main", ".stbuild", "ExtensionUtilityCppProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionUtility", "ExtensionUtilityDelphi", "project", "main", ".stbuild", "ExtensionUtilityDelphiProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionUtility", "ExtensionUtilityNet", "project", "main", ".stbuild", "ExtensionUtilityNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "GCodeGeneration", "ExtensionUtilityNCMakerNet", "project", "main", ".stbuild", "ExtensionUtilityNCMakerNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "Geometry", "ExtensionUtilityGeometryImporterNet", "project", "main", ".stbuild", "ExtensionUtilityGeometryImporterNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "Geometry", "ExtensionUtilityGeometryModelNet", "project", "main", ".stbuild", "ExtensionUtilityGeometryModelNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "PLMIntegration", "PLMExtensionDelphi", "project", "main", ".stbuild", "PLMExtensionDelphiProject.json"),
+                Path.Combine(RootDirectory.Parent, "PLMIntegration", "PLMExtensionNet", "project", "main", ".stbuild", "PLMExtensionNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "ProjectMachine", "ExtensionUtilityProjectMachineInfoNet", "project", "main", ".stbuild", "ExtensionUtilityProjectMachineInfoNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "ProjectToolsList", "ExtensionUtilityProjectToolsListNet", "project", "main", ".stbuild", "ExtensionUtilityProjectToolsListNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "UI", "ExtensionUtilityMessageBoxNet", "project", "main", ".stbuild", "ExtensionUtilityMessageBoxNetProject.json")
             ],
             Variants =
             [
@@ -90,7 +109,9 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64",
+                        [BuildSystem.Variants.Variant.NodePlatform + "_csharp"] = "x64",
+                        [BuildSystem.Variants.Variant.NodePlatform + "_cpp"] = "x64"
                     }
                 },
 
@@ -103,17 +124,27 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64",
+                        [BuildSystem.Variants.Variant.NodePlatform + "_csharp"] = "x64",
+                        [BuildSystem.Variants.Variant.NodePlatform + "_cpp"] = "x64"
                     }
                 }
             ],
             ManagerProps =
             [
+                new BuilderDotnetProps
+                {
+                    Name = "BuilderDotnet"
+                },
+                new BuilderMsDelphiProps
+                {
+                    Name = "BuilderDelphi",
+                    MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe"
+                },
                 new BuilderMsCppProps
                 {
                     Name = "BuilderCpp",
-                    MsBuilderPath =
-                        "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
+                    MsBuilderPath = "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
                 },
                 new RestorerNugetProps
                 {
@@ -122,9 +153,21 @@ public class Build : NukeBuild
                     [
                         new RestorerDepProp
                         {
+                            PackageId = "EncySoftware.CAMAPI.SDK.Net",
+                            Version = "1.2.1",
+                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
+                        },
+                        new RestorerDepProp
+                        {
+                            PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
+                            Version = "1.2.1",
+                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
+                        },
+                        new RestorerDepProp
+                        {
                             PackageId = "EncySoftware.CAMAPI.SDK.tlb",
                             Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent?.Parent?.Parent, "SDK")
+                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
                         }
                     ]
                 },
@@ -134,10 +177,14 @@ public class Build : NukeBuild
                 }
             ]
         };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderCpp");
-        settings.ManagerNames.Add("builder", "Release", "BuilderCpp");
+        settings.ManagerNames.Add("builder_delphi", "Debug", "BuilderDelphi");
+        settings.ManagerNames.Add("builder_delphi", "Release", "BuilderDelphi");
+        settings.ManagerNames.Add("builder_csharp", "Debug", "BuilderDotnet");
+        settings.ManagerNames.Add("builder_csharp", "Release", "BuilderDotnet");
+        settings.ManagerNames.Add("builder_cpp", "Debug", "BuilderCpp");
+        settings.ManagerNames.Add("builder_cpp", "Release", "BuilderCpp");
         settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");   
+        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         
@@ -165,10 +212,8 @@ public class Build : NukeBuild
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
                               ?? throw new Exception("Build results with dll type not found");
                 var jsonPath = Path.ChangeExtension(mainProjectFilePath, ".settings.json");
-                if (!File.Exists(jsonPath))
-                    throw new Exception("Settings file not found");
-
-                File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);
+                if (File.Exists(jsonPath))
+                    File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);
             }
         });
 
@@ -212,6 +257,34 @@ public class Build : NukeBuild
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
                 archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
                 _logger.head($"Created dext file: {dextPath}");
+            }
+        });
+    
+    /// <summary>
+    /// Inject early created .dext file into the application
+    /// </summary>
+    // ReSharper disable once UnusedMember.Local
+    private Target Inject => _ => _
+        .DependsOn(Pack)
+        .Executes(() =>
+        {
+            foreach (var project in _buildSpace.Projects)
+            {
+                // path to dext
+                var dllPath = project.GetBuildResultPath(Variant, "dll")
+                              ?? throw new Exception("Build results with dll type not found");
+                var dextPath = Path.ChangeExtension(dllPath, ".dext");
+
+                // execute it, because executing application will be chosen automatically
+                _logger.head($"Injecting dext file: {dextPath}");
+                using var process = new Process();
+                process.StartInfo = new ProcessStartInfo(dextPath)
+                {
+                    UseShellExecute = true
+                };
+                process.Start();
+                process.WaitForExit();
+                _logger.debug($"{dextPath} injected");
             }
         });
 }

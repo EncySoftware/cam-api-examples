@@ -10,7 +10,6 @@ using BuildSystem.BuildSpace.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
-using BuildSystem.ManagerObject;
 using BuildSystem.ManagerObject.Interfaces;
 using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
@@ -76,13 +75,13 @@ public class Build : NukeBuild
         
         var settings = new SettingsObject
         {
-            Projects = new HashSet<string>
-            {
+            Projects =
+            [
                 Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "PLMExtensionDelphiProject.json")
-            },
-            Variants = new VariantList
-            {
-                new()
+            ],
+            Variants =
+            [
+                new Variant
                 {
                     Name = "Debug",
                     Configurations = new Dictionary<string, string>
@@ -94,7 +93,8 @@ public class Build : NukeBuild
                         [BuildSystem.Variants.Variant.NodePlatform] = "Win64"
                     }
                 },
-                new()
+
+                new Variant
                 {
                     Name = "Release",
                     Configurations = new Dictionary<string, string>
@@ -106,33 +106,35 @@ public class Build : NukeBuild
                         [BuildSystem.Variants.Variant.NodePlatform] = "Win64"
                     }
                 }
-            },
-            ManagerProps = new List<IManagerProp>
-            {
+            ],
+            ManagerProps =
+            [
                 new BuilderMsDelphiProps
                 {
                     Name = "BuilderDelphi",
                     MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe"
                 },
+
                 new CleanerCommonProps
                 {
                     Name = "CleanerCommon",
                     AllBuildResults = true
                 },
+
                 new RestorerNugetProps
                 {
                     Name = "RestorerNuget",
-                    DepsProp = new List<RestorerDepProp>
-                    {
-                        new()
+                    DepsProp =
+                    [
+                        new RestorerDepProp
                         {
                             PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
-                            Version = "1.1.3",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
+                            Version = "1.2.1",
+                            OutDir = Path.Combine(RootDirectory.Parent?.Parent?.Parent, "SDK")
                         }
-                    }
+                    ]
                 }
-            }
+            ]
         };
         settings.ManagerNames.Add("builder", "Debug", "BuilderDelphi");
         settings.ManagerNames.Add("builder", "Release", "BuilderDelphi");  
