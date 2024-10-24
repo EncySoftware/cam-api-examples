@@ -34,6 +34,28 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "pack-all",
+            "command": ".stbuild/build.cmd --Target Pack --Variant Release",
+            "type": "shell",
+            "args": [],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "injet-all",
+            "command": ".stbuild/build.cmd --Target Inject --Variant Release",
+            "type": "shell",
+            "args": [],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "clean-all",
             "command": ".stbuild/build.cmd --Target Clean",
             "type": "shell",
