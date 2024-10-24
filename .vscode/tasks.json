@@ -21,6 +21,28 @@
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-all",
+            "command": ".stbuild/build.cmd --Target Compile --Variant Debug",
+            "type": "shell",
+            "args": [],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean-all",
+            "command": ".stbuild/build.cmd --Target Clean",
+            "type": "shell",
+            "args": [],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
         }
     ]
 }
