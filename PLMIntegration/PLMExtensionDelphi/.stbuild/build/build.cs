@@ -112,7 +112,9 @@ public class Build : NukeBuild
                 new BuilderMsDelphiProps
                 {
                     Name = "BuilderDelphi",
-                    MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe"
+                    MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe",
+                    EnvBdsPath = "c:/program files (x86)/embarcadero/studio/23.0",
+                    RsVarsPath = "c:/program files (x86)/embarcadero/studio/23.0/bin/rsvars.bat",
                 },
 
                 new CleanerCommonProps
