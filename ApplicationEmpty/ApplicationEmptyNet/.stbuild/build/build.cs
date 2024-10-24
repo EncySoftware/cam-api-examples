@@ -28,7 +28,7 @@ public class Build : NukeBuild
     /// Calling target by default
     /// </summary>
     public static int Main() => Execute<Build>(x => x.Pack);
-    
+
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
     /// </summary>
@@ -38,21 +38,14 @@ public class Build : NukeBuild
     /// <summary>
     /// Logging object
     /// </summary>
-    private readonly ILogger _logger;
-    
+    private ILogger? _logger;
+    private ILogger Logger => _logger ??= InitLogger();
+
     /// <summary>
     /// Main build space as manager over projects
     /// </summary>
-    private readonly IBuildSpace _buildSpace;
-
-    /// <summary>
-    /// Build system
-    /// </summary>
-    public Build()
-    { 
-        _logger = InitLogger();
-        _buildSpace = InitBuildSpace();        
-    }
+    private IBuildSpace? _buildSpace;
+    private IBuildSpace BuildSpace => _buildSpace ??= InitBuildSpace();
     
     private ILogger InitLogger() {
         // logging to console
@@ -125,7 +118,7 @@ public class Build : NukeBuild
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         
         var tempDir = Path.Combine(RootDirectory, "temp");
-        return new BuildSpaceCommon(_logger, tempDir, SettingsReaderType.Object, settings);
+        return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
     }
 
     /// <summary>
@@ -135,7 +128,7 @@ public class Build : NukeBuild
     private Target Compile => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Compile(Variant, true);
+            BuildSpace.Projects.Compile(Variant, true);
         });
 
     /// <summary>
@@ -145,8 +138,8 @@ public class Build : NukeBuild
     private Target Clean => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Clean("Debug");
-            _buildSpace.Projects.Clean("Release");
+            BuildSpace.Projects.Clean("Debug");
+            BuildSpace.Projects.Clean("Release");
         });
 
     /// <summary>
@@ -157,7 +150,7 @@ public class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in _buildSpace.Projects)
+            foreach (var project in BuildSpace.Projects)
             {
                 // path to dll (to be included into dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
@@ -181,7 +174,7 @@ public class Build : NukeBuild
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
                 archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
-                _logger.head($"Created dext file: {dextPath}");
+                Logger.head($"Created dext file: {dextPath}");
             }
         });
 }

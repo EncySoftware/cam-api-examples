@@ -1,7 +1,7 @@
 @echo off
 cd /D %~dp0
 
-call ..\build.cmd --Target Inject --Variant Release
+call ..\build.cmd --Target Pack --Variant Release
 
 pause
 

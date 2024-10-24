@@ -29,8 +29,8 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling target by default
     /// </summary>
-    public static int Main() => Execute<Build>(x => x.Inject);
-    
+    public static int Main() => Execute<Build>(x => x.Pack);
+
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
     /// </summary>
@@ -40,27 +40,20 @@ public class Build : NukeBuild
     /// <summary>
     /// Logging object
     /// </summary>
-    private readonly ILogger _logger;
-    
+    private ILogger? _logger;
+    private ILogger Logger => _logger ??= InitLogger();
+
     /// <summary>
     /// Main build space as manager over projects
     /// </summary>
-    private readonly IBuildSpace _buildSpace;
-
-    /// <summary>
-    /// Build system
-    /// </summary>
-    public Build()
-    { 
-        _logger = InitLogger();
-        _buildSpace = InitBuildSpace();        
-    }
+    private IBuildSpace? _buildSpace;
+    private IBuildSpace BuildSpace => _buildSpace ??= InitBuildSpace();
     
     private ILogger InitLogger() {
         // logging to console
         var console = new LoggerConsole();
         console.setMinLevel(LoggingLevel.info);
-        
+
         // logging to file
         var file = new LoggerFile(Path.Combine(RootDirectory, "logs"), "log", 7);
         file.setMinLevel(LoggingLevel.debug);
@@ -69,6 +62,7 @@ public class Build : NukeBuild
         var logger = new LoggerBroadCaster();
         logger.Loggers.Add(file);
         logger.Loggers.Add(console);
+
         return logger;
     }
 
@@ -82,8 +76,8 @@ public class Build : NukeBuild
             [
                 // Path.Combine(RootDirectory.Parent, "ApplicationEmpty", "ApplicationEmptyNet", "project", "main", ".stbuild", "ApplicationEmptyNetProject.json")
                 Path.Combine(RootDirectory.Parent, "ExtensionEmpty", "ExtensionEmptyCpp", "project", "main", ".stbuild", "ExtensionEmptyCppProject.json"),
-                Path.Combine(RootDirectory.Parent, "ExtensionEmptyDelphi", "ExtensionEmptyDelphi", "project", "main", ".stbuild", "ExtensionEmptyDelphiProject.json"),
-                Path.Combine(RootDirectory.Parent, "ExtensionEmptyNet", "ExtensionEmptyNet", "project", "main", ".stbuild", "ExtensionEmptyNetProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionEmpty", "ExtensionEmptyDelphi", "project", "main", ".stbuild", "ExtensionEmptyDelphiProject.json"),
+                Path.Combine(RootDirectory.Parent, "ExtensionEmpty", "ExtensionEmptyNet", "project", "main", ".stbuild", "ExtensionEmptyNetProject.json"),
                 Path.Combine(RootDirectory.Parent, "ExtensionGlobal", "ExtensionGlobalNet", "project", "main", ".stbuild", "ExtensionGlobalNetProject.json"),
                 Path.Combine(RootDirectory.Parent, "ExtensionOperationPopup", "ExtensionOperationPopupNet", "project", "main", ".stbuild", "ExtensionOperationPopupNetProject.json"),
                 Path.Combine(RootDirectory.Parent, "ExtensionUtility", "ExtensionUtilityCpp", "project", "main", ".stbuild", "ExtensionUtilityCppProject.json"),
@@ -191,9 +185,9 @@ public class Build : NukeBuild
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         
         var tempDir = Path.Combine(RootDirectory, "temp");
-        return new BuildSpaceCommon(_logger, tempDir, SettingsReaderType.Object, settings);
+        return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
     }
-
+    
     /// <summary>
     /// Parameterized compile
     /// </summary>
@@ -201,11 +195,11 @@ public class Build : NukeBuild
     private Target Compile => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Restore(Variant);
-            _buildSpace.Projects.Compile(Variant, true);
+            BuildSpace.Projects.Restore(Variant);
+            BuildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
-            foreach (var project in _buildSpace.Projects)
+            foreach (var project in BuildSpace.Projects)
             {
                 var mainProjectFilePath = project.MainFilePath;
                 if (mainProjectFilePath == null)
@@ -226,8 +220,8 @@ public class Build : NukeBuild
     private Target Clean => _ => _
         .Executes(() =>
         {
-            _buildSpace.Projects.Clean("Debug");
-            _buildSpace.Projects.Clean("Release");
+            BuildSpace.Projects.Clean("Debug");
+            BuildSpace.Projects.Clean("Release");
         });
 
     /// <summary>
@@ -238,7 +232,7 @@ public class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in _buildSpace.Projects)
+            foreach (var project in BuildSpace.Projects)
             {
                 // path to dll (to be included into dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
@@ -258,7 +252,7 @@ public class Build : NukeBuild
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
                 archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
-                _logger.head($"Created dext file: {dextPath}");
+                Logger.head($"Created dext file: {dextPath}");
             }
         });
     
@@ -270,7 +264,7 @@ public class Build : NukeBuild
         .DependsOn(Pack)
         .Executes(() =>
         {
-            foreach (var project in _buildSpace.Projects)
+            foreach (var project in BuildSpace.Projects)
             {
                 // path to dext
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
@@ -278,7 +272,7 @@ public class Build : NukeBuild
                 var dextPath = Path.ChangeExtension(dllPath, ".dext");
 
                 // execute it, because executing application will be chosen automatically
-                _logger.head($"Injecting dext file: {dextPath}");
+                Logger.head($"Injecting dext file: {dextPath}");
                 using var process = new Process();
                 process.StartInfo = new ProcessStartInfo(dextPath)
                 {
@@ -286,7 +280,7 @@ public class Build : NukeBuild
                 };
                 process.Start();
                 process.WaitForExit();
-                _logger.debug($"{dextPath} injected");
+                Logger.debug($"{dextPath} injected");
             }
         });
 }
