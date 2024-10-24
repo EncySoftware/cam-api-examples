@@ -69,9 +69,18 @@ __recovery/
 # Boss dependency manager vendor folder https://github.com/HashLoad/boss
 modules/
 
-.idea/**
+**/.idea/
 **/bin/
 **/obj/
+**/.vs/
 
 **/.stbuild/.nuke/
 **/.stbuild/logs/
+**/.stbuild/temp/
+**/SDK/
+**/Extensio.81a8bf9d/
+**/Extensio.2b4ac41b/
+
+*.vcxproj.user
+
+*.res
