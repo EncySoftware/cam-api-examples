@@ -67,7 +67,7 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             var operations = operationCom.Instance;
 
             // Limit set of operations by substring inside full name
-            operations.OperationsFilter = new OperationsFilterByName("Setup stage 1");
+            // operations.OperationsFilter = new OperationsFilterByName("Setup stage 1");
 
             // make CLData
             var clDataFile = Path.Combine(_tempDir, "example.inpcld");
