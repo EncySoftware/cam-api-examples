@@ -1,0 +1,8 @@
+{
+	"type": "CSharp",
+	"project_path": "../DIN4000ImportPluginNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj"
+	]
+}

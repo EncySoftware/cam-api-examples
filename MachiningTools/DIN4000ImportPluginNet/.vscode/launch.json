@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/DIN4000ImportPlugin.exe",
+            "program": "${workspaceFolder}/bin/DIN4000ImportPluginNet.exe",
             "args": [
                 "${workspaceFolder}\\in\\DIN4000_Tools1.zip",
                 "${workspaceFolder}\\in\\DIN4000_Tools2.zip",

@@ -1,0 +1,8 @@
+{
+	"type": "CSharp",
+	"project_path": "../MachiningToolsCreateExampleNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj"
+	]
+}

@@ -90,7 +90,9 @@ public class Build : NukeBuild
                 Path.Combine(RootDirectory.Parent, "PLMIntegration", "PLMExtensionNet", "project", "main", ".stbuild", "PLMExtensionNetProject.json"),
                 Path.Combine(RootDirectory.Parent, "ProjectMachine", "ExtensionUtilityProjectMachineInfoNet", "project", "main", ".stbuild", "ExtensionUtilityProjectMachineInfoNetProject.json"),
                 Path.Combine(RootDirectory.Parent, "ProjectToolsList", "ExtensionUtilityProjectToolsListNet", "project", "main", ".stbuild", "ExtensionUtilityProjectToolsListNetProject.json"),
-                Path.Combine(RootDirectory.Parent, "UI", "ExtensionUtilityMessageBoxNet", "project", "main", ".stbuild", "ExtensionUtilityMessageBoxNetProject.json")
+                Path.Combine(RootDirectory.Parent, "UI", "ExtensionUtilityMessageBoxNet", "project", "main", ".stbuild", "ExtensionUtilityMessageBoxNetProject.json"),
+                Path.Combine(RootDirectory.Parent, @"MachiningTools\MachiningToolsCreateExampleNet\.stbuild\MachiningToolsCreateExampleNetProject.json"),
+                Path.Combine(RootDirectory.Parent, @"MachiningTools\DIN4000ImportPluginNet\.stbuild\DIN4000ImportPluginNetProject.json"),
             ],
             Variants =
             [
@@ -240,7 +242,10 @@ public class Build : NukeBuild
 
                 // path to json, describing extension (to be included into dext)
                 var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
-
+                if (!File.Exists(jsonPath)) {
+                    Logger.head($"Create of dext file skipped for: {project.MainFilePath}");
+                    continue;
+                }
                 // make new dext
                 var outputFolder = Path.GetDirectoryName(dllPath)
                                    ?? throw new Exception("Parent folder of dll path is null");

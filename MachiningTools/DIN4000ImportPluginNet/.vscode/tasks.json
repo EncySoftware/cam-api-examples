@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/DIN4000ImportPlugin.csproj",
+                "${workspaceFolder}/DIN4000ImportPluginNet.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/DIN4000ImportPlugin.csproj",
+                "${workspaceFolder}/DIN4000ImportPluginNet.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/DIN4000ImportPlugin.csproj"
+                "${workspaceFolder}/DIN4000ImportPluginNet.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
