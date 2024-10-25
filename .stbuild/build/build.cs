@@ -271,9 +271,17 @@ public class Build : NukeBuild
         {
             foreach (var project in BuildSpace.Projects)
             {
-                // path to dext
+                // path to dll (to be included into dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
                               ?? throw new Exception("Build results with dll type not found");
+
+                // path to json, describing extension (to be included into dext)
+                var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
+                if (!File.Exists(jsonPath)) {
+                    Logger.head($"Injecting of dext file skipped for: {project.MainFilePath}");
+                    continue;
+                }
+                // path to dext
                 var dextPath = Path.ChangeExtension(dllPath, ".dext");
 
                 // execute it, because executing application will be chosen automatically
