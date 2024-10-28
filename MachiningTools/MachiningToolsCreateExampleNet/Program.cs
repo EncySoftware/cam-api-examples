@@ -27,7 +27,8 @@ namespace STConsoleApp
             } finally {
                 MTIMachiningToolsImportHelper.FinalizeImporter();
             }
-            Console.WriteLine("Done.");
+            Console.WriteLine("Press any key...");
+            Console.ReadLine();
         }
 
         private static IMTI_MachiningToolsImportLibrary LoadImporter() 
