@@ -29,7 +29,7 @@ public class ExtensionUtility : IExtension, IExtensionUtility
             var paths = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
             
             // export
-            using var application = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            using var application = new ComWrapper<ICamApiApplication>(context.CamApplication);
             var exportedFile = Path.Combine(paths.Instance.MainProgramFolder, "exported.stcp");
             application.Instance.ExportCurrentProject(exportedFile, true, out resultStatus);
             if (resultStatus.Code == TResultStatusCode.rsError)

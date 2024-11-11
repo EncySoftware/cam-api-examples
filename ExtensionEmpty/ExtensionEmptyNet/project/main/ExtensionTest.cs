@@ -26,7 +26,7 @@ public class ExtensionTest : IExtension, IExtensionUtility
         try
         {
             // get project
-            using var projectCom = new ApiComObject<ICamApiProject>(context.CamApplication.GetActiveProject(out resultStatus));
+            using var projectCom = new ComWrapper<ICamApiProject>(context.CamApplication.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error getting project: " + resultStatus.Description);
             var project = projectCom.Instance;

@@ -1,0 +1,14 @@
+{
+    "name": "Simple operation by C# extension",
+    "description": "Extension to calculate tool path by C#",
+    "module_path": "${extensionJsonFolder}/ExtensionOperationSimpleNet.dll",
+    "extensions": [
+        {
+            "OperationSolver": {
+                "name": "Simple operation by C# extension",
+                "caption": "Simple operation by C# extension",
+                "id": "Extension.Operation.Simple.Net"
+            }
+        }
+    ]
+}

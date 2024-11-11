@@ -5,6 +5,7 @@ using CAMAPI.Project;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;
 using CAMAPI.Technologist;
+using CAMAPI.TechOperation;
 using CAMAPI.TechnologyForm;
 using CAMAPI.DotnetHelper;
 
@@ -56,10 +57,10 @@ public class MakeNcOnClicked : ICamApiTechnologyFormOperationPopupItemOnClicked
             
             // context
             using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", _info);
-            using var project = new ApiComObject<ICamApiProject>(context.ActiveProject);
-            using var operation = new ApiComObject<ICamApiTechOperation>(context.SelectedOperation);
-            using var technologist = new ApiComObject<ICamApiTechnologist>(project.Instance.Technologist);
-            using var ncMaker = new ApiComObject<ICamApiNCMaker>(project.Instance.NCMaker);
+            using var project = new ComWrapper<ICamApiProject>(context.ActiveProject);
+            using var operation = new ComWrapper<ICamApiTechOperation>(context.SelectedOperation);
+            using var technologist = new ComWrapper<ICamApiTechnologist>(project.Instance.Technologist);
+            using var ncMaker = new ComWrapper<ICamApiNCMaker>(project.Instance.NCMaker);
 
             // show project info
             WriteLog("Active project file: " + project.Instance.FilePath);
@@ -73,7 +74,7 @@ public class MakeNcOnClicked : ICamApiTechnologyFormOperationPopupItemOnClicked
             WriteLog("CLData saved to file: " + clDataFile);
 
             // make settings for CNC generating
-            using var settings = new ApiComObject<ICamApiMakeCncSppxSettings>(
+            using var settings = new ComWrapper<ICamApiMakeCncSppxSettings>(
                 ncMaker.Instance.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, out resultStatus) as ICamApiMakeCncSppxSettings);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error creating settings: " + resultStatus.Description);

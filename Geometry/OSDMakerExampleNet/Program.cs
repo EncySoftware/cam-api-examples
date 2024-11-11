@@ -47,9 +47,9 @@ public class Program
                 "CreateCAMAPIGeometryLibrary");
             var libPtr = CreateLibPointer();
 
-            using var geomLib = new ApiComObject<ICAMAPIGeomLibrary>((ICAMAPIGeomLibrary)Marshal.GetTypedObjectForIUnknown(libPtr, typeof(ICAMAPIGeomLibrary)));
-            using var fullModel = new ApiComObject<ICAMAPIGeometryModel>(geomLib.Instance.CreateGeometryModel(out resultStatus));
-            using var importer = new ApiComObject<ICAMAPIGeometryImporter>(geomLib.Instance.CreateGeometryImporter(out resultStatus));
+            using var geomLib = new ComWrapper<ICAMAPIGeomLibrary>((ICAMAPIGeomLibrary)Marshal.GetTypedObjectForIUnknown(libPtr, typeof(ICAMAPIGeomLibrary)));
+            using var fullModel = new ComWrapper<ICAMAPIGeometryModel>(geomLib.Instance.CreateGeometryModel(out resultStatus));
+            using var importer = new ComWrapper<ICAMAPIGeometryImporter>(geomLib.Instance.CreateGeometryImporter(out resultStatus));
 
             importer.Instance.GeometryModel = fullModel.Instance;
 

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>ExtensionNetProject</RootNamespace>
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <CAMPath>C:\Program Files\ENCY Software\ENCY NB\Bin64\</CAMPath>
+  </PropertyGroup>
+  
+  <ItemGroup>
+<!--    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.2.1-dev.18" />-->
+      <Reference Include="$(CAMPath)CAMAPI.ResultStatus.dll" />
+      <Reference Include="$(CAMPath)CAMAPI.Extensions.dll" />
+      <Reference Include="$(CAMPath)CAMAPI.Singletons.dll" />
+      <Reference Include="$(CAMPath)CAMAPI.TechOperation.dll" />
+      <Reference Include="$(CAMPath)CAMAPI.UIDialogs.DotnetHelper.dll" />
+      <Reference Include="$(CAMPath)CAMAPI.DotnetHelper.dll" />
+      <Reference Include="$(CAMPath)CAMAPI.MCDFormerTypes.dll" />
+      <Reference Include="$(CAMPath)STTypes.dll" />
+      <Reference Include="$(CAMPath)STCustomPropTypes.dll" />
+      <Reference Include="$(CAMPath)STXMLPropTypes.dll" />
+  </ItemGroup>
+</Project>

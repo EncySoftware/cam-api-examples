@@ -40,8 +40,8 @@ public class GeometryModelExportExample : IExtension, IExtensionUtility
             {
                 var importFileName = Path.Combine(paths.ModelsFolder, "Milling_3D", "49-1.igs");
                 var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "CAMAPI Geometry examples");
-                using var fullModel = new ApiComObject<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
-                using var importer = new ApiComObject<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
+                using var fullModel = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
+                using var importer = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 
                 importer.Instance.ImportFile(importFileName, "", false);
 

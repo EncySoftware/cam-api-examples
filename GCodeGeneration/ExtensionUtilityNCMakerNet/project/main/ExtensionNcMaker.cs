@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.NCMaker;
@@ -8,6 +6,7 @@ using CAMAPI.Project;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;
 using CAMAPI.Technologist;
+using CAMAPI.TechOperation;
 using CAMAPI.DotnetHelper;
 
 namespace ExtensionUtilityNcMakerNet;
@@ -43,14 +42,14 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("MakeNCUtilityExtension log started");
 
             // catch active project
-            using var projectCom = new ApiComObject<ICamApiProject>(context.CamApplication.GetActiveProject(out resultStatus));
+            using var projectCom = new ComWrapper<ICamApiProject>(context.CamApplication.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error getting active project: " + resultStatus.Description);
             var project = projectCom.Instance;
             
-            using var technologistCom = new ApiComObject<ICamApiTechnologist>(project.Technologist);
+            using var technologistCom = new ComWrapper<ICamApiTechnologist>(project.Technologist);
             var technologist = technologistCom.Instance;
-            using var ncMakerCom = new ApiComObject<ICamApiNCMaker>(project.NCMaker);
+            using var ncMakerCom = new ComWrapper<ICamApiNCMaker>(project.NCMaker);
             var ncMaker = ncMakerCom.Instance;
             
             // no active project
@@ -61,7 +60,7 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("Active project file: " + project.FilePath);
             WriteLog("Active project ID: " + project.Id);
             
-            using var operationCom = new ApiComObject<ICamApiTechOperationIterator>(technologist.GetOperations(TCamApiReorderingMode.rmReordered, out resultStatus));
+            using var operationCom = new ComWrapper<ICamApiTechOperationIterator>(technologist.GetOperations(TCamApiReorderingMode.rmReordered, out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error getting operations: " + resultStatus.Description);
             var operations = operationCom.Instance;
