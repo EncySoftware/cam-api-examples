@@ -7,6 +7,7 @@
             "utility": {
                 "name": "Empty extension on C++",
                 "caption": "Empty extension on C++",
+                "icon_path": "./ExtensionEmptyCpp.png",
                 "id": "Extension.Utility.Empty.Cpp"
             }
         }

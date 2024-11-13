@@ -160,8 +160,11 @@ public class Build : NukeBuild
                 var jsonPath = Path.ChangeExtension(mainProjectFilePath, ".settings.json");
                 if (!File.Exists(jsonPath))
                     throw new Exception("Settings file not found");
+                var pngPath = Path.ChangeExtension(mainProjectFilePath, ".png");
 
                 File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);
+                if (File.Exists(pngPath))
+                    File.Copy(pngPath, Path.ChangeExtension(dllPath, ".png"), true);
             }
         });
 
@@ -192,6 +195,9 @@ public class Build : NukeBuild
 
                 // path to json, describing extension (to be included into dext)
                 var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
+                
+                // additional files
+                var pngPath = Path.ChangeExtension(dllPath, ".png");
 
                 // make new dext
                 var outputFolder = Path.GetDirectoryName(dllPath)
@@ -204,6 +210,8 @@ public class Build : NukeBuild
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
                 archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
+                if (File.Exists(pngPath))
+                    archive.CreateEntryFromFile(pngPath, Path.GetFileName(pngPath));
                 Logger.head($"Created dext file: {dextPath}");
             }
         });
