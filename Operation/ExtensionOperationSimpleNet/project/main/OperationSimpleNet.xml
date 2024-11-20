@@ -6,9 +6,8 @@
         </SCType>
     </SCNameSpace>
 
-    <SCType ID="TSimpleNetOP" Caption="Simple .NET" type="TSTMillOp" Enabled = "True">
+    <SCType ID="TSimpleNetOP" Caption="Simple .NET" type="TSTMillExtensionOp" Enabled = "True">
         <GUID DefaultValue="{BDD2CAD7-D2A9-43C4-86E3-399FCB439FC0}"/>
-        <ContainerID DefaultValue="{6C19D035-D02C-4B0C-A8E0-9E33F15054F7}"/>
         <SolverID DefaultValue="Extension.Operation.Simple.Net"/>
 
         <!-- Header -->
@@ -124,11 +123,6 @@
                 <SCType ID="ZStart" Caption="Z start" type="Double" DefaultValue="100"/>
                 <SCType ID="ZStep" Caption="Z step" type="Double" DefaultValue="-10"/>
             </SCType>
-        </SCType>
-
-        <SCType ID="AxesBrakeUsingMode" Caption="Axes brakes using mode" type="Enumerated" DefaultValue="DoNotUse" Visible="False">
-            <SCType ID="DoNotUse" Caption="Do not use brakes" type="None"/>
-            <SCType ID="Always" Caption="Use brakes" type="None"/>
         </SCType>
     </SCType>
 
