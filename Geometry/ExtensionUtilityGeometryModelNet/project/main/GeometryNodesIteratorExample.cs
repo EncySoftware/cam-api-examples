@@ -41,8 +41,8 @@ public class GeometryNodesIteratorExample : IExtension, IExtensionUtility
                 var importFileName = Path.Combine(paths.ModelsFolder, "Milling_3D", "49-1.igs");
                 var nodeColor = 13132900;
                 string[] nodeNames = ["Part\\49-1.igs\\Face2", "Part\\49-1.igs\\Face10", "Part\\49-1.igs\\Face28", "Part\\49-1.igs\\Face31"];
-                using var fullModel = new ApiComObject<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
-                using var importer = new ApiComObject<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
+                using var fullModel = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
+                using var importer = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 
                 importer.Instance.ImportFile(importFileName, "", false);
 
@@ -53,7 +53,7 @@ public class GeometryNodesIteratorExample : IExtension, IExtensionUtility
                     Marshal.ReleaseComObject(geomNode);
                 }
 
-                using var nodeIterator = new ApiComObject<ICAMAPIGeometryTreeNodeIterator>(fullModel.Instance.GetNodes(out resultStatus));
+                using var nodeIterator = new ComWrapper<ICAMAPIGeometryTreeNodeIterator>(fullModel.Instance.GetNodes(out resultStatus));
                 while (nodeIterator.Instance.MoveToChild()) {}
 
                 do 

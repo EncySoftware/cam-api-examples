@@ -23,11 +23,11 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
         resultStatus = default;
         try
         {
-            using var applicationCom = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
             var application = applicationCom.Instance;
             
             // active project
-            using var activeProjectCom = new ApiComObject<ICamApiProject>(application.GetActiveProject(out resultStatus));
+            using var activeProjectCom = new ComWrapper<ICamApiProject>(application.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't get active project: " + resultStatus.Description);
             if (activeProjectCom == null)
@@ -41,11 +41,11 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
             );
             
             // tools list
-            using var toolsListCom = new ApiComObject<ICamApiMachiningToolsList>(activeProject.ToolsList);
+            using var toolsListCom = new ComWrapper<ICamApiMachiningToolsList>(activeProject.ToolsList);
             var toolsList = toolsListCom.Instance;
             for (var i = 0; i < toolsList.Count; i++)
             {
-                using var toolInfoCom = new ApiComObject<ICamApiMachiningToolInfo>(toolsList.ToolInfo[i]);
+                using var toolInfoCom = new ComWrapper<ICamApiMachiningToolInfo>(toolsList.ToolInfo[i]);
                 var toolInfo = toolInfoCom.Instance;
                 File.AppendAllText(tmpFileName,
                     "    Tool caption: " + toolInfo.ToolCaption + Environment.NewLine +
@@ -58,7 +58,7 @@ public class ExtensionProjectProjectToolsList: IExtension, IExtensionUtility
                     "        Magazine number: " + toolInfo.MagazineNumber + Environment.NewLine
                 );
 
-                using var operationCom = new ApiComObject<ICamApiMachiningToolOperationsIterator>(toolsList.GetOperationsUsingTheTool(toolInfo.ToolID));
+                using var operationCom = new ComWrapper<ICamApiMachiningToolOperationsIterator>(toolsList.GetOperationsUsingTheTool(toolInfo.ToolID));
                 var operations = operationCom.Instance;
                 
                 operations.Reset();

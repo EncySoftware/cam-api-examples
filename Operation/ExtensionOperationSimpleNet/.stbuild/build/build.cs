@@ -2,16 +2,14 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
-using BuildSystem.Builder.MsCpp;
 using Nuke.Common;
+using BuildSystem.Builder.Dotnet;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Cleaner.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
-using BuildSystem.ManagerObject.Interfaces;
-using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
 using BuildSystem.SettingsReader.Object;
 using BuildSystem.Variants;
@@ -70,7 +68,7 @@ public class Build : NukeBuild
         {
             Projects =
             [
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionEmptyCppProject.json")
+                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionOperationSimpleNetProject.json")
             ],
             Variants =
             [
@@ -83,7 +81,7 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
                     }
                 },
 
@@ -96,30 +94,19 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
                     }
                 }
             ],
             ManagerProps =
             [
-                new BuilderMsCppProps
+                new BuilderDotnetProps
                 {
-                    Name = "BuilderCpp",
-                    MsBuilderPath =
-                        "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
+                    Name = "BuilderDotnet"
                 },
-                new RestorerNugetProps
+                new CleanerCommonProps
                 {
-                    Name = "RestorerNuget",
-                    DepsProp =
-                    [
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.tlb",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent?.Parent?.Parent, "SDK")
-                        }
-                    ]
+                    Name = "CleanerCommon"
                 },
                 new CleanerCommonProps
                 {
@@ -127,10 +114,8 @@ public class Build : NukeBuild
                 }
             ]
         };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderCpp");
-        settings.ManagerNames.Add("builder", "Release", "BuilderCpp");
-        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");   
+        settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
+        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
         
@@ -145,7 +130,6 @@ public class Build : NukeBuild
     private Target Compile => _ => _
         .Executes(() =>
         {
-            BuildSpace.Projects.Restore(Variant);
             BuildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
@@ -154,17 +138,25 @@ public class Build : NukeBuild
                 var mainProjectFilePath = project.MainFilePath;
                 if (mainProjectFilePath == null)
                     continue;
-
+                var mainProjectFolder = Path.GetDirectoryName(mainProjectFilePath)
+                                        ?? throw new Exception("Parent folder of main project file path is null");
+                            
+                // copy settings file
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
                               ?? throw new Exception("Build results with dll type not found");
+                var dllFolder = Path.GetDirectoryName(dllPath)
+                                ?? throw new Exception("Parent folder of dll path is null");
                 var jsonPath = Path.ChangeExtension(mainProjectFilePath, ".settings.json");
                 if (!File.Exists(jsonPath))
                     throw new Exception("Settings file not found");
-                var pngPath = Path.ChangeExtension(mainProjectFilePath, ".png");
+                File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);  
 
-                File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);
-                if (File.Exists(pngPath))
-                    File.Copy(pngPath, Path.ChangeExtension(dllPath, ".png"), true);
+                // copy xml file
+                var sourceXmlPath = Path.Combine(mainProjectFolder, "OperationSimpleNet.xml");
+                if (!File.Exists(sourceXmlPath))
+                    throw new Exception($"{sourceXmlPath} file not found");
+                var targetXmlPath = Path.Combine(dllFolder, "OperationSimpleNet.xml");
+                File.Copy(sourceXmlPath, targetXmlPath, true);
             }
         });
 
@@ -195,9 +187,6 @@ public class Build : NukeBuild
 
                 // path to json, describing extension (to be included into dext)
                 var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
-                
-                // additional files
-                var pngPath = Path.ChangeExtension(dllPath, ".png");
 
                 // make new dext
                 var outputFolder = Path.GetDirectoryName(dllPath)
@@ -210,8 +199,6 @@ public class Build : NukeBuild
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
                 archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
-                if (File.Exists(pngPath))
-                    archive.CreateEntryFromFile(pngPath, Path.GetFileName(pngPath));
                 Logger.head($"Created dext file: {dextPath}");
             }
         });

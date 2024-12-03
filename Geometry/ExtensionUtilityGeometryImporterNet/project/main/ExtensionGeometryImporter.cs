@@ -24,12 +24,12 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
         try
         {
             using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
-            using var applicationCom = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
             var application = applicationCom.Instance;
 
             // active project
             using var activeProjectCom =
-                new ApiComObject<ICamApiProject>(application.GetActiveProject(out resultStatus));
+                new ComWrapper<ICamApiProject>(application.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't get active project: " + resultStatus.Description);
             if (activeProjectCom == null)
@@ -37,7 +37,7 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
             var activeProject = activeProjectCom.Instance;
 
             // geometry importer
-            using var geomImporterCom = new ApiComObject<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
+            using var geomImporterCom = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
             var importer = geomImporterCom.Instance;
 
             var modelFileName = Path.Combine(pathsHelper.Instance.ModelsFolder, "Milling_25D", "Part1.igs");

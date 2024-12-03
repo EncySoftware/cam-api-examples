@@ -22,11 +22,11 @@ public class ExtensionProjectMachineInfo: IExtension, IExtensionUtility
         resultStatus = default;
         try
         {
-            using var applicationCom = new ApiComObject<ICamApiApplication>(context.CamApplication);
+            using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
             var application = applicationCom.Instance;
             
             // active project
-            using var activeProjectCom = new ApiComObject<ICamApiProject>(application.GetActiveProject(out resultStatus));
+            using var activeProjectCom = new ComWrapper<ICamApiProject>(application.GetActiveProject(out resultStatus));
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Can't get active project: " + resultStatus.Description);
             if (activeProjectCom == null)
@@ -34,7 +34,7 @@ public class ExtensionProjectMachineInfo: IExtension, IExtensionUtility
             var activeProject = activeProjectCom.Instance;
             
             // machine information
-            using var machineInfoCom = new ApiComObject<ICamApiMachineInfo>(activeProject.MachineInformation);
+            using var machineInfoCom = new ComWrapper<ICamApiMachineInfo>(activeProject.MachineInformation);
             var machineInfo = machineInfoCom.Instance;
             
             var tmpFileName = Path.GetTempFileName();

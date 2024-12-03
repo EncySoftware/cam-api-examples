@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<SCCollection>
+    <SCNameSpace ID="OperationRegistrator">
+        <SCType ID="RegTSimpleNetOP" type="TRegisterOperationRecord" Enabled="True">
+            <TypeName DefaultValue="TSimpleNetOP"/>
+        </SCType>
+    </SCNameSpace>
+
+    <SCType ID="TSimpleNetOP" Caption="Simple .NET" type="TSTMillExtensionOp" Enabled = "True">
+        <GUID DefaultValue="{BDD2CAD7-D2A9-43C4-86E3-399FCB439FC0}"/>
+        <SolverID DefaultValue="Extension.Operation.Simple.Net"/>
+
+        <!-- Header -->
+        <Name DefaultValue="Simple .NET"/>
+        <Comment DefaultValue="Simple .NET"/>
+        <Image DefaultValue="$(SUPPLEMENT_FOLDER)\operations\MillOperations\Images\Knife5D.bmp"/>
+        <Icon DefaultValue="$(SUPPLEMENT_FOLDER)\operations\MillOperations\Images\Knife5DIcon.bmp"/>
+        <Video DefaultValue="$(SUPPLEMENT_FOLDER)\operations\MillOperations\Video\Knife5D.wmv"/>
+        <OperationGroup DefaultValue="Mill"/>
+        <MultiGroup>
+            <SCType ID="Spray" OrderInGroup="10" type="TLinkToParentMultiGroup"/>
+        </MultiGroup>
+        <RestMode DefaultValue="Off"/>
+        <OperationConfiguration>
+            <Conf_Free DefaultValue="True"/>
+            <Conf_2D DefaultValue="True"/>
+            <Conf_25D DefaultValue="True"/>
+            <Conf_3D DefaultValue="True"/>
+            <Conf_3AD DefaultValue="True"/>
+            <Conf_MW DefaultValue="True"/>
+            <Conf_4D DefaultValue="True"/>
+            <Conf_5D DefaultValue="True"/>
+            <Conf_5DA DefaultValue="True"/>
+        </OperationConfiguration>
+
+        <CheckedGeometry Enabled="False"/>
+        <FeedSwitchLevel Enabled="True">
+            <ReferenceType DefaultValue="PercentDTool">
+                <Percent Enabled="False"/>
+            </ReferenceType>
+        </FeedSwitchLevel>
+        <LinksPlaceHolder Enabled="False"/>
+        <LeadsPlaceHolder Enabled="False"/>
+        <Tolerances Enabled="False"/>
+        <Stock Enabled="False"/>
+
+        <CustomizedMachiningApplications>
+            <SupportedApplications>
+                <MillTool DefaultValue="true"/>
+                <LatheCutter DefaultValue="false"/>
+                <JetCutter DefaultValue="false"/>
+                <Punch DefaultValue="true"/>
+                <Wire DefaultValue="false"/>
+                <Cutter6D DefaultValue="true"/>
+                <Welder DefaultValue="false"/>
+                <AdditiveTool DefaultValue="false"/>
+                <HeatTreatment DefaultValue="false"/>
+                <Painter DefaultValue="true"/>
+            </SupportedApplications>
+        </CustomizedMachiningApplications>
+
+        <ConditionsSection>
+            <!-- <Feeds Transparent="NOT [UseMWFeeds]" Visible="NOT [UseMWFeeds]">
+                <ReturnFeed>
+                    <SCType ID="RapidReturn" Caption="Return on the rapid feed" type="Boolean" DefaultValue="False"/>
+                </ReturnFeed>
+            </Feeds> -->
+        </ConditionsSection>
+
+        <ToolSection>
+            <SupportedToolTypes>
+                <EndMill Enabled="True"/>
+                <Spherical Enabled="True"/>
+                <Torus Enabled="True"/>
+                <DblRadius Enabled="True"/>
+                <TrimDblRadius Enabled="True"/>
+                <Angle Enabled="True"/>
+                <TrimAngle Enabled="True"/>
+                <Grooving Enabled="True"/>
+                <Drill Enabled="False"/>
+                <Complex Enabled="False"/>
+                <NegativeRad Enabled="True"/>
+                <Cutter Enabled="False"/>
+                <Tap Enabled="False"/>
+                <CenterDrill Enabled="False"/>
+                <CounterSink Enabled="False"/>
+                <CounterBore Enabled="False"/>
+                <Reamer Enabled="False"/>
+                <ThreadMill Enabled="False"/>
+                <CustomMill Enabled="True"/>
+                <UndercutTool Enabled="True"/>
+                <KnifeTool Enabled="true"/>
+                <Spray Enabled="True"/>
+            </SupportedToolTypes>
+        </ToolSection>
+
+        <Simulation>
+            <SimulationType DefaultValue="Painting"/>
+        </Simulation>
+
+        <SCType ID="ToolpathParams" Caption="Toolpath pattern" type="ComplexType" Compact="True">
+            <SCType ID="Pattern" Caption="Pattern" type="Enumerated" DefaultValue="Rect">
+                <SCType ID="Rect" Caption="Rectangle" type="None"/>
+                <SCType ID="Circle" Caption="Circle" type="None"/>
+            </SCType>
+            <SCType ID="RectParams" Caption="Rectangle" type="ComplexType" Transparent="True">
+                <SCType ID="StartPoint" Caption="Start point" type="ComplexType" Visible="[Pattern]=[Pattern.Rect]">
+                    <SCType ID="X" Caption="X" type="Double" DefaultValue="10"/>
+                    <SCType ID="Y" Caption="Y" type="Double" DefaultValue="10"/>
+                </SCType>
+                <SCType ID="Width" Caption="Width" type="Double" DefaultValue="90" Visible="[Pattern]=[Pattern.Rect]"/>
+                <SCType ID="Height" Caption="Height" type="Double" DefaultValue="90" Visible="[Pattern]=[Pattern.Rect]"/>
+            </SCType>
+            <SCType ID="CircParams" Caption="Circle" type="ComplexType" Transparent="True">
+                <SCType ID="CenterPoint" Caption="Center point" type="ComplexType" Visible="[Pattern]=[Pattern.Circle]">
+                    <SCType ID="X" Caption="X" type="Double" DefaultValue="50"/>
+                    <SCType ID="Y" Caption="Y" type="Double" DefaultValue="50"/>
+                </SCType>
+                <SCType ID="Diameter" Caption="Diameter" type="Double" DefaultValue="45" Visible="[Pattern]=[Pattern.Circle]"/>
+            </SCType>
+            <SCType ID="ZLayers" Caption="Z layers" type="ComplexType">
+                <SCType ID="Count" Caption="Count" type="Integer" DefaultValue="10"/>
+                <SCType ID="ZStart" Caption="Z start" type="Double" DefaultValue="100"/>
+                <SCType ID="ZStep" Caption="Z step" type="Double" DefaultValue="-10"/>
+            </SCType>
+        </SCType>
+    </SCType>
+
+</SCCollection>
