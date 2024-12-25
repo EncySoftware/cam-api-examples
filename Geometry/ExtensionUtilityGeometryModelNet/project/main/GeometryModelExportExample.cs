@@ -7,6 +7,8 @@ using CAMAPI.ResultStatus;
 using CAMAPI.Project;
 using CAMAPI.Singletons;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
+using Geometry.VecMatrLib;
 
 namespace ExtensionUtilityGeometryModelNet;
 
@@ -40,6 +42,7 @@ public class GeometryModelExportExample : IExtension, IExtensionUtility
             {
                 var importFileName = Path.Combine(paths.ModelsFolder, "Milling_3D", "49-1.igs");
                 var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "CAMAPI Geometry examples");
+                var exportedFilePath = Path.Combine(exportDir, "ExportedModelExample.osd");
                 using var fullModel = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
                 using var importer = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 
@@ -47,10 +50,23 @@ public class GeometryModelExportExample : IExtension, IExtensionUtility
 
                 if(!Directory.Exists(exportDir))
                     Directory.CreateDirectory(exportDir);
-                fullModel.Instance.ExportSelectedToOSD(Path.Combine(exportDir, "ExportedModelExample.osd"), out resultStatus);
+                if(File.Exists(exportedFilePath))
+                    File.Delete(exportedFilePath);
+                fullModel.Instance.ExportSelectedToOSD(exportedFilePath, out resultStatus);
+
+                // Open the file in a new instance of Windows Explorer
+                Process.Start("explorer.exe", "/select, " + exportedFilePath);
 
                 if (!(resultStatus.Code == TResultStatusCode.rsSuccess))
                     throw new Exception(resultStatus.Description);
+
+                // Import the exported file back into the CAM application
+                importer.Instance.ImportFile(exportedFilePath, "", false);
+
+                // Move the new model a little to place it next to the original model
+                var geomNode = new ComWrapper<ICAMAPIGeometryTreeNode>(fullModel.Instance.ActiveNode);
+                var shiftMatrix = T3DMatrix.MakeShiftMatrix(new T3DPoint { X = 0, Y = 0, Z = 100 });
+                resultStatus = fullModel.Instance.Transform(geomNode.Instance, shiftMatrix);
             }
         } finally {
             if (activeProject != null)
