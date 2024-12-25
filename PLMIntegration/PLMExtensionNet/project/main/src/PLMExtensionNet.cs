@@ -150,7 +150,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
 
     public IPLMResult UploadProject(IPLMCAMProject Project, bool SaveAs, bool Replace) => ReturnSuccessfulResult();
 
-    public IPLMResult UploadItem(TPLMItemType ItemType, string ItemId, IPLMFiles Files, bool Replace, out IPLMDataItems UplItems)
+    public IPLMResult UploadItem(TPLMItemType ItemType, string ItemId, IPLMFiles Files, IPLMItemAttributes ItemAttributes, bool Replace, out IPLMDataItems UplItems)
     {
         for(var i = 0; i < Files.Count; i++)
             File.Copy(Files[i], Path.Combine(PLMExtensionTempDir, Path.GetFileName(Files[i])));
