@@ -38,27 +38,41 @@ public class GeometryNodesIteratorExample : IExtension, IExtensionUtility
 
             if (resultStatus.Code == TResultStatusCode.rsSuccess)
             {
+                // Import geometry model from standard installation folder 
                 var importFileName = Path.Combine(paths.ModelsFolder, "Milling_3D", "49-1.igs");
-                var nodeColor = 13132900;
-                string[] nodeNames = ["Part\\49-1.igs\\Face2", "Part\\49-1.igs\\Face10", "Part\\49-1.igs\\Face28", "Part\\49-1.igs\\Face31"];
                 using var fullModel = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
                 using var importer = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 
                 importer.Instance.ImportFile(importFileName, "", false);
+                var importedNodeName = fullModel.Instance.ActiveNode.FullName;
 
-                foreach (var nodeName in nodeNames)
-                {                    
-                    var geomNode = fullModel.Instance.FindByFullName(nodeName, out resultStatus);
-                    geomNode.GeometryEntity.Color = nodeColor;
-                    Marshal.ReleaseComObject(geomNode);
-                }
-
+                // Example of nodes colorization by specified name and geometry type
+                var desiredColor = 13132900;
+                string[] desiredNames = ["2", "10", "28", "31"];
                 using var nodeIterator = new ComWrapper<ICAMAPIGeometryTreeNodeIterator>(fullModel.Instance.GetNodes(out resultStatus));
                 while (nodeIterator.Instance.MoveToChild()) {}
-
                 do 
                 {
-                    if (nodeIterator.Instance.Current().GeometryEntity.Color == nodeColor)
+                    var node = new ComWrapper<ICAMAPIGeometryTreeNode>(nodeIterator.Instance.Current());
+                    if (node.Instance.GeometryEntity.EntityType == TCAMAPIGeometryEntityType.etFace)
+                    {
+                        var nodeName = node.Instance.Name;
+                        foreach (var desiredName in desiredNames)
+                            if (nodeName.EndsWith(desiredName))
+                            {
+                                node.Instance.GeometryEntity.Color = desiredColor;
+                                // node.Instance.Selected = true;
+                                break;
+                            }
+                    }
+                } while(nodeIterator.Instance.MoveToSibling());
+
+                // Example of nodes selection by specified color
+                nodeIterator.Instance.Reset();
+                while (nodeIterator.Instance.MoveToChild()) {}
+                do 
+                {
+                    if (nodeIterator.Instance.Current().GeometryEntity.Color == desiredColor)
                         nodeIterator.Instance.Current().Selected = true;
                 } while(nodeIterator.Instance.MoveToSibling());
 
