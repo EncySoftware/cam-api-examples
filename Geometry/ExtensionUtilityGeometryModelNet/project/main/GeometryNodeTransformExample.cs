@@ -52,21 +52,25 @@ public class GeometryNodeTransformExample : IExtension, IExtensionUtility
             if (resultStatus.Code == TResultStatusCode.rsSuccess)
             {
                 var importFileName = Path.Combine(paths.ModelsFolder, "Milling_3D", "49-1.igs");
-                var nodeFullName = "Part\\49-1.igs";
                 using var fullModel = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
                 using var importer = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
 
                 importer.Instance.ImportFile(importFileName, "", false);
+                var nodeFullName = fullModel.Instance.ActiveNode.FullName;
                 var geomNode = new ComWrapper<ICAMAPIGeometryTreeNode>(fullModel.Instance.FindByFullName(nodeFullName, out resultStatus));
 
                 var shiftMatrix = T3DMatrix.MakeShiftMatrix(new T3DPoint { X = 100, Y = 200, Z = 0 });
-                var rotMatrix = T3DMatrix.MakeRotMatrix(60, 1, T3DPoint.Zero);
-                var scaleMatrix = MakeScaleMatrix(2, 100, 200, 0);
-
                 resultStatus = fullModel.Instance.Transform(geomNode.Instance, shiftMatrix);
-                // result = fullModel.Instance.Transform(geomNode.Instance, rotMatrix);
-                // result = fullModel.Instance.Transform(geomNode.Instance, scaleMatrix);
+                if (!(resultStatus.Code == TResultStatusCode.rsSuccess))
+                    throw new Exception(resultStatus.Description);
 
+                var rotMatrix = T3DMatrix.MakeRotMatrix(60, 1, T3DPoint.Zero);
+                resultStatus = fullModel.Instance.Transform(geomNode.Instance, rotMatrix);
+                if (!(resultStatus.Code == TResultStatusCode.rsSuccess))
+                    throw new Exception(resultStatus.Description);
+
+                var scaleMatrix = MakeScaleMatrix(2, 100, 200, 0);
+                resultStatus = fullModel.Instance.Transform(geomNode.Instance, scaleMatrix);
                 if (!(resultStatus.Code == TResultStatusCode.rsSuccess))
                     throw new Exception(resultStatus.Description);
             }
