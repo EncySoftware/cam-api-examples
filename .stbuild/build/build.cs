@@ -94,6 +94,7 @@ public class Build : NukeBuild
                 Path.Combine(RootDirectory.Parent, @"UI\ExtensionUtilityDialogWindowNet\project\main\.stbuild\ExtensionUtilityDialogWindowNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"MachiningTools\MachiningToolsCreateExampleNet\.stbuild\MachiningToolsCreateExampleNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"MachiningTools\DIN4000ImportPluginNet\.stbuild\DIN4000ImportPluginNetProject.json"),
+                Path.Combine(RootDirectory.Parent, @"Attributes\ExtensionAttributesManageNet\project\main\.stbuild\ExtensionAttributesManageNet.json"),
             ],
             Variants =
             [

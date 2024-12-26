@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>ExtensionNetProject</RootNamespace>
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <CAMPath>C:\Program Files\ENCY Software\ENCY\Bin64</CAMPath>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.3.1-dev.13" />
+
+    <!-- <Reference Include="$(CAMPath)\STTypes.dll" />
+    <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Application.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ApplicationMainForm.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.CurveTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.CustomAttributes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.DotnetHelper.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.EventHandler.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Extension.PLM.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Extension.Util.Common.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ExtensionManager.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Extensions.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Generic.Dictionary.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Generic.List.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.GeomImporter.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.GeomLibrary.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.GeomModel.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Logger.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Machine.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.MCDFormerTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.MeshTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ModelFormerTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.NCMaker.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Project.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ResultStatus.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Singletons.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Snapshot.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.SurfaceTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Technologist.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.TechnologyForm.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.TechOperation.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.TechSolvers.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Tools.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ToolsList.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.DotnetHelper.dll" /> -->
+  </ItemGroup>
+</Project>
