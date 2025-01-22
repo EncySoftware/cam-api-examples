@@ -64,7 +64,7 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
             window.SetPropIterator(propIterator);
             
             // show
-            window.SetButtons((ushort)(TUIButtonType.btOk | TUIButtonType.btCancel));
+            window.SetButtons((ushort)(TUIButtonTypeFlags.btfOk | TUIButtonTypeFlags.btfCancel));
             switch (window.Show())
             {
                 case TUIButtonType.btOk:

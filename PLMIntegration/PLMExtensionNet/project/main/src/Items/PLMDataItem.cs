@@ -13,4 +13,6 @@ public class PLMDataItem : IPLMDataItem
     public string TimeStamp { get; set; } = string.Empty;
 
     public IPLMFiles? Files { get; set; }
+
+    public IPLMItemAttributes? Attributes { get; set; }
 }
