@@ -7,6 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EncySoftware.CAMIPC.SDK.Net" Version="1.1.1-dev.172" />
+        <PackageReference Include="EncySoftware.CAMIPC.SDK.Net" Version="1.1.12" />
     </ItemGroup>
 </Project>
