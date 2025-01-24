@@ -1,0 +1,13 @@
+{
+    "name": "Utility to show selected geometry model objects by C#",
+    "description": "Utility to show selected geometry model objects by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityGeometryPickerNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to show selected geometry model objects by C#",
+                "id": "Extension.Utility.GeometryPicker.Net"
+            }
+        }
+    ]
+}
