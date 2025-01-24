@@ -147,28 +147,7 @@ public class Build : NukeBuild
                 },
                 new RestorerNugetProps
                 {
-                    Name = "RestorerNuget",
-                    DepsProp =
-                    [
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.Net",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        },
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        },
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.tlb",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        }
-                    ]
+                    Name = "RestorerNuget"
                 },
                 new CleanerCommonProps
                 {

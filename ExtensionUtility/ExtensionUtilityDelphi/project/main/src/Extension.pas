@@ -12,6 +12,7 @@ uses
   ,IDL.CAMAPI.Application
   ,IDL.CAMAPI.ResultStatus
   ,IDL.CAMAPI.Singletons
+  ,SystemExtensionFactory
 ;
 
 type
@@ -69,15 +70,10 @@ begin
     var ret := default(TResultStatus);
 
     // get global context
-    if (FExtensionInfo = nil) then
-      raise Exception.Create('Info is null');
-    var extension := FExtensionInfo.InstanceInfo.ExtensionManager.GetSingletonExtension('Extension.Global.Singletons.Paths', ret);
-    if (ret.Code = TResultStatusCode.rsError) then
-      raise Exception.Create('Error getting global context: ' + ret.Description);
-    var paths := extension as ICamApiPaths;
+    var extension := TSystemExtensionFactory.GetSingletonExtension<ICamApiPaths>('Extension.Global.Singletons.Paths');
 
     // get context
-    var currentFolder := paths.Get_MainProgramFolder;
+    var currentFolder := extension.Get_MainProgramFolder;
     if currentFolder = '' then
       raise Exception.Create('Cannot get MainProgramFolder');
 

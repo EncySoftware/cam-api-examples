@@ -10,7 +10,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.3.1-dev.7" />
-    <PackageReference Include="EncySoftware.CAMAPI.GeomPicker.Net" Version="1.1.1-dev" />
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.3.1-dev.11" />
   </ItemGroup>
 </Project>

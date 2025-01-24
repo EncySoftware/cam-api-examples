@@ -1,9 +1,13 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using CAMAPI.Application;
+using CAMAPI.DotnetHelper;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
 using CAMAPI.UIDialogs;
 using CAMAPI.UIDialogs.DotnetHelper;
+using CAMHelper.NativeLibUtils;
+using STCustomPropTypes;
 
 namespace ExtensionUtilityDialogWindowNet;
 
@@ -14,7 +18,7 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
 {
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
-
+    
     /// <inheritdoc />
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
@@ -28,14 +32,15 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
             var currentValues = new DialogWindowValues();
             
             // create window
-            using var window = new CamApiInspectorWindow(Info);
+            using var window = new CamApiInspectorWindow();
             
             // properties to provide to user
-            using var propIterator = new SimplePropIterator(Info.InstanceInfo.ExtensionManager);
+            using var propIterator = new SimplePropIterator();
+          
             propIterator.AddStringProp("String value",
                 () => currentValues.StringValue,
                 value => currentValues.StringValue = value);
-
+            
             propIterator.AddEnumIndexedProp("Enum indexed value",
                 () => currentValues.EnumIndexedValue,
                 value => currentValues.EnumIndexedValue = value,
@@ -45,7 +50,7 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
                     list.Add("Value 2", "");
                     list.Add("Value 3", "");
                 });
-
+            
             propIterator.AddEnumIdProp("Enum value",
                 () => currentValues.EnumIdValue,
                 value => currentValues.EnumIdValue = value,
@@ -64,7 +69,7 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
             window.SetPropIterator(propIterator);
             
             // show
-            window.SetButtons((ushort)(TUIButtonTypeFlags.btfOk | TUIButtonTypeFlags.btfCancel));
+            window.SetButtons(MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel));
             switch (window.Show())
             {
                 case TUIButtonType.btOk:

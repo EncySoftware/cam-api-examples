@@ -110,16 +110,7 @@ public class Build : NukeBuild
                 },
                 new RestorerNugetProps
                 {
-                    Name = "RestorerNuget",
-                    DepsProp =
-                    [
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.tlb",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent?.Parent?.Parent, "SDK")
-                        }
-                    ]
+                    Name = "RestorerNuget"
                 },
                 new CleanerCommonProps
                 {

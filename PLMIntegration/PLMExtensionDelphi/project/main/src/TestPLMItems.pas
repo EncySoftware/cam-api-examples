@@ -97,6 +97,7 @@ type
     FType: TPLMItemType;
     FTimeStamp: WideString;
     FFiles: IPLMFiles;
+    FAttributes: IPLMItemAttributes;
   public
     destructor Destroy; override;
 
@@ -108,12 +109,14 @@ type
     function Get_Type_: TPLMItemType; safecall;
     function Get_TimeStamp: WideString; safecall;
     function Get_Files: IPLMFiles; safecall;
+    function Get_Attributes: IPLMItemAttributes; safecall;
 
     property Id: WideString read Get_Id;
     property Name: WideString read Get_Name;
     property Type_: TPLMItemType read Get_Type_;
     property TimeStamp: WideString read Get_TimeStamp;
     property Files: IPLMFiles read Get_Files;
+    property Attributes: IPLMItemAttributes read Get_Attributes;
   end;
 
 implementation
@@ -299,6 +302,11 @@ begin
   inherited;
 end;
 
+function TTestPLMDataItem.Get_Attributes: IPLMItemAttributes;
+begin
+  result := FAttributes;
+end;
+
 function TTestPLMDataItem.Get_Files: IPLMFiles;
 begin
   Result := FFiles;
@@ -334,6 +342,7 @@ begin
     FTimeStamp := ATimeStamp;
     FType := AType;
     FFiles := AFiles;
+    FAttributes := nil;
   except
     Result := False;
   end;

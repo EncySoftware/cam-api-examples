@@ -18,7 +18,7 @@ public class ExtensionUtilityMessageBox: IExtension, IExtensionUtility
     /// <inheritdoc />
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
-        using var helperCom = UIDialogs.CreateComObject();
+        using var helperCom = UIDialogs.CreateHelper();
         var helper = helperCom.Instance
             ?? throw new Exception("Failed to create UIDialogs helper");
         var buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel);
