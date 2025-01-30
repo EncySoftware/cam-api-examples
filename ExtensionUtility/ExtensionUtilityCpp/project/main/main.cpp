@@ -5,7 +5,7 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
-#include <fstream>
+#include "ExtensionManagerHelper.h"
 
 #pragma comment(lib, "Shell32.lib")
 
@@ -158,11 +158,10 @@ public:
         try
         {
             TResultStatus resultStatus;
-        
-			// get global context
-			if (!Info)
-				throw std::runtime_error("Info is null");
-			IUnknown* extension = Info->InstanceInfo->ExtensionManager->GetSingletonExtension(
+
+			// get global context			
+            IUnknown* extension = 
+                ExtensionManagerHelper::GetInstance()->GetSingletonExtension(
 				"Extension.Global.Singletons.Paths", &resultStatus);
 			if (resultStatus.Code == TResultStatusCode::rsError)
 				throw std::runtime_error("Error getting global context: " + BSTRToString(resultStatus.Description));
