@@ -205,4 +205,10 @@ class PLMExtensionNet : IExtensionPLM, IExtension
 
         settingsParams = new List<TempParam>();
     }
+
+    public bool SupportProjectLoad { get => true; }
+    public bool SupportMachineLoad { get => true; }
+    public bool SupportPostprocessorLoad { get => true; }
+    public bool SupportPostprocessorInsideMachineLoad { get => true; }
+    public bool SupportToolLoad { get => true; }
 }

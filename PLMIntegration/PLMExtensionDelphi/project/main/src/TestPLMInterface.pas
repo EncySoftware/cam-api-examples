@@ -56,8 +56,14 @@ type
                              out PrjStructItems: IPLMProjectStructItems): IPLMResult; safecall;
 
     function UploadProject(const Project: IPLMCAMProject; SaveAs: WordBool; Replace: WordBool): IPLMResult; safecall;
-    function UploadItem(ItemType: TPLMItemType; const ItemId: WideString; const Files: IPLMFiles;
-                        Replace: WordBool; out UplItems: IPLMDataItems): IPLMResult; safecall;
+    function UploadItem(ItemType: TPLMItemType; const ItemId: WideString; const Files: IPLMFiles; 
+                        const ItemAttributes: IPLMItemAttributes; Replace: WordBool; 
+                        out UplItems: IPLMDataItems): IPLMResult; safecall;
+    function Get_SupportProjectLoad: WordBool; safecall;
+    function Get_SupportMachineLoad: WordBool; safecall;
+    function Get_SupportPostprocessorLoad: WordBool; safecall;
+    function Get_SupportPostprocessorInsideMachineLoad: WordBool; safecall;
+    function Get_SupportToolLoad: WordBool; safecall;
 
     function Get_Info: IExtensionInfo; safecall;
     procedure Set_Info(const Value: IExtensionInfo); safecall;
@@ -284,9 +290,9 @@ begin
   Result := Res;
 end;
 
-function TTestPLMInterface.UploadItem(ItemType: TPLMItemType;
-  const ItemId: WideString; const Files: IPLMFiles; Replace: WordBool;
-  out UplItems: IPLMDataItems): IPLMResult;
+function TTestPLMInterface.UploadItem(ItemType: TPLMItemType; const ItemId: WideString; const Files: IPLMFiles; 
+                    const ItemAttributes: IPLMItemAttributes; Replace: WordBool; 
+                    out UplItems: IPLMDataItems): IPLMResult; safecall;
 var
   Res : TPLMResult;
   i : Integer;
@@ -356,6 +362,31 @@ begin
   FCode := 0;
   FErrorMessage := '';
   FWarningMessage := AWarningMessage;
+end;
+
+function TTestPLMInterface.Get_SupportProjectLoad: WordBool;
+begin
+  result := true;
+end;
+
+function TTestPLMInterface.Get_SupportMachineLoad: WordBool;
+begin
+  result := true;
+end;
+
+function TTestPLMInterface.Get_SupportPostprocessorLoad: WordBool;
+begin
+  result := true;
+end;
+
+function TTestPLMInterface.Get_SupportPostprocessorInsideMachineLoad: WordBool;
+begin
+  result := true;
+end;
+
+function TTestPLMInterface.Get_SupportToolLoad: WordBool;
+begin
+  result := true;
 end;
 
 end.
