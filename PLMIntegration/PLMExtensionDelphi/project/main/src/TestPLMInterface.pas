@@ -59,6 +59,8 @@ type
     function UploadItem(ItemType: TPLMItemType; const ItemId: WideString; const Files: IPLMFiles; 
                         const ItemAttributes: IPLMItemAttributes; Replace: WordBool; 
                         out UplItems: IPLMDataItems): IPLMResult; safecall;
+    function GetItemData(ItemType: TPLMItemType; const ItemId: WideString;
+                         out ItemData: IPLMDataItem): IPLMResult; safecall;
     function Get_SupportProjectLoad: WordBool; safecall;
     function Get_SupportMachineLoad: WordBool; safecall;
     function Get_SupportPostprocessorLoad: WordBool; safecall;
@@ -138,7 +140,7 @@ begin
     Id := AId;
     Name := AName;
     ItemType := AType;
-    TimeStamp := '';
+    TimeStamp := 0;
     FilePath := AFilePath;
   end;
   Result := DwnDataItems;
@@ -272,6 +274,15 @@ var
 begin
   Items := TTestPLMTree.Create;
   Res := TPLMResult.Create;
+  Res.Set_Successful('');
+  Result := Res;
+end;
+
+function TTestPLMInterface.GetItemData(ItemType: TPLMItemType;
+  const ItemId: WideString; out ItemData: IPLMDataItem): IPLMResult;
+begin
+  ItemData := nil;
+  var Res := TPLMResult.Create;
   Res.Set_Successful('');
   Result := Res;
 end;

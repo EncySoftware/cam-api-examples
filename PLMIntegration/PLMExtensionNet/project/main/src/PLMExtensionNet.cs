@@ -88,7 +88,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                     Id = modelDataItemName,
                     Name = modelDataItemName,
                     ItemType = Items[i].Type,
-                    TimeStamp = ""
+                    TimeStamp = 0
                 };
                 tempItem.FilePaths.Add(modelFilePath);
                 tempItems.Add(tempItem);
@@ -98,7 +98,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                     Id = modelDataItemName,
                     Name = modelDataItemName,
                     ItemType = Items[i].Type,
-                    TimeStamp = ""
+                    TimeStamp = 0
                 };
                 tempItem.FilePaths.Add(modelFilePath);
                 tempItems.Add(tempItem);
@@ -108,7 +108,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                     Id = toolDataItemName,
                     Name = toolDataItemName,
                     ItemType = Items[i].Type,
-                    TimeStamp = ""
+                    TimeStamp = 0
                 };
                 tempItem.FilePaths.Add(toolFilePath);
                 tempItems.Add(tempItem);
@@ -118,7 +118,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                     Id = machineDataItemName,
                     Name = machineDataItemName,
                     ItemType = Items[i].Type,
-                    TimeStamp = ""
+                    TimeStamp = 0
                 };
                 tempItem.FilePaths.Add(machineFilePath);
                 tempItems.Add(tempItem);
@@ -130,7 +130,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                     Id = sppDataItemName,
                     Name = sppDataItemName,
                     ItemType = Items[i].Type,
-                    TimeStamp = ""
+                    TimeStamp = 0
                 };
                 tempItem.FilePaths.Add(sppFilePath);
                 tempItems.Add(tempItem);
@@ -155,6 +155,12 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         for(var i = 0; i < Files.Count; i++)
             File.Copy(Files[i], Path.Combine(PLMExtensionTempDir, Path.GetFileName(Files[i])));
         UplItems = new PLMDataItems();
+        return ReturnSuccessfulResult();
+    }
+
+    public IPLMResult GetItemData(TPLMItemType ItemType, string ItemId, out IPLMDataItem ItemData) 
+    {
+        ItemData = new PLMDataItem();
         return ReturnSuccessfulResult();
     }
 
