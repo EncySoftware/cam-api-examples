@@ -24,6 +24,7 @@
 #import "CAMAPI.Extensions.tlb" no_namespace, named_guids
 #import "CAMAPI.NCMaker.tlb" no_namespace, named_guids
 #import "CAMAPI.Machine.tlb" no_namespace, named_guids
+#import "CAMAPI.Tools.tlb" no_namespace, named_guids
 #import "CAMAPI.TechOperation.tlb" no_namespace, named_guids
 #import "CAMAPI.Technologist.tlb" no_namespace, named_guids
 #import "CAMAPI.Snapshot.tlb" no_namespace, named_guids
@@ -35,6 +36,7 @@
 #import "CAMAPI.TechnologyForm.tlb" no_namespace, named_guids
 #import "CAMAPI.ApplicationMainForm.tlb" no_namespace, named_guids
 #import "CAMAPI.Extension.PLM.tlb" no_namespace, named_guids
+#import "CAMAPI.CustomAttributes.tlb" no_namespace, named_guids
 #import "CAMAPI.Application.tlb" no_namespace, named_guids
 
 namespace fs = std::filesystem;

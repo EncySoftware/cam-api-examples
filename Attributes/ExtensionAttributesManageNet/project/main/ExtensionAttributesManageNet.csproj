@@ -12,7 +12,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.3.1-dev.13" />
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.3.1-dev.14" />
 
     <!-- <Reference Include="$(CAMPath)\STTypes.dll" />
     <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
