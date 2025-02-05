@@ -80,7 +80,7 @@ public class Build : NukeBuild
                 Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyNet\project\main\.stbuild\ExtensionEmptyNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionGlobal\ExtensionGlobalNet\project\main\.stbuild\ExtensionGlobalNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionOperationPopup\ExtensionOperationPopupNet\project\main\.stbuild\ExtensionOperationPopupNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityCpp\project\main\.stbuild\ExtensionUtilityCppProject.json"),
+                // Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityCpp\project\main\.stbuild\ExtensionUtilityCppProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityDelphi\project\main\.stbuild\ExtensionUtilityDelphiProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityNet\project\main\.stbuild\ExtensionUtilityNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"GCodeGeneration\ExtensionUtilityNCMakerNet\project\main\.stbuild\ExtensionUtilityNCMakerNetProject.json"),
