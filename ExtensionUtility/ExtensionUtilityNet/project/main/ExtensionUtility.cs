@@ -26,12 +26,17 @@ public class ExtensionUtility : IExtension, IExtensionUtility
         try
         {
             // get global context
-            var paths = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
+            using var pathsCom = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
+            var paths = pathsCom.Instance
+                ?? throw new Exception("Paths singleton not found");
             
             // export
-            using var application = new ComWrapper<ICamApiApplication>(context.CamApplication);
-            var exportedFile = Path.Combine(paths.Instance.MainProgramFolder, "exported.stcp");
-            application.Instance.ExportCurrentProject(exportedFile, true, out resultStatus);
+            using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
+            var application = applicationCom.Instance
+                ?? throw new Exception("Application not found");
+            
+            var exportedFile = Path.Combine(paths.MainProgramFolder, "exported.stcp");
+            application.ExportCurrentProject(exportedFile, true, out resultStatus);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error exporting project: " + resultStatus.Description);
         }

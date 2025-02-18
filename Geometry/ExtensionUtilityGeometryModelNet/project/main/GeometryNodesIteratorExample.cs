@@ -27,12 +27,9 @@ public class GeometryNodesIteratorExample : IExtension, IExtensionUtility
         try
         {
             // get global context
-            var extension = Info?.InstanceInfo.ExtensionManager.GetSingletonExtension("Extension.Global.Singletons.Paths", out resultStatus)
-                            ?? throw new Exception("Info is null");
-            if (resultStatus.Code == TResultStatusCode.rsError)
-                throw new Exception("Error getting global context: " + resultStatus.Description);
-            if (extension is not ICamApiPaths paths)
-                throw new Exception("Cannot get global context");
+            var pathsCom = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
+            var paths = pathsCom.Instance
+                        ?? throw new Exception("Cannot get global context");
 
             activeProject = Context.CamApplication.GetActiveProject(out resultStatus);
 

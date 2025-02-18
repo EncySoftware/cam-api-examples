@@ -80,7 +80,7 @@ public class Build : NukeBuild
                 Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyNet\project\main\.stbuild\ExtensionEmptyNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionGlobal\ExtensionGlobalNet\project\main\.stbuild\ExtensionGlobalNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionOperationPopup\ExtensionOperationPopupNet\project\main\.stbuild\ExtensionOperationPopupNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityCpp\project\main\.stbuild\ExtensionUtilityCppProject.json"),
+                // Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityCpp\project\main\.stbuild\ExtensionUtilityCppProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityDelphi\project\main\.stbuild\ExtensionUtilityDelphiProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityNet\project\main\.stbuild\ExtensionUtilityNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"GCodeGeneration\ExtensionUtilityNCMakerNet\project\main\.stbuild\ExtensionUtilityNCMakerNetProject.json"),
@@ -94,6 +94,7 @@ public class Build : NukeBuild
                 Path.Combine(RootDirectory.Parent, @"UI\ExtensionUtilityDialogWindowNet\project\main\.stbuild\ExtensionUtilityDialogWindowNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"MachiningTools\MachiningToolsCreateExampleNet\.stbuild\MachiningToolsCreateExampleNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"MachiningTools\DIN4000ImportPluginNet\.stbuild\DIN4000ImportPluginNetProject.json"),
+                Path.Combine(RootDirectory.Parent, @"Attributes\ExtensionAttributesManageNet\project\main\.stbuild\ExtensionAttributesManageNet.json"),
             ],
             Variants =
             [
@@ -147,28 +148,7 @@ public class Build : NukeBuild
                 },
                 new RestorerNugetProps
                 {
-                    Name = "RestorerNuget",
-                    DepsProp =
-                    [
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.Net",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        },
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        },
-                        new RestorerDepProp
-                        {
-                            PackageId = "EncySoftware.CAMAPI.SDK.tlb",
-                            Version = "1.2.1",
-                            OutDir = Path.Combine(RootDirectory.Parent, "SDK")
-                        }
-                    ]
+                    Name = "RestorerNuget"
                 },
                 new CleanerCommonProps
                 {

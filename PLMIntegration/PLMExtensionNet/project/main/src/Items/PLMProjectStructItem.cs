@@ -10,6 +10,6 @@ public class PLMProjectStructItem : IPLMProjectStructItem
 
     public TPLMItemType Type { get; set; }
 
-    public string TimeStamp { get; set; } = string.Empty;
+    public Double TimeStamp { get; set; } = 0;
 
 }

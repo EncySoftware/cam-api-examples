@@ -10,7 +10,7 @@ public class TempItem
 
     public TPLMItemType ItemType { get; set; }
 
-    public string TimeStamp { get; set; } = string.Empty;
+    public Double TimeStamp { get; set; } = 0;
 
     public List<string> FilePaths { get; set; } = new List<string>();
 }

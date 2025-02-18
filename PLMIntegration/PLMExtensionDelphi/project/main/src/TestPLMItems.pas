@@ -10,7 +10,7 @@ type
     Id: string;
     Name: string;
     ItemType: TPLMItemType;
-    TimeStamp: WideString;
+    TimeStamp: Double;
     FilePath: WideString;
   end;
   TDataItems = array of TDataItem;
@@ -95,25 +95,28 @@ type
     FId: WideString;
     FName: WideString;
     FType: TPLMItemType;
-    FTimeStamp: WideString;
+    FTimeStamp: Double;
     FFiles: IPLMFiles;
+    FAttributes: IPLMItemAttributes;
   public
     destructor Destroy; override;
 
-    function Put(AId, AName, ATimeStamp: WideString; AType: TPLMItemType;
+    function Put(AId, AName: WideString; ATimeStamp: Double; AType: TPLMItemType;
      AFiles: TTestPLMFiles): Boolean; overload;
 
     function Get_Id: WideString; safecall;
     function Get_Name: WideString; safecall;
     function Get_Type_: TPLMItemType; safecall;
-    function Get_TimeStamp: WideString; safecall;
+    function Get_TimeStamp: Double; safecall;
     function Get_Files: IPLMFiles; safecall;
+    function Get_Attributes: IPLMItemAttributes; safecall;
 
     property Id: WideString read Get_Id;
     property Name: WideString read Get_Name;
     property Type_: TPLMItemType read Get_Type_;
-    property TimeStamp: WideString read Get_TimeStamp;
+    property TimeStamp: Double read Get_TimeStamp;
     property Files: IPLMFiles read Get_Files;
+    property Attributes: IPLMItemAttributes read Get_Attributes;
   end;
 
 implementation
@@ -299,6 +302,11 @@ begin
   inherited;
 end;
 
+function TTestPLMDataItem.Get_Attributes: IPLMItemAttributes;
+begin
+  result := FAttributes;
+end;
+
 function TTestPLMDataItem.Get_Files: IPLMFiles;
 begin
   Result := FFiles;
@@ -314,7 +322,7 @@ begin
   Result := FName;
 end;
 
-function TTestPLMDataItem.Get_TimeStamp: WideString;
+function TTestPLMDataItem.Get_TimeStamp: Double;
 begin
   Result := FTimeStamp;
 end;
@@ -324,7 +332,7 @@ begin
   Result := FType;
 end;
 
-function TTestPLMDataItem.Put(AId, AName, ATimeStamp: WideString;
+function TTestPLMDataItem.Put(AId, AName: WideString; ATimeStamp: Double;
   AType: TPLMItemType; AFiles: TTestPLMFiles): Boolean;
 begin
   Result := True;
@@ -334,6 +342,7 @@ begin
     FTimeStamp := ATimeStamp;
     FType := AType;
     FFiles := AFiles;
+    FAttributes := nil;
   except
     Result := False;
   end;

@@ -10,7 +10,7 @@ public class PLMDataItem : IPLMDataItem
 
     public TPLMItemType Type { get; set; }
 
-    public string TimeStamp { get; set; } = string.Empty;
+    public Double TimeStamp { get; set; } = 0;
 
     public IPLMFiles? Files { get; set; }
 

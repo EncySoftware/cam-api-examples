@@ -1,0 +1,25 @@
+{
+    "name": "Utility to import custom geometry by C#",
+    "description": "Utility to import custom geometry by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityGeomCustomImportNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to import custom geometry (vertexes) by C#",
+                "id": "Extension.Utility.Geometry.Importer.Custom.Vertexes.Net"
+            }
+        },
+        {
+            "Utility": {
+                "name": "Utility to import custom geometry (curves) by C#",
+                "id": "Extension.Utility.Geometry.Importer.Custom.Curves.Net"
+            }
+        },
+        {
+            "Utility": {
+                "name": "Utility to import custom geometry (meshes) by C#",
+                "id": "Extension.Utility.Geometry.Importer.Custom.Meshes.Net"
+            }
+        }
+    ]
+}

@@ -56,7 +56,7 @@ public class MakeNcOnClicked : ICamApiTechnologyFormOperationPopupItemOnClicked
             _logFile = Path.Combine(tempFolder, "log.txt");
             
             // context
-            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", _info);
+            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
             using var project = new ComWrapper<ICamApiProject>(context.ActiveProject);
             using var operation = new ComWrapper<ICamApiTechOperation>(context.SelectedOperation);
             using var technologist = new ComWrapper<ICamApiTechnologist>(project.Instance.Technologist);

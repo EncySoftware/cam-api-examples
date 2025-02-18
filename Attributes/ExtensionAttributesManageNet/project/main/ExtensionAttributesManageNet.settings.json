@@ -1,0 +1,49 @@
+{
+    "name": "Attributes usage examples",
+    "description": "Demonstrates ho to use custom attributes of different objects of CAM",
+    "module_path": "${extensionJsonFolder}/ExtensionAttributesManageNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Custom attributes library creation example",
+                "caption": "Attributes: create library",
+                "id": "Extension.Attributes.CreateLibrary"
+            }
+        },
+        {
+            "utility": {
+                "name": "Shows a separate window with application attributes",
+                "caption": "Attributes: show Application attributes",
+                "id": "Extension.Attributes.ShowAppAttributes"
+            }            
+        },
+        {
+            "utility": {
+                "name": "Shows a separate window with project attributes",
+                "caption": "Attributes: show Project attributes",
+                "id": "Extension.Attributes.ShowProjectAttributes"
+            }            
+        },
+        {
+            "operation_popup": {
+                "name": "Shows a popup menu item with Part attributes",
+                "caption": "Attributes: show Part attributes",
+                "id": "Extension.Attributes.ShowPartAttributes"
+            }            
+        },        
+        {
+            "operation_popup": {
+                "name": "Adds a popup menu item with operation attributes",
+                "caption": "Show Operation attributes",
+                "id": "Extension.Attributes.ShowOperationAttributes"
+            }            
+        },
+        {
+            "operation_popup": {
+                "name": "Adds a popup menu item with tool attributes",
+                "caption": "Show Tool attributes",
+                "id": "Extension.Attributes.ShowToolAttributes"
+            }            
+        }
+    ]
+}

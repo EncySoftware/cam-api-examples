@@ -5,26 +5,38 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
-#include <fstream>
+#include "ExtensionManagerHelper.h"
 
 #pragma comment(lib, "Shell32.lib")
 
-#import "STTypes.tlb" no_namespace, named_guids
+#import <STTypes.tlb> no_namespace, named_guids
+#import <STXmlPropTypes.tlb> no_namespace, named_guids
+#import <STCustomPropTypes.tlb> no_namespace, named_guids
+#import <CAMAPI.MeshTypes.tlb> no_namespace, named_guids
+#import <CAMAPI.CurveTypes.tlb> no_namespace, named_guids
+#import <CAMAPI.SurfaceTypes.tlb> no_namespace, named_guids
+#import <CAMAPI.ModelFormerTypes.tlb> no_namespace, named_guids
 #import <CAMAPI.Logger.tlb> no_namespace, named_guids
 #import <CAMAPI.ResultStatus.tlb> no_namespace, named_guids
 #import "CAMAPI.Generic.List.tlb" no_namespace, named_guids
+#import "STGeomApiTypes.tlb" no_namespace, named_guids
 #import "CAMAPI.Singletons.tlb" no_namespace, named_guids
 #import "CAMAPI.Extensions.tlb" no_namespace, named_guids
 #import "CAMAPI.NCMaker.tlb" no_namespace, named_guids
 #import "CAMAPI.Machine.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
+#import "CAMAPI.Tools.tlb" no_namespace, named_guids
+#import "CAMAPI.TechOperation.tlb" no_namespace, named_guids
 #import "CAMAPI.Technologist.tlb" no_namespace, named_guids
 #import "CAMAPI.Snapshot.tlb" no_namespace, named_guids
+#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
+#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
 #import "CAMAPI.GeomImporter.tlb" no_namespace, named_guids
 #import "CAMAPI.ToolsList.tlb" no_namespace, named_guids
 #import "CAMAPI.Project.tlb" no_namespace, named_guids
 #import "CAMAPI.TechnologyForm.tlb" no_namespace, named_guids
 #import "CAMAPI.ApplicationMainForm.tlb" no_namespace, named_guids
+#import "CAMAPI.Extension.PLM.tlb" no_namespace, named_guids
+#import "CAMAPI.CustomAttributes.tlb" no_namespace, named_guids
 #import "CAMAPI.Application.tlb" no_namespace, named_guids
 
 namespace fs = std::filesystem;
@@ -148,11 +160,10 @@ public:
         try
         {
             TResultStatus resultStatus;
-        
-			// get global context
-			if (!Info)
-				throw std::runtime_error("Info is null");
-			IUnknown* extension = Info->InstanceInfo->ExtensionManager->GetSingletonExtension(
+
+			// get global context			
+            IUnknown* extension = 
+                ExtensionManagerHelper::GetInstance()->GetSingletonExtension(
 				"Extension.Global.Singletons.Paths", &resultStatus);
 			if (resultStatus.Code == TResultStatusCode::rsError)
 				throw std::runtime_error("Error getting global context: " + BSTRToString(resultStatus.Description));

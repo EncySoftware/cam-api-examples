@@ -33,7 +33,7 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
         try
         {
             // global context
-            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
+            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
 
             // Make temp file name to write log
             _tempDir = Path.Combine(Path.GetTempPath(), "MakeNCUtilityExtension", Path.GetRandomFileName());

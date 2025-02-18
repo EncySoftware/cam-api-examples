@@ -23,7 +23,7 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
         resultStatus = default;
         try
         {
-            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths", Info);
+            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
             using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
             var application = applicationCom.Instance;
 

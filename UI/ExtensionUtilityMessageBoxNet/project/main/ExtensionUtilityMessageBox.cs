@@ -2,6 +2,8 @@
 using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
+using CAMAPI.UIDialogs;
+using CAMAPI.UIDialogs.DotnetHelper;
 
 namespace ExtensionUtilityMessageBoxNet;
 
@@ -16,10 +18,11 @@ public class ExtensionUtilityMessageBox: IExtension, IExtensionUtility
     /// <inheritdoc />
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
-
+        using var helperCom = UIDialogs.CreateHelper();
+        var helper = helperCom.Instance
+            ?? throw new Exception("Failed to create UIDialogs helper");
+        var buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel);
+        helper.MessageBox("Some text", TMessageDialogType.mdtInformation, buttons, TUIButtonType.btOk, "Some text");
         resultStatus = default;
-        MessageBox(new IntPtr(0), "Some text", "Some text", 0);  
     }
 }
