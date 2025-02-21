@@ -1,0 +1,13 @@
+{
+    "name": "React on change of operation tool",
+    "description": "React on change of operation tool",
+    "module_path": "${extensionJsonFolder}\\ExtensionOperationPopupOnChangeNet.dll",
+    "extensions": [
+        {
+            "operation_popup": {
+                "name": "Catch operation tool change",
+                "id": "Extension.OperationPopup.OnChange.Net"
+            }
+        }
+    ]
+}
