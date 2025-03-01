@@ -39,7 +39,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
 
     public IPLMParameters GetParameters() => new PLMParameters(connectionParams, loginParams, loginParamValues, settingsParams);
 
-    public IPLMResult Connect(IPLMParameterValues Values) => ReturnSuccessfulResult();
+    public IPLMResult Connect(IPLMParameterValues Values, Guid ConnectionId, bool UseDomainAuth) => ReturnSuccessfulResult();
 
     public IPLMResult Disconnect() => ReturnSuccessfulResult();
 
@@ -217,4 +217,5 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     public bool SupportPostprocessorLoad { get => true; }
     public bool SupportPostprocessorInsideMachineLoad { get => true; }
     public bool SupportToolLoad { get => true; }
+    public bool SupportDomainAuth { get => true; }
 }
