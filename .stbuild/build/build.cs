@@ -13,7 +13,6 @@ using BuildSystem.Cleaner.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
-using BuildSystem.ManagerObject.Interfaces;
 using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
 using BuildSystem.SettingsReader.Object;
@@ -74,12 +73,13 @@ public class Build : NukeBuild
         {
             Projects =
             [
-                // Path.Combine(RootDirectory.Parent, @"ApplicationEmpty\ApplicationEmptyNet\project\main\.stbuild\ApplicationEmptyNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyCpp\project\main\.stbuild\ExtensionEmptyCppProject.json"),
+                Path.Combine(RootDirectory.Parent, @"ApplicationEmpty\ApplicationEmptyNet\project\main\.stbuild\ApplicationEmptyNetProject.json"),
+                // Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyCpp\project\main\.stbuild\ExtensionEmptyCppProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyDelphi\project\main\.stbuild\ExtensionEmptyDelphiProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyNet\project\main\.stbuild\ExtensionEmptyNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionGlobal\ExtensionGlobalNet\project\main\.stbuild\ExtensionGlobalNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionOperationPopup\ExtensionOperationPopupNet\project\main\.stbuild\ExtensionOperationPopupNetProject.json"),
+                Path.Combine(RootDirectory.Parent, @"ExtensionOperationPopup\ExtensionOperationPopupOnChangeNet\project\main\.stbuild\ExtensionOperationPopupOnChangeNetProject.json"),
                 // Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityCpp\project\main\.stbuild\ExtensionUtilityCppProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityDelphi\project\main\.stbuild\ExtensionUtilityDelphiProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityNet\project\main\.stbuild\ExtensionUtilityNetProject.json"),

@@ -99,6 +99,7 @@ type
     FOrder: Integer;
     FMandatory: Boolean;
     FPassword: Boolean;
+    FLogin: Boolean;
     FLOV: IPLMLoginParamListOfValues;
     procedure Load(ALoginParameter: TLoginParameter);
     procedure Set_LOV(ALoginValues: TLoginParamValues);
@@ -110,6 +111,7 @@ type
     function Get_Order: Integer; safecall;
     function Get_Mandatory: WordBool; safecall;
     function Get_Password: WordBool; safecall;
+    function Get_Login: WordBool; safecall;
     function Get_LOV: IPLMLoginParamListOfValues; safecall;
   end;
 
@@ -340,6 +342,11 @@ end;
 function TTestPLMLoginParameter.Get_Id: WideString;
 begin
   Result := FId;
+end;
+
+function TTestPLMLoginParameter.Get_Login: WordBool;
+begin
+  Result := FLogin;
 end;
 
 function TTestPLMLoginParameter.Get_LOV: IPLMLoginParamListOfValues;

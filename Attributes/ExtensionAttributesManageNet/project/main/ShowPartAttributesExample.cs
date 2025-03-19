@@ -63,7 +63,7 @@ internal class PartMenuItemClickHandler : ICamApiTechnologyFormOperationPopupIte
             using var partOperation = ComWrapper.Create(context.SelectedOperation);
             
             // Get ExtensionManager to ask Application instance
-            using var extensionManager = ComWrapper.Create(ExtensionManagerHelper.GetInstance());
+            using var extensionManager = ExtensionManagerHelper.GetInstance();
 
             // Ask Application from ExtensionManager
             using var appGetter = ComWrapper.Create(extensionManager.It.GetSingletonExtension("Extension.Global.Singletons.Application", out resultStatus) as ICamApiApplicationSingleton);

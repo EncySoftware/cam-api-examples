@@ -16,5 +16,7 @@ public class PLMLoginParameter : IPLMLoginParameter
 
     public bool Password { get; set; }
 
+    public bool Login { get; set; }
+
     public IPLMLoginParamListOfValues? LOV { get; set; } 
 }

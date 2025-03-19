@@ -38,7 +38,7 @@ type
     procedure SetLanguage(LanguageID: LongWord; LngCodePage: Byte); safecall;
 
     function GetParameters: IPLMParameters; safecall;
-    function Connect(const Values: IPLMParameterValues): IPLMResult; safecall;
+    function Connect(const Values: IPLMParameterValues; ConnectionId: TGUID; UseDomainAuth: WordBool): IPLMResult; safecall;
     function Disconnect: IPLMResult; safecall;
     function Install: IPLMResult; safecall;
     function Uninstall: IPLMResult; safecall;
@@ -66,6 +66,7 @@ type
     function Get_SupportPostprocessorLoad: WordBool; safecall;
     function Get_SupportPostprocessorInsideMachineLoad: WordBool; safecall;
     function Get_SupportToolLoad: WordBool; safecall;
+    function Get_SupportDomainAuth: WordBool; safecall;
 
     function Get_Info: IExtensionInfo; safecall;
     procedure Set_Info(const Value: IExtensionInfo); safecall;
@@ -192,8 +193,8 @@ begin
   Exit(FInfo);
 end;
 
-function TTestPLMInterface.Connect(
-  const Values: IPLMParameterValues): IPLMResult;
+function TTestPLMInterface.Connect(const Values: IPLMParameterValues;
+  ConnectionId: TGUID; UseDomainAuth: WordBool): IPLMResult;
 var
   Res : TPLMResult;
 begin
@@ -376,6 +377,11 @@ begin
 end;
 
 function TTestPLMInterface.Get_SupportProjectLoad: WordBool;
+begin
+  result := true;
+end;
+
+function TTestPLMInterface.Get_SupportDomainAuth: WordBool;
 begin
   result := true;
 end;
