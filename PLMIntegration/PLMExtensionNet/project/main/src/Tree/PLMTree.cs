@@ -2,61 +2,45 @@ using CAMAPI.Extension.PLM;
 
 namespace PLMIntegrarionExamples.Tree;
 
+/// <summary>
+/// Represents hierarchical tree of items within the PLM extension.
+/// </summary>
 public class PLMTree : IPLMTree
 {
+    /// <summary>
+    /// Gets the number of tree items in the collection.
+    /// </summary>
     public int Count => treeItems.Count();
 
-    public IPLMTreeItem this[int Index] => treeItems[Index];
-
-    public PLMTree(TPLMItemType itemType = TPLMItemType.itNone)
-    {
-        treeItems = new List<PLMTreeItem>();
-        
-        switch (itemType)
-        {            
-            case TPLMItemType.itNone: 
-                InitTestTreeItems();
-                break;
-            case TPLMItemType.itModel: 
-                CreateTreeItem("ChildModelId", "ChildModelName", "Child Model PLMTree Item", TPLMItemType.itModel);
-                break;
-            case TPLMItemType.itWorkpiece: 
-                CreateTreeItem("ChildWorkpieceId", "ChildWorkpieceName", "Child Workpiece PLMTree Item", TPLMItemType.itWorkpiece);
-                break;
-            case TPLMItemType.itTool: 
-                CreateTreeItem("ChildToolId", "ChildToolName", "Child Tool PLMTree Item", TPLMItemType.itTool);
-                break;
-            case TPLMItemType.itMachine: 
-                CreateTreeItem("ChildMachineId", "ChildMachineName", "Child Machine PLMTree Item", TPLMItemType.itMachine);
-                break;
-            case TPLMItemType.itProject: 
-                CreateTreeItem("ChildProjectId", "ChildProjectName", "Child Project PLMTree Item", TPLMItemType.itProject);
-                break;
-            case TPLMItemType.itPostprocessor: 
-                CreateTreeItem("ChildPostprocessorId", "ChildPostprocessorName", "Child Postprocessor PLMTree Item", TPLMItemType.itPostprocessor);
-                break;                              
-        }
-    }
+    /// <summary>
+    /// Gets the tree item at the specified index.
+    /// </summary>
+    /// <param name="index">The index of the tree item.</param>
+    /// <returns>The <see cref="IPLMTreeItem"/> at the specified index.</returns>
+    public IPLMTreeItem this[int index] => treeItems[index];
 
     private List<PLMTreeItem> treeItems;
 
-    private void CreateTreeItem(string id, string name, string comment, TPLMItemType itemType) => treeItems.Add(new PLMTreeItem
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PLMTree"/> class.
+    /// </summary>
+    public PLMTree()
+    {
+        treeItems = [];
+    }
+
+    /// <summary>
+    /// Adds a new tree item to the collection.
+    /// </summary>
+    /// <param name="id">The unique identifier of the tree item.</param>
+    /// <param name="name">The name of the tree item.</param>
+    /// <param name="comment">A comment associated with the tree item.</param>
+    /// <param name="itemType">The type of the tree item.</param>
+    public void AddTreeItem(string id, string name, string comment, TPLMItemType itemType) => treeItems.Add(new PLMTreeItem
     {
         Id = id,
         Name = name,
         Type = itemType,
         Comment = comment
     });
-
-    private void InitTestTreeItems()
-    {
-        CreateTreeItem("NoneId", "NoneName", "Test None PLMTree Item", TPLMItemType.itNone);
-        CreateTreeItem("ModelId", "ModelName", "Test Model PLMTree Item", TPLMItemType.itModel);
-        CreateTreeItem("WorkpieceId", "WorkpieceName", "Test Workpiece PLMTree Item", TPLMItemType.itWorkpiece);
-        CreateTreeItem("ToolId", "ToolName", "Test Tool PLMTree Item", TPLMItemType.itTool);
-        CreateTreeItem("MachineId", "MachineName", "Test Machine PLMTree Item", TPLMItemType.itMachine);
-        CreateTreeItem("ProjectId", "ProjectName", "Test Project PLMTree Item", TPLMItemType.itProject);
-        CreateTreeItem("PostprocessorId", "PostprocessorName", "Test Postprocessor PLMTree Item", TPLMItemType.itPostprocessor);
-    }
-
 }

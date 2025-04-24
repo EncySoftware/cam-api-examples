@@ -2,38 +2,28 @@ using CAMAPI.Extension.PLM;
 
 namespace PLMIntegrarionExamples.Parameters;
 
+/// <summary>
+/// Represents a settings parameter used for configuring the PLM extension.
+/// </summary>
 public class PLMSettingsParameter : IPLMSettingsParameter
 {
-    public string Id
-    {
-        get => id;
-        set => id = value;
-    }
+    /// <summary>
+    /// Gets or sets the unique identifier of the settings parameter.
+    /// </summary>
+    public string Id {get; set; } = string.Empty;
 
-    public string Name
-    {
-        get => name;
-        set => name = value;
-    }
+    /// <summary>
+    /// Gets or sets the display name of the settings parameter.
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
 
-    public string DefaultValue
-    {
-        get => defaultValue;
-        set => defaultValue = value;
-    }
+    /// <summary>
+    /// Gets or sets the default value of the settings parameter.
+    /// </summary>
+    public string DefaultValue { get; set; } = string.Empty;
 
-
-    public int Order
-    {
-        get => order;
-        set => order = value;
-    }
-
-    private string id = string.Empty;
-
-    private string name = string.Empty;
-
-    private string defaultValue = string.Empty;
-
-    private int order;
+    /// <summary>
+    /// Gets or sets the order in which the settings parameter appears.
+    /// </summary>
+    public int Order { get; set; }
 }
