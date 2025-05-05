@@ -96,17 +96,24 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     {
         plmParams.SetParameterValues(values);
 
+        var plmFolderPath = plmParams["PLMFolder"];
+        if (string.IsNullOrEmpty(plmFolderPath))
+            return new PLMResult {
+                Code = 1,
+                ErrorMessage = "PLM Folder parameter is empty"
+            };
+
         try
         {
-            var machDirName = Path.Combine(plmParams["PLMFolder"], "Machines");
+            var machDirName = Path.Combine(plmFolderPath, "Machines");
             machinesDirectoryHelper = new PLMDirectoryHelper(machDirName);
-            var ppDirName = Path.Combine(plmParams["PLMFolder"], "Postprocessors");
+            var ppDirName = Path.Combine(plmFolderPath, "Postprocessors");
             postprocessorsDirectoryHelper = new PLMDirectoryHelper(ppDirName);
-            var modDirName = Path.Combine(plmParams["PLMFolder"], "Models");
+            var modDirName = Path.Combine(plmFolderPath, "Models");
             modelsDirectoryHelper = new PLMDirectoryHelper(modDirName);
-            var projDirName = Path.Combine(plmParams["PLMFolder"], "Projects");
+            var projDirName = Path.Combine(plmFolderPath, "Projects");
             projectsDirectoryHelper = new PLMDirectoryHelper(projDirName);
-            var toolsDirName = Path.Combine(plmParams["PLMFolder"], "Tools");
+            var toolsDirName = Path.Combine(plmFolderPath, "Tools");
             toolsDirectoryHelper = new PLMDirectoryHelper(toolsDirName);
         }
         catch (Exception ex)
