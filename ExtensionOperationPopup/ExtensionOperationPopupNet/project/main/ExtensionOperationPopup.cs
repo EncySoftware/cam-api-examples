@@ -25,7 +25,7 @@ public class ExtensionOperationPopup : IExtension, IExtensionOperationPopup
         try
         {
             var popupItems = context.OperationPopup;
-            popupItems.AddItem("Calculate NC", "Calculate NC", true, new MakeNcOnClicked(Info), out resultStatus);
+            popupItems.AddItem("Calculate NC", "Calculate NC", true, new MakeNcOnClicked(), out resultStatus);
         }
         catch (Exception ex)
         {

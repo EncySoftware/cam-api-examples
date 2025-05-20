@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200mm" height="200mm">
+  <!-- Outer flange circle -->
+  <circle cx="100" cy="100" r="80" stroke="#00BFFF" stroke-width="2" fill="none" />
+
+  <!-- Inner hole -->
+  <circle cx="100" cy="100" r="30" stroke="#00BFFF" stroke-width="2" fill="none" />
+
+  <!-- Holes along the circumference (6 total) -->
+  <circle cx="100" cy="20" r="5" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+  <circle cx="164.64" cy="50" r="5" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+  <circle cx="164.64" cy="150" r="5" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+  <circle cx="100" cy="180" r="5" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+  <circle cx="35.36" cy="150" r="5" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+  <circle cx="35.36" cy="50" r="5" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+
+  <!-- Central axis lines -->
+  <line x1="0" y1="100" x2="200" y2="100" stroke="#C0C0C0" stroke-width="1" stroke-dasharray="4 2" />
+  <line x1="100" y1="0" x2="100" y2="200" stroke="#C0C0C0" stroke-width="1" stroke-dasharray="4 2" />
+
+  <!-- Fastening surface indicated by ellipse (visually resembles a raised rim) -->
+  <ellipse cx="100" cy="100" rx="55" ry="10" stroke="#00BFFF" stroke-width="1.5" fill="none" />
+
+  <!-- Surface indicator with a rectangle -->
+  <rect x="85" y="10" width="30" height="5" stroke="#00BFFF" stroke-width="1" fill="none" />
+
+  <!-- Custom cutout indicated by polygon -->
+  <polygon points="90,120 110,120 100,140" stroke="#00BFFF" stroke-width="1" fill="none" />
+</svg>

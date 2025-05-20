@@ -1,0 +1,18 @@
+{
+    "name": "Extension to convert geometry CLData on C#",
+    "description": "Extension to convert geometry CLData on C#",
+    "module_path": "${extensionJsonFolder}/ExtensionGeomCLDataConverterNet.dll",
+    "extensions": [
+        {
+            "geom_cldata_converter": {
+                "name": "Empty extension on C#",
+                "caption": "Empty extension on C#",
+                "id": "Extension.GeomCLDataConverter.Simple.Net",
+                "filterOperationTypes": {
+                    "filter_type": "exact",
+                    "operation_types": ["TSimpleOp"]
+                }
+            }
+        }
+    ]
+}

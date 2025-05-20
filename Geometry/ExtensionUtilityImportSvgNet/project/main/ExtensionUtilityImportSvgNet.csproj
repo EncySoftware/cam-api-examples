@@ -6,10 +6,11 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <OutDir>bin\$(Configuration)\</OutDir>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
+
+    <ItemGroup>
+      <PackageReference Include="Svg" Version="3.4.7" />
+      <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
   </ItemGroup>
 </Project>
