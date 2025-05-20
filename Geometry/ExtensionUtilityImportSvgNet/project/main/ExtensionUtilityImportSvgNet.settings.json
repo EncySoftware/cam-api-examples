@@ -1,0 +1,13 @@
+{
+    "name": "Import SVG",
+    "description": "Import SVG",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityImportSvgNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Import SVG",
+                "id": "Extension.Utility.Geometry.Importer.Svg.Net"
+            }
+        }
+    ]
+}

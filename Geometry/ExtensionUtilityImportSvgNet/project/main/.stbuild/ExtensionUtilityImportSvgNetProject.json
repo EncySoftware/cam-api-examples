@@ -1,0 +1,9 @@
+{
+	"type": "CSharp",
+	"project_path": "../ExtensionUtilityImportSvgNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"*.json"
+	]
+}

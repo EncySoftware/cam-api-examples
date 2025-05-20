@@ -69,7 +69,7 @@ public class ExtensionOperationSimpleNet :
         try
         {
             // read params
-            using var xmlPropCom = new ComWrapper<IST_XMLPropPointer>(techOperation.XMLProp);
+            using var xmlPropCom = ComWrapper.Create(techOperation.XMLProp);
             var xmlProp = xmlPropCom.Instance
                 ?? throw new Exception("Can't get XML properties");
             var pattern = xmlProp.Int["ToolpathParams.Pattern"];
@@ -96,6 +96,7 @@ public class ExtensionOperationSimpleNet :
                 lastPoint = makeOneLayer(startZ + i * stepZ);
             
             // go to start point
+            cldFormer.AddComment("Go to start point");
             cldFormer.OutStandardFeed((int)TFeedTypeFlag.affRapid);
             lastPoint.Z = startZ + stepZ;
             cldFormer.CutTo(lastPoint);

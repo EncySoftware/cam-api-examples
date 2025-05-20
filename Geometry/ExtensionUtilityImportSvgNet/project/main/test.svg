@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Rectangle: Blue border -->
+  <rect x="10" y="10" width="100" height="50" fill="#000000" stroke="#00BFFF" stroke-width="20"/>
+
+  <!-- Circle: Orange border -->
+  <circle cx="160" cy="35" r="25" fill="#000000" stroke="#FFA500" stroke-width="2"/>
+
+  <!-- Ellipse: Light green border -->
+  <ellipse cx="250" cy="35" rx="40" ry="25" fill="#000000" stroke="#90EE90" stroke-width="2"/>
+
+  <!-- Line: Red -->
+  <line x1="10" y1="100" x2="390" y2="100" stroke="#FF0000" stroke-width="2"/>
+
+  <!-- Triangle: Purple border -->
+  <polygon points="300,150 350,120 380,170" fill="#000000" stroke="#800080" stroke-width="2"/>
+
+  <!-- Path for ParsePath test >
+  <path d="M 50 150 L 100 180 L 150 150 Z" fill="none" stroke="#008000" stroke-width="2"/-->
+
+  <!-- Bézier curve -->
+  <path d="M 50 180 C 100 100, 200 260, 250 180" fill="none" stroke="#0000FF" stroke-width="2"/>
+
+</svg>

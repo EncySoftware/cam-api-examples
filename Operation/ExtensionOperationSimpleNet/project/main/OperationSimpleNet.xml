@@ -59,14 +59,6 @@
             </SupportedApplications>
         </CustomizedMachiningApplications>
 
-        <ConditionsSection>
-            <!-- <Feeds Transparent="NOT [UseMWFeeds]" Visible="NOT [UseMWFeeds]">
-                <ReturnFeed>
-                    <SCType ID="RapidReturn" Caption="Return on the rapid feed" type="Boolean" DefaultValue="False"/>
-                </ReturnFeed>
-            </Feeds> -->
-        </ConditionsSection>
-
         <ToolSection>
             <SupportedToolTypes>
                 <EndMill Enabled="True"/>
@@ -98,6 +90,7 @@
             <SimulationType DefaultValue="Painting"/>
         </Simulation>
 
+        <!-- Parameters to be edited on 'Strategy' panel -->
         <SCType ID="ToolpathParams" Caption="Toolpath pattern" type="ComplexType" Compact="True">
             <SCType ID="Pattern" Caption="Pattern" type="Enumerated" DefaultValue="Rect">
                 <SCType ID="Rect" Caption="Rectangle" type="None"/>
