@@ -32,7 +32,7 @@ public class ExtensionFactory : IExtensionFactory
     /// </param>
     /// <param name="ret">Error to return it, because throw exception will not work</param>
     /// <returns>Instance of out extension</returns>
-    public IExtension Create(string extensionIdent, out TResultStatus ret)
+    public IExtension? Create(string extensionIdent, out TResultStatus ret)
     {
         try
         {

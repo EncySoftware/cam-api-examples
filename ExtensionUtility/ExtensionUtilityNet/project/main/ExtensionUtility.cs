@@ -1,8 +1,8 @@
 ﻿using CAMAPI.Application;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
-using CAMAPI.Singletons;
 using CAMAPI.DotnetHelper;
+using CAMAPI.UIDialogs.DotnetHelper;
 
 namespace ExtensionUtilityNet;
 
@@ -25,17 +25,23 @@ public class ExtensionUtility : IExtension, IExtensionUtility
         
         try
         {
-            // get global context
-            using var pathsCom = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
-            var paths = pathsCom.Instance
-                ?? throw new Exception("Paths singleton not found");
+            // select output file
+            using var dialogsHelperCom = UIDialogs.CreateHelper();
+            var exportedFolder = dialogsHelperCom.Invoke(helper =>
+            {
+                var result = string.Empty;
+                return helper.SelectFolderDialog("Select folder to export project", ref result)
+                    ? result
+                    : string.Empty;
+            });
+            if (string.IsNullOrEmpty(exportedFolder))
+                return;
             
             // export
-            using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
+            var exportedFile = Path.Combine(exportedFolder, "exported.stcp");
+            using var applicationCom = ComWrapper.Create(context.CamApplication);
             var application = applicationCom.Instance
-                ?? throw new Exception("Application not found");
-            
-            var exportedFile = Path.Combine(paths.MainProgramFolder, "exported.stcp");
+                              ?? throw new Exception("Application not found");
             application.ExportCurrentProject(exportedFile, true, out resultStatus);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error exporting project: " + resultStatus.Description);

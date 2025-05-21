@@ -2,27 +2,33 @@ using CAMAPI.Extension.PLM;
 
 namespace PLMIntegrarionExamples.Parameters;
 
+/// <summary>
+/// Represents the list of possible values for the login parameter in the PLM extension.
+/// </summary>
 public class PLMLoginParamListOfValues : IPLMLoginParamListOfValues
 {
+    /// <summary>
+    /// Gets the number of possible values for the login parameter in the collection.
+    /// </summary>
     public int Count => loginParamValues.Count;
 
-    public IPLMLoginParamValue this[int Index] => loginParamValues[Index];
+    /// <summary>
+    /// Gets the possible value for the login parameter at the specified index.
+    /// </summary>
+    /// <param name="index">The index of the parameter.</param>
+    /// <returns>The parameter at the specified index.</returns>
+    /// <exception cref="IndexOutOfRangeException">
+    /// Thrown if the index is out of range.
+    /// </exception>
+    public IPLMLoginParamValue this[int index] => loginParamValues[index];
 
-    public PLMLoginParamListOfValues()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PLMLoginParamListOfValues"/> class.
+    /// </summary>
+    public PLMLoginParamListOfValues(IEnumerable<IPLMLoginParamValue> paramValues)
     {
-        loginParamValues = new List<IPLMLoginParamValue>();
+        loginParamValues = paramValues.ToList();
     }
 
-    private List<IPLMLoginParamValue> loginParamValues;
-
-    public void Load(IEnumerable<TempParamValue>? paramValues)
-    {
-        if(paramValues is null) return;
-        
-        foreach (var param in paramValues)
-            loginParamValues.Add(new PLMLoginParamValue {
-                Value = param.Value,
-                DisplayName = param.DisplayName
-            });
-    }    
+    private List<IPLMLoginParamValue> loginParamValues;  
 }
