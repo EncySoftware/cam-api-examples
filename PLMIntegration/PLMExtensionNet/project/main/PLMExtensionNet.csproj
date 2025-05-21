@@ -10,6 +10,6 @@
     <OutDir>bin</OutDir>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1-dev.25" />
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
   </ItemGroup>
 </Project>

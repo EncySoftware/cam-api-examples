@@ -66,6 +66,7 @@ type
     function Get_SupportPostprocessorLoad: WordBool; safecall;
     function Get_SupportPostprocessorInsideMachineLoad: WordBool; safecall;
     function Get_SupportToolLoad: WordBool; safecall;
+    function Get_SupportToolSave: WordBool; safecall;
     function Get_SupportDomainAuth: WordBool; safecall;
 
     function Get_Info: IExtensionInfo; safecall;
@@ -404,6 +405,11 @@ end;
 function TTestPLMInterface.Get_SupportToolLoad: WordBool;
 begin
   result := true;
+end;
+
+function TTestPLMInterface.Get_SupportToolSave: WordBool;
+begin
+  result := false;
 end;
 
 end.
