@@ -69,25 +69,15 @@ internal class ToolMenuItemClickHandler : ICamApiTechnologyFormOperationPopupIte
             // Get tool of this operation
             using var tool = ComWrapper.Create(operation.It.ToolEntity);
 
-            // Get ExtensionManager to ask Application instance
-            using var extensionManager = ExtensionManagerHelper.GetInstance();
-
-            // Ask Application from ExtensionManager
-            using var appGetter = ComWrapper.Create(extensionManager.It.GetSingletonExtension("Extension.Global.Singletons.Application", out resultStatus) as ICamApiApplicationSingleton);
-            using var app = ComWrapper.Create(appGetter.It.GetApplication(out resultStatus));
-
-            // Get attributes manager to ask for attributes of the Tool
-            using var manager = ComWrapper.Create(app.It.AttributesManager);
-
-            // Check the user created example library before we ask for attributes from this library
-            if (!LibraryChecker.CheckIsExampleLibraryAttached(manager.It)) 
-                return;
-
             // Cast tool to ICamApiObjectWithAttributes to get the attributes tree
             var toolObj = (ICamApiObjectWithAttributes)tool.It;
 
+            // Check the user created example library before we ask for attributes from this library
+            if (!LibraryChecker.CheckIsExampleLibraryAttached(toolObj)) 
+                return;
+
             // Attributes tree is an exploded tree of attributes INSTANCES copied from attributes TYPES described in the library
-            using var toolAttributesTree = ComWrapper.Create(manager.It.GetAttributesForObject(toolObj));
+            using var toolAttributesTree = ComWrapper.Create(toolObj.Attributes);
 
             // Using the attributes tree we can view and modify values of attributes asking them by name or by TypeID.
             // For example we created "Initialized" boolean attribute before in our example library.

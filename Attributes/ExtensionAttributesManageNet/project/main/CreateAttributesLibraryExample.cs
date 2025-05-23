@@ -322,9 +322,9 @@ internal class CreateLibraryExample : IExtension, IExtensionUtility
             var aArr = arw.It;
             aArr.Name = "Components";
             aArr.TypeCategoryID = toolCategory.TypeID;
-            // We are defining DefaultTypeID to be possible to change count of components inside the assembly 
+            // We are defining DefaultAttributeType to be possible to change count of components inside the assembly 
             // with just changing the Count property programmatically or by user in edit window.
-            aArr.DefaultTypeID = toolComponentCategory.TypeID;  
+            aArr.DefaultAttributeType = toolComponentCategory;  
             // Wa also make a limit what types the array can contain.
             aArr.AddItemAt(Guid.Empty, toolComponentCategory.TypeID, -1);
             lib.Attributes.AddAttribute(aArr);

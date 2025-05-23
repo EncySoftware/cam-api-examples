@@ -32,19 +32,16 @@ internal class ShowProjectAttributesExample : IExtension, IExtensionUtility
             // Get application
             using var app = ComWrapper.Create(context.CamApplication);
 
-            // Get attributes manager to ask for attributes of the application
-            using var manager = ComWrapper.Create(app.It.AttributesManager);
-
-            // Check the user created example library before we ask for attributes from this library
-            if (!LibraryChecker.CheckIsExampleLibraryAttached(manager.It)) 
-                return;
-
             // Get active project from the application and cast it to object with attributes to be possible to ask them.
             using var prj = ComWrapper.Create(app.It.GetActiveProject(out resultStatus));
             var prjObj = (ICamApiObjectWithAttributes)prj.It;
 
+            // Check the user created example library before we ask for attributes from this library
+            if (!LibraryChecker.CheckIsExampleLibraryAttached(prjObj)) 
+                return;
+
             // Attributes tree is an exploded tree of attributes INSTANCES copied from attributes TYPES described in the library
-            using var prjAttributesTree = ComWrapper.Create(manager.It.GetAttributesForObject(prjObj));
+            using var prjAttributesTree = ComWrapper.Create(prjObj.Attributes);
 
             // Using the attributes tree we can view and modify values of attributes asking them by name or by TypeID.
             // We will use a "full name" of the attribute. Full name - is divided by "." symbol set of names of attribute nodes we
@@ -54,7 +51,7 @@ internal class ShowProjectAttributesExample : IExtension, IExtensionUtility
             if (string.IsNullOrEmpty(prjAttributesTree.It.Str.Value["My Project attributes.External project ID"]))
             {
                 // Get attributes of the application
-                using var appAttributesTree = ComWrapper.Create(manager.It.GetAttributesForObject((ICamApiObjectWithAttributes)app.It));
+                using var appAttributesTree = ComWrapper.Create(((ICamApiObjectWithAttributes)app.It).Attributes);
 
                 // Generate new ID for the project
                 prjAttributesTree.It.Str.Value["My Project attributes.External project ID"] = Guid.NewGuid().ToString();
