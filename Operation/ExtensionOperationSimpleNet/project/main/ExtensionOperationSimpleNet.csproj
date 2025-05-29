@@ -13,4 +13,13 @@
   <ItemGroup>
     <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="OperationSimpleNet.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ExtensionOperationSimpleNet.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

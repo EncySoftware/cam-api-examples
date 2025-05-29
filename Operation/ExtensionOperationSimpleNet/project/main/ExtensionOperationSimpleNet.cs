@@ -59,7 +59,7 @@ public class ExtensionOperationSimpleNet :
     private delegate TST3DPoint MakeOneLayer(double valueZ);
 
     /// <summary>
-    /// ake simple work path according to operation params
+    /// Make simple work path according to operation params
     /// </summary>
     public void MakeWorkPath(ICamApiCLDReceiver cldFormer,
         ICamApiTechOperation techOperation,
@@ -68,6 +68,11 @@ public class ExtensionOperationSimpleNet :
         resultStatus = default;
         try
         {
+            // logging object
+            using var loggerCom = ExtensionManagerHelper.GetInstance().InvokeAndWrap(manager => manager.Logger);
+            var logger = loggerCom.Instance
+                ?? throw new Exception("Can't get logger instance");
+            
             // read params
             using var xmlPropCom = ComWrapper.Create(techOperation.XMLProp);
             var xmlProp = xmlPropCom.Instance
@@ -76,6 +81,7 @@ public class ExtensionOperationSimpleNet :
             var layersCount = xmlProp.Int["ToolpathParams.ZLayers.Count"];
             var startZ = xmlProp.Flt["ToolpathParams.ZLayers.ZStart"];
             var stepZ = xmlProp.Flt["ToolpathParams.ZLayers.ZStep"];
+            cldFormer.AddComment("Go to start point");
             
             // get method to create one layer
             var makeOneLayer = pattern switch
@@ -87,8 +93,7 @@ public class ExtensionOperationSimpleNet :
                 // unknown
                 _ => null
             };
-            if (makeOneLayer == null)
-                return;
+            logger.Info($"Make work path with pattern: {pattern} Operation: {techOperation.Name}");
             
             // make layers
             var lastPoint = default(TST3DPoint);
@@ -96,7 +101,6 @@ public class ExtensionOperationSimpleNet :
                 lastPoint = makeOneLayer(startZ + i * stepZ);
             
             // go to start point
-            cldFormer.AddComment("Go to start point");
             cldFormer.OutStandardFeed((int)TFeedTypeFlag.affRapid);
             lastPoint.Z = startZ + stepZ;
             cldFormer.CutTo(lastPoint);
