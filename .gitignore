@@ -84,3 +84,4 @@ modules/
 *.vcxproj.user
 
 *.res
+*.user
