@@ -1,33 +1,22 @@
 ﻿using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using CAMAPI.Extensions;
-using CAMAPI.Logger;
 using STTypes;
 using Svg;
 using Svg.Pathing;
 
-namespace ExtensionUtilityImportSvgNet;
+namespace AddinImportSvgNet;
 
 /// <summary>
-/// Utility to import from SVG. Calls callbacks
+/// Addin to import from SVG. Calls callbacks
 /// </summary>
 public class SvgToCamConverter
 {
-    private readonly IExtensionLogger _logger;
     private static int _entityId;
-
-    /// <summary>
-    /// Utility to import from SVG. Calls callbacks
-    /// </summary>
-    public SvgToCamConverter(IExtensionLogger logger)
-    {
-        _logger = logger;
-    }
     
     private void NotifyError(string message)
     {
-        _logger.Notify(TLogEventType.leError, message, "Import SVG");
+        //
     }
 
     /// <summary>
@@ -92,6 +81,7 @@ public class SvgToCamConverter
                 callbacks.OnLineTo?.Invoke(end);
                 callbacks.OnClosePath?.Invoke(true);
             }
+                // не замыкаем
                 break;
             
             case SvgRectangle rect:
