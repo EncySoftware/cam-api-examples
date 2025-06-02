@@ -6,15 +6,19 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>ExtensionNetProject</RootNamespace>
     <OutDir>bin\$(Configuration)\</OutDir>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <None Update="ExtensionGeomCLDataConverterNet.settings.json">
+    <None Update="OperationParamsNet.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="ExtensionOperationParamsNet.settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

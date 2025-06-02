@@ -1,0 +1,14 @@
+{
+    "name": "Operation by C# extension with setting params",
+    "description": "Extension to calculate tool path by C#",
+    "module_path": "${extensionJsonFolder}/ExtensionOperationParamsNet.dll",
+    "extensions": [
+        {
+            "OperationSolver": {
+                "name": "Operation by C# extension with setting params",
+                "caption": "Operation by C# extension with setting params",
+                "id": "Extension.Operation.Params.Net"
+            }
+        }
+    ]
+}

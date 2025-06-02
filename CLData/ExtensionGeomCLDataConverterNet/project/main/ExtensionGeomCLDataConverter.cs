@@ -1,4 +1,5 @@
-﻿using CAMAPI.Extensions;
+﻿using CAMAPI.DotnetHelper;
+using CAMAPI.Extensions;
 using CAMAPI.MCDFormerTypes;
 using CAMAPI.ResultStatus;
 using CAMAPI.TechOperation;
@@ -28,7 +29,7 @@ public class ExtensionGeomClDataConverter : IExtension, IExtensionGeomCLDataConv
             if (receiver == null)
                 throw new Exception("Receiver is null");
             
-            _wrapper = new CLDReceiverWrapperLogger(receiver);
+            _wrapper = new CLDReceiverWrapperCustom(receiver);
             return _wrapper;
         }
         catch (Exception e)

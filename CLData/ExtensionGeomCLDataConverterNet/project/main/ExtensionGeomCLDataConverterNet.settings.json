@@ -10,7 +10,7 @@
                 "id": "Extension.GeomCLDataConverter.Simple.Net",
                 "filterOperationTypes": {
                     "filter_type": "exact",
-                    "operation_types": ["TSimpleOp"]
+                    "operation_types": ["TST2DContouringOp"]
                 }
             }
         }

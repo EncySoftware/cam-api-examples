@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<SCCollection>
+    <SCNameSpace ID="OperationRegistrator">
+        <SCType ID="RegTOperationWithParamsNetOP" type="TRegisterOperationRecord" Enabled="True">
+            <TypeName DefaultValue="TOperationWithParamsNetOP"/>
+        </SCType>
+    </SCNameSpace>
+
+    <SCType ID="TOperationWithParamsNetOP" Caption="Operation .NET with params" type="TSTMillExtensionOp" Enabled = "True">
+        <GUID DefaultValue="{A6A942F3-E335-4D40-AC35-87819FA9A70A}"/>
+        <SolverID DefaultValue="Extension.Operation.Params.Net"/>
+
+        <!-- Header -->
+        <Name DefaultValue="Operation .NET with params"/>
+        <Comment DefaultValue="Operation .NET with params"/>
+        <Image DefaultValue="$(SUPPLEMENT_FOLDER)\operations\MillOperations\Images\Knife5D.bmp"/>
+        <Icon DefaultValue="$(SUPPLEMENT_FOLDER)\operations\MillOperations\Images\Knife5DIcon.bmp"/>
+        <Video DefaultValue="$(SUPPLEMENT_FOLDER)\operations\MillOperations\Video\Knife5D.wmv"/>
+        <OperationGroup DefaultValue="Mill"/>
+        <MultiGroup>
+            <SCType ID="Spray" OrderInGroup="10" type="TLinkToParentMultiGroup"/>
+        </MultiGroup>
+        <RestMode DefaultValue="Off"/>
+        <OperationConfiguration>
+            <Conf_Free DefaultValue="True"/>
+            <Conf_2D DefaultValue="True"/>
+            <Conf_25D DefaultValue="True"/>
+            <Conf_3D DefaultValue="True"/>
+            <Conf_3AD DefaultValue="True"/>
+            <Conf_MW DefaultValue="True"/>
+            <Conf_4D DefaultValue="True"/>
+            <Conf_5D DefaultValue="True"/>
+            <Conf_5DA DefaultValue="True"/>
+        </OperationConfiguration>
+
+        <CheckedGeometry Enabled="False"/>
+        <FeedSwitchLevel Enabled="True">
+            <ReferenceType DefaultValue="PercentDTool">
+                <Percent Enabled="False"/>
+            </ReferenceType>
+        </FeedSwitchLevel>
+        <LinksPlaceHolder Enabled="False"/>
+        <LeadsPlaceHolder Enabled="False"/>
+        <Tolerances Enabled="False"/>
+        <Stock Enabled="False"/>
+
+        <CustomizedMachiningApplications>
+            <SupportedApplications>
+                <MillTool DefaultValue="true"/>
+                <LatheCutter DefaultValue="false"/>
+                <JetCutter DefaultValue="false"/>
+                <Punch DefaultValue="true"/>
+                <Wire DefaultValue="false"/>
+                <Cutter6D DefaultValue="true"/>
+                <Welder DefaultValue="false"/>
+                <AdditiveTool DefaultValue="false"/>
+                <HeatTreatment DefaultValue="false"/>
+                <Painter DefaultValue="true"/>
+            </SupportedApplications>
+        </CustomizedMachiningApplications>
+
+        <ToolSection>
+            <SupportedToolTypes>
+                <EndMill Enabled="True"/>
+                <Spherical Enabled="True"/>
+                <Torus Enabled="True"/>
+                <DblRadius Enabled="True"/>
+                <TrimDblRadius Enabled="True"/>
+                <Angle Enabled="True"/>
+                <TrimAngle Enabled="True"/>
+                <Grooving Enabled="True"/>
+                <Drill Enabled="False"/>
+                <Complex Enabled="False"/>
+                <NegativeRad Enabled="True"/>
+                <Cutter Enabled="False"/>
+                <Tap Enabled="False"/>
+                <CenterDrill Enabled="False"/>
+                <CounterSink Enabled="False"/>
+                <CounterBore Enabled="False"/>
+                <Reamer Enabled="False"/>
+                <ThreadMill Enabled="False"/>
+                <CustomMill Enabled="True"/>
+                <UndercutTool Enabled="True"/>
+                <KnifeTool Enabled="true"/>
+                <Spray Enabled="True"/>
+            </SupportedToolTypes>
+        </ToolSection>
+
+        <Simulation>
+            <SimulationType DefaultValue="Painting"/>
+        </Simulation>
+
+        <!-- Parameters to be edited on 'Strategy' panel -->
+        <SCType ID="MFTabsInfo" Type="ComplexType" Enabled="False" ReadOnly="True">
+            <SCType ID="Common" Type="TMFTabInfo">
+                <CustomFormName DefaultValue="ExtOpParametersForm"/>
+            </SCType>
+        </SCType>
+
+        <!-- Storage for custom parameters -->
+        <SCType ID="CustomOperationPropertiesArray" Caption="Custom operation properties"
+                CollectionKeyField="Name"
+                CollectionValueField="Value"
+                type="Array" Enabled="True" Visible="False"
+        >
+            <SCType ID="CustomOperationProperty" Caption="Custom operation property" type="ComplexType">
+                <SCType ID="Name" Caption="Name" type="String" Enabled="True"/>
+                <SCType ID="Value" Caption="Value" type="String" Enabled="True"/>
+            </SCType>
+        </SCType>
+    </SCType>
+
+</SCCollection>
