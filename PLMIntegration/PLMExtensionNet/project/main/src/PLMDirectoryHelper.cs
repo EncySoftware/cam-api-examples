@@ -66,9 +66,31 @@ public class PLMDirectoryHelper
         if (!File.Exists(sourceFilePath))
             throw new FileNotFoundException($"Source file not found: {sourceFilePath}");
 
-        var targetDir = FindSubdirectoryByExactName(targetDirectoryName);
-        if (!Directory.Exists(targetDir))
-            throw new DirectoryNotFoundException($"Target directory '{targetDirectoryName}' not found.");
+        var parts = targetDirectoryName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        string targetDir = _basePath;
+        if (!string.IsNullOrEmpty(parts[0]))
+        {
+            targetDir = FindSubdirectoryByExactName(parts[0]);
+            if (!Directory.Exists(targetDir))
+                throw new DirectoryNotFoundException($"Target directory '{targetDirectoryName}' not found.");
+        }
+
+        try
+            {
+                if (parts.Length > 1)
+                {
+                    targetDir = Path.Combine(targetDir, Path.GetFileNameWithoutExtension(sourceFilePath));
+                    if (!Directory.Exists(targetDir))
+                    {
+                        Directory.CreateDirectory(targetDir);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Cannot create directory {targetDir}: {ex.Message}.");
+            }
 
         try
         {

@@ -4,6 +4,9 @@ using PLMIntegrarionExamples.Common;
 using PLMIntegrarionExamples.Tree;
 using CAMAPI.Extensions;
 using CAMAPI.Extension.PLM;
+using CAMAPI.UIDialogs;
+using CAMAPI.UIDialogs.DotnetHelper;
+using System.Reflection;
 
 namespace PLMIntegrarionExamples;
 
@@ -30,7 +33,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     /// <summary>
     /// Gets a value indicating whether this PLM extension supports working with postproccesors inside machines.
     /// </summary>
-    public bool SupportPostprocessorInsideMachineLoad { get => true; }
+    public bool SupportPostprocessorInsideMachineLoad { get => false; }
 
     /// <summary>
     /// Gets a value indicating whether this PLM extension supports loading tools.
@@ -59,12 +62,17 @@ class PLMExtensionNet : IExtensionPLM, IExtension
 
     private PLMDirectoryHelper? toolsDirectoryHelper;
 
+    private const string emptyElementId = "EmptyElementId";
+
+    private readonly string defaultDirectory;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PLMExtensionNet"/> class.
     /// </summary>
     public PLMExtensionNet()
     {
-        plmParams = new PLMParameters();
+        defaultDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\PLMData";
+        plmParams = new PLMParameters(defaultDirectory);
     }
 
     /// <summary>
@@ -97,14 +105,36 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         plmParams.SetParameterValues(values);
 
         var plmFolderPath = plmParams["PLMFolder"];
-        if (string.IsNullOrEmpty(plmFolderPath))
-            return new PLMResult {
-                Code = 1,
-                ErrorMessage = "PLM Folder parameter is empty"
-            };
 
         try
         {
+            if (plmFolderPath == defaultDirectory)
+            {
+                using var dialogsHelperCom = UIDialogs.CreateHelper();
+                var helper = dialogsHelperCom.Instance
+                    ?? throw new Exception("Failed to create UIDialogs helper");
+                // var buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btYes, TUIButtonType.btNo);
+                // var useDefaultPath = dialogsHelperCom.Invoke(helper =>
+                // {
+                //     return helper.MessageBox($"Parameter with the path to the PLM folder was not set.\nDo you want to use the default path:\n\"{defaultDirectory}\"?",
+                //         TMessageDialogType.mdtInformation, buttons, TUIButtonType.btYes, "");
+                // });
+
+                // if (useDefaultPath == TUIButtonType.btNo)
+                // {
+                //     return new PLMResult {
+                //         Code = 1,
+                //         ErrorMessage = "Please set the PLM Folder parameter in the Settings"
+                //     };
+                // }
+                var buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btOk);
+                dialogsHelperCom.Invoke(helper =>
+                {
+                    return helper.MessageBox($"Parameter with the path to the PLM folder was not set.\nDefault path will be used:\n\"{defaultDirectory}\".",
+                        TMessageDialogType.mdtInformation, buttons, TUIButtonType.btOk, "");
+                });
+            }
+
             var machDirName = Path.Combine(plmFolderPath, "Machines");
             machinesDirectoryHelper = new PLMDirectoryHelper(machDirName);
             var ppDirName = Path.Combine(plmFolderPath, "Postprocessors");
@@ -118,7 +148,8 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         }
         catch (Exception ex)
         {
-            return new PLMResult {
+            return new PLMResult
+            {
                 Code = 1,
                 ErrorMessage = $"An exception occured while connecting to PLM. Exception message: {ex.Message}"
             };
@@ -153,11 +184,11 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     /// <param name="itemId">The unique identifier of the item.</param>
     /// <param name="items">The output parameter containing the retrieved item.</param>
     /// <returns>An <see cref="IPLMResult"/> instance indicating the result of the operation.</returns>
-    public IPLMResult GetItem(TPLMItemType itemType, string itemId, out IPLMTree items)
+    public IPLMResult GetItem(TPLMItemType itemType, string itemId, out IPLMTree? items)
     {
         if (string.IsNullOrEmpty(itemId))
         {
-            items = new PLMTree();
+            items = null;
             return new PLMResult {
                 Code = 1,
                 ErrorMessage = "The item identificator is empty"
@@ -165,27 +196,30 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         }
         
         string[] directories;
-        switch (itemType)
-        {
-            case TPLMItemType.itMachine:
-                directories = [machinesDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
-                break;
-            case TPLMItemType.itPostprocessor:
-                directories = [postprocessorsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
-                break;
-            case TPLMItemType.itModel: case TPLMItemType.itWorkpiece:
-                directories = [modelsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
-                break;
-            case TPLMItemType.itProject:
-                directories = [projectsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
-                break;
-            case TPLMItemType.itTool:
-                directories = [toolsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
-                break;
-            default:
-                items = new PLMTree();
-                return ReturnSuccessfulResult();
-        }
+        if (itemId.Contains(emptyElementId))
+            directories = [];
+        else switch (itemType)
+            {
+                case TPLMItemType.itMachine:
+                    directories = [machinesDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
+                    break;
+                case TPLMItemType.itPostprocessor:
+                    directories = [postprocessorsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
+                    break;
+                case TPLMItemType.itModel:
+                case TPLMItemType.itWorkpiece:
+                    directories = [modelsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
+                    break;
+                case TPLMItemType.itProject:
+                    directories = [projectsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
+                    break;
+                case TPLMItemType.itTool:
+                    directories = [toolsDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
+                    break;
+                default:
+                    items = new PLMTree();
+                    return ReturnSuccessfulResult();
+            }
         
         items = GetPLMTree(itemType, directories);
         return ReturnSuccessfulResult();
@@ -199,32 +233,36 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     /// <param name="itemId">The unique identifier of the primary item.</param>
     /// <param name="items">The output parameter containing the linked item.</param>
     /// <returns>An <see cref="IPLMResult"/> instance indicating the result of the operation.</returns>
-    public IPLMResult GetLinkedItem(TPLMItemType itemType, TPLMItemType linkedItemType, string itemId, out IPLMTree items)
+    public IPLMResult GetLinkedItem(TPLMItemType itemType, TPLMItemType linkedItemType, string itemId, out IPLMTree? items)
     {
-        if (string.IsNullOrEmpty(itemId))
-        {
-            items = new PLMTree();
-            return new PLMResult {
-                Code = 1,
-                ErrorMessage = "The item identificator is empty"
-            };
-        }
-        
         if (string.IsNullOrEmpty(itemId) || itemType != TPLMItemType.itMachine || linkedItemType != TPLMItemType.itPostprocessor)
         {
-            items = new PLMTree();
+            items = null;
             return new PLMResult {
                 Code = 1,
                 ErrorMessage = $"Cannot retrieve linked item with type {linkedItemType} for item with type {itemType}"
             };
         }
-
-        string[] directories = [machinesDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
+        
+        string[] directories;
+        if (itemId.Contains(emptyElementId))
+            directories = [];
+        else
+            directories = [machinesDirectoryHelper?.FindSubdirectoryByExactName(itemId) ?? string.Empty];
         string postprocessorDir = string.Empty;
         foreach (var dir in directories)
             if (string.Equals(Path.GetFileName(dir), "Postprocessor"))
                 postprocessorDir = dir;
-        
+
+        if (string.IsNullOrEmpty(postprocessorDir))
+        {
+            items = null;
+            return new PLMResult {
+                Code = 1,
+                ErrorMessage = $"Cannot retrieve linked item for item with id {itemId}"
+            };            
+        }
+
         items = GetPLMTree(linkedItemType, [postprocessorDir]);
         return ReturnSuccessfulResult();
     }
@@ -236,51 +274,60 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     /// <param name="parentItemId">The unique identifier of the parent item.</param>
     /// <param name="items">The output parameter containing the retrieved child items.</param>
     /// <returns>An <see cref="IPLMResult"/> instance indicating the result of the operation.</returns>
-    public IPLMResult GetChilds(TPLMItemType itemType, string parentItemId, out IPLMTree items)
+    public IPLMResult GetChilds(TPLMItemType itemType, string parentItemId, out IPLMTree? items)
     {
         string[] directories;
+        var addNewElement = false;
         PLMDirectoryHelper? dirHelper;
         try
         {
-            switch (itemType)
+            if (string.IsNullOrEmpty(parentItemId) || !parentItemId.Contains(emptyElementId))
             {
-                case TPLMItemType.itMachine:
-                    dirHelper = machinesDirectoryHelper;
-                    break;
-                case TPLMItemType.itPostprocessor:
-                    dirHelper = postprocessorsDirectoryHelper;
-                    break;
-                case TPLMItemType.itModel: case TPLMItemType.itWorkpiece:
-                    dirHelper = modelsDirectoryHelper;
-                    break;
-                case TPLMItemType.itProject:
-                    dirHelper = projectsDirectoryHelper;
-                    break;
-                case TPLMItemType.itTool:
-                    dirHelper = toolsDirectoryHelper;
-                    break;
-                default:
-                    items = new PLMTree();
-                    return ReturnSuccessfulResult();
-            }
+                switch (itemType)
+                {
+                    case TPLMItemType.itMachine:
+                        dirHelper = machinesDirectoryHelper;
+                        break;
+                    case TPLMItemType.itPostprocessor:
+                        dirHelper = postprocessorsDirectoryHelper;
+                        break;
+                    case TPLMItemType.itModel:
+                    case TPLMItemType.itWorkpiece:
+                        dirHelper = modelsDirectoryHelper;
+                        break;
+                    case TPLMItemType.itProject:
+                        dirHelper = projectsDirectoryHelper;
+                        break;
+                    case TPLMItemType.itTool:
+                        dirHelper = toolsDirectoryHelper;
+                        break;
+                    default:
+                        items = new PLMTree();
+                        return ReturnSuccessfulResult();
+                }
+                var parentDir = dirHelper?.FindSubdirectoryByExactName(parentItemId) ?? string.Empty;
+                var parentDirType = GetDirectoryPLMItemType(itemType, parentDir);
+                if (parentDirType != TPLMItemType.itNone)
+                    directories = [];
+                else
+                    directories = dirHelper?.GetSubdirectories(parentItemId) ?? [];
 
-            var parentDir = dirHelper?.FindSubdirectoryByExactName(parentItemId) ?? string.Empty;
-            var parentDirType = GetDirectoryPLMItemType(itemType, parentDir);
-            if (parentDirType != TPLMItemType.itNone)
+                addNewElement = true;
+            }
+            else
                 directories = [];
-            else 
-                directories = dirHelper?.GetSubdirectories(parentItemId) ?? [];
         }
         catch (Exception ex)
         {
-            items = new PLMTree();
-            return new PLMResult {
+            items = null;
+            return new PLMResult
+            {
                 Code = 1,
                 ErrorMessage = $"An exception occured while getting items from PLM. Exception message: {ex.Message}"
             };
         }
         
-        items = GetPLMTree(itemType, directories);
+        items = GetPLMTree(itemType, directories, addNewElement, parentItemId);
         return ReturnSuccessfulResult();
     }
 
@@ -337,6 +384,9 @@ class PLMExtensionNet : IExtensionPLM, IExtension
             {
                 string? destFilePath;
                 string directory;
+                if (items[i].Id.Contains(emptyElementId))
+                    continue;
+                    
                 switch (items[i].Type)
                 {
                     case TPLMItemType.itMachine:
@@ -347,7 +397,8 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                         directory = machinesDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
                         destFilePath = postprocessorsDirectoryHelper?.CopyFilesFromPLMDirectory(items[i].Id, downloadPath).FirstOrDefault();
                         break;
-                    case TPLMItemType.itModel: case TPLMItemType.itWorkpiece:
+                    case TPLMItemType.itModel:
+                    case TPLMItemType.itWorkpiece:
                         directory = machinesDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
                         destFilePath = modelsDirectoryHelper?.CopyFilesFromPLMDirectory(items[i].Id, downloadPath).FirstOrDefault();
                         break;
@@ -599,7 +650,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         return result;
     }
 
-    private PLMTree GetPLMTree(TPLMItemType itemType, string[] directories)
+    private PLMTree GetPLMTree(TPLMItemType itemType, string[] directories, bool addNewElement = false, string parentItemId = "")
     {
         var plmTree = new PLMTree();
         foreach (var directory in directories)
@@ -608,6 +659,9 @@ class PLMExtensionNet : IExtensionPLM, IExtension
             var dirType = GetDirectoryPLMItemType(itemType, directory);
             plmTree.AddTreeItem(directoryName, directoryName, string.Empty, dirType);
         }
+
+        if (addNewElement)
+            plmTree.AddTreeItem($"{parentItemId}/{emptyElementId}", "New element", string.Empty, itemType);
 
         return plmTree;
     }
