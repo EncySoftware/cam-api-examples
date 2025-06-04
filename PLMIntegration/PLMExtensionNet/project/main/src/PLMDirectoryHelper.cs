@@ -51,6 +51,28 @@ public class PLMDirectoryHelper
 
         return Directory.GetDirectories(targetPath);
     }
+    
+    /// <summary>
+    /// Creates a new directory with the specified name in the given parent directory.
+    /// </summary>
+    /// <param name="parentDirectory">The parent directory where the new directory should be created.</param>
+    /// <param name="directoryName">The name of the new directory to create.</param>
+    /// <exception cref="DirectoryNotFoundException">Thrown if the specified parent directory does not exist under the base directory.</exception>
+    public void CreateDirectory(string parentDirectory, string directoryName)
+    {
+        string targetDir;
+        if (string.IsNullOrEmpty(parentDirectory))
+            targetDir = _basePath;
+        else
+        {
+            targetDir = FindSubdirectoryByExactName(parentDirectory);
+            if (!Directory.Exists(targetDir))
+                throw new DirectoryNotFoundException($"Target directory '{parentDirectory}' not found.");
+        }
+
+        string newDirectoryPath = Path.Combine(targetDir, directoryName);
+        Directory.CreateDirectory(newDirectoryPath);
+    }
 
     /// <summary>
     /// Copies a file or extracts a ZIP archive into a uniquely named subdirectory inside the base directory.
@@ -65,32 +87,10 @@ public class PLMDirectoryHelper
     {
         if (!File.Exists(sourceFilePath))
             throw new FileNotFoundException($"Source file not found: {sourceFilePath}");
-
-        var parts = targetDirectoryName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-
-        string targetDir = _basePath;
-        if (!string.IsNullOrEmpty(parts[0]))
-        {
-            targetDir = FindSubdirectoryByExactName(parts[0]);
-            if (!Directory.Exists(targetDir))
-                throw new DirectoryNotFoundException($"Target directory '{targetDirectoryName}' not found.");
-        }
-
-        try
-            {
-                if (parts.Length > 1)
-                {
-                    targetDir = Path.Combine(targetDir, Path.GetFileNameWithoutExtension(sourceFilePath));
-                    if (!Directory.Exists(targetDir))
-                    {
-                        Directory.CreateDirectory(targetDir);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Cannot create directory {targetDir}: {ex.Message}.");
-            }
+        
+        var targetDir = FindSubdirectoryByExactName(targetDirectoryName);
+        if (!Directory.Exists(targetDir))
+            throw new DirectoryNotFoundException($"Target directory '{targetDirectoryName}' not found.");
 
         try
         {

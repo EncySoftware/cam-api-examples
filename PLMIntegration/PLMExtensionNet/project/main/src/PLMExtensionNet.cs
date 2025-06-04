@@ -459,9 +459,20 @@ class PLMExtensionNet : IExtensionPLM, IExtension
             };
         }
 
+        if (itemId.Contains(emptyElementId))
+        {
+            dwnItems = new PLMDataItems();
+            prjStructItems = new PLMProjectStructItems();
+            return new PLMResult {
+                Code = 1,
+                ErrorMessage = "The item is empty"
+            };
+        }
+
         var copiedItems = new PLMDataItems();
         var structItems = new PLMProjectStructItems();
-        try 
+            
+        try
         {
             var dwnFiles = projectsDirectoryHelper?.CopyFilesFromPLMDirectory(itemId, downloadPath, false) ?? [];
 
@@ -479,7 +490,8 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         {
             dwnItems = new PLMDataItems();
             prjStructItems = new PLMProjectStructItems();
-            return new PLMResult {
+            return new PLMResult
+            {
                 Code = 1,
                 ErrorMessage = $"An exception occured while downloading project from PLM. Exception message: {ex.Message}"
             };
@@ -503,11 +515,17 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         {
             List<string> items = [];
             for (var i = 0; i < project.ProjectFiles.Count; i++)
-            {
                 items.Add(project.ProjectFiles[i].FileName);
+
+            var projectId = project.Id;
+            if (project.Id.Contains(emptyElementId))
+            {
+                projectId = $"Project_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}";
+                string parentPath = project.Id.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+                projectsDirectoryHelper?.CreateDirectory(parentPath, projectId);
             }
 
-            projectsDirectoryHelper?.CopyFilesToPLMDirectory(project.Id, items, replace);
+            projectsDirectoryHelper?.CopyFilesToPLMDirectory(projectId, items, replace);
 
             // List<IPLMOperation> operations = [];
             // for (var i = 0; i < project.OperationList.Count; i++)
@@ -563,13 +581,34 @@ class PLMExtensionNet : IExtensionPLM, IExtension
             switch (itemType)
             {
                 case TPLMItemType.itMachine:
-                    machinesDirectoryHelper?.CopyFileToPLMDirectory(files[0], itemId, replace);
+                    var machDirectory = itemId;
+                    if (itemId.Contains(emptyElementId))
+                    {
+                        string parentPath = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+                        machDirectory = Path.GetFileNameWithoutExtension(files[0]);
+                        machinesDirectoryHelper?.CreateDirectory(parentPath, machDirectory);
+                    }
+                    machinesDirectoryHelper?.CopyFileToPLMDirectory(files[0], machDirectory, replace);
                     break;
                 case TPLMItemType.itPostprocessor:
-                    postprocessorsDirectoryHelper?.CopyFileToPLMDirectory(files[0], itemId, replace);
+                    var ppDirectory = itemId;
+                    if (itemId.Contains(emptyElementId))
+                    {
+                        string parentPath = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+                        ppDirectory = Path.GetFileNameWithoutExtension(files[0]);
+                        postprocessorsDirectoryHelper?.CreateDirectory(parentPath, ppDirectory);
+                    }
+                    postprocessorsDirectoryHelper?.CopyFileToPLMDirectory(files[0], ppDirectory, replace);
                     break;
                 case TPLMItemType.itTool:
-                    toolsDirectoryHelper?.CopyFileToPLMDirectory(files[0], itemId, replace);
+                    var toolDirectory = itemId;
+                    if (itemId.Contains(emptyElementId))
+                    {
+                        string parentPath = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+                        toolDirectory = Path.GetFileNameWithoutExtension(files[0]);
+                        toolsDirectoryHelper?.CreateDirectory(parentPath, toolDirectory);
+                    }
+                    toolsDirectoryHelper?.CopyFileToPLMDirectory(files[0], toolDirectory, replace);
                     break;
                 default:
                     break;
