@@ -1,0 +1,39 @@
+g obj_pyramid
+
+#
+# object obj_pyramid
+#
+
+v 0.0 0.0 0.0    # v1 left-bottom-front (base)
+v 2.0 0.0 0.0    # v2 right-bottom-front (base)
+v 2.0 0.0 2.0    # v3 right-bottom-back (base)
+v 0.0 0.0 2.0    # v4 left-bottom-back (base)
+v 1.0 3.0 1.0    # v5 top vertex
+# 5 vertices
+
+vn 0 -1 0        # base normal (down)
+vn -1 1 0         # left-front normal
+vn 1 1 0          # right-front normal
+vn 1 1 0          # right-back normal
+vn -1 1 0         # left-back normal
+# 5 vertex normals
+
+s off
+
+# Base (Y=0)
+f 1//1 2//1 3//1
+f 1//1 3//1 4//1
+
+# Left-front face
+f 1//2 5//2 2//2
+
+# Right-front face
+f 2//3 5//3 3//3
+
+# Right-back face
+f 3//4 5//4 4//4
+
+# Left-back face
+f 4//5 5//5 1//5
+
+# 6 polygons (4 triangles for sides, 2 for base)
