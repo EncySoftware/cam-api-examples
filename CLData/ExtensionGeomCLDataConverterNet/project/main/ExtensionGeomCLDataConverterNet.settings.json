@@ -5,8 +5,6 @@
     "extensions": [
         {
             "geom_cldata_converter": {
-                "name": "Empty extension on C#",
-                "caption": "Empty extension on C#",
                 "id": "Extension.GeomCLDataConverter.Simple.Net",
                 "filterOperationTypes": {
                     "filter_type": "exact",

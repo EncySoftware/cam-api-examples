@@ -10,27 +10,50 @@ namespace ExtensionGeomCLDataConverterNet;
 /// </summary>
 public class CLDReceiverWrapperCustom : CLDRecevierWrapperDefault
 {
-    private readonly ComWrapper<IExtensionLogger> _logger;
+    /// <summary>
+    /// Value to increase Z-coordinate of points in CLData
+    /// </summary>
+    public static int IncreaseZValue = 20;
+    
+    private int _currentFeed = (int)TFeedTypeFlag.affWorking;
     
     /// <summary>
     /// Simple realization just to log commands
     /// </summary>
-    public CLDReceiverWrapperCustom(ICamApiCLDReceiver receiver) : base(receiver)
+    public CLDReceiverWrapperCustom(ICamApiCLDReceiver receiver) : base(receiver) { }
+    
+    public override void CutTo(TST3DPoint p)
     {
-        using var extensionManager = ExtensionManagerHelper.GetInstance();
-        _logger = extensionManager.InvokeAndWrap(manager => manager.Logger);
+        if (_currentFeed == (int)TFeedTypeFlag.affWorking)
+            p.Z += IncreaseZValue;
+        base.CutTo(p);
     }
     
-    public override void AddComment(string comment)
+    public override void OutStandardFeed(int feed)
     {
-        _logger.Invoke(logger => logger.Info(comment));
-        base.AddComment(comment);
+        _currentFeed = feed;
+        base.OutStandardFeed(feed);
     }
-
-    /// <inheritdoc />
-    public override void Dispose()
+    
+    public override void OutPercentFeed(int feed, double percent)
     {
-        _logger.Dispose();
-        base.Dispose();
+        _currentFeed = feed;
+        base.OutPercentFeed(feed, percent);
+    }
+    
+    public override void OutFeed(int feed, double value, bool mpm)
+    {
+        _currentFeed = feed;
+        base.OutFeed(feed, value, mpm);
+    }
+    
+    public override void ArcTo2d(TST3DPoint pe, TST3DPoint pc, TCLDPlaneType plane, double rc, bool canBeFull)
+    {
+        if (_currentFeed == (int)TFeedTypeFlag.affWorking)
+        {
+            pe.Z += IncreaseZValue;
+            pc.Z += IncreaseZValue;
+        }
+        base.ArcTo2d(pe, pc, plane, rc, canBeFull);
     }
 }

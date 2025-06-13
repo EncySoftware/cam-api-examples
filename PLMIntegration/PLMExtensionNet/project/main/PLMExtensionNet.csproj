@@ -9,7 +9,14 @@
     <RootNamespace>ExtensionNetProject</RootNamespace>
     <OutDir>bin</OutDir>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="PLMExtensionNet.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
