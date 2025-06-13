@@ -77,6 +77,7 @@ modules/
 **/.stbuild/.nuke/
 **/.stbuild/logs/
 **/.stbuild/temp/
+**/.stbuild/cache/
 **/SDK/
 **/Extensio.81a8bf9d/
 **/Extensio.2b4ac41b/

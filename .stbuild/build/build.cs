@@ -10,9 +10,12 @@ using BuildSystem.Builder.MsDelphi;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Cleaner.Common;
+using BuildSystem.HashGenerator.Common;
 using BuildSystem.Info;
 using BuildSystem.Loggers;
 using BuildSystem.Logging;
+using BuildSystem.ManagerObject.Interfaces;
+using BuildSystem.ProjectCache.Common;
 using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
 using BuildSystem.SettingsReader.Object;
@@ -161,6 +164,16 @@ public class Build : NukeBuild
                 new CleanerCommonProps
                 {
                     Name = "CleanerCommon"
+                },
+                new ProjectCacheCommonProps
+                {
+                    Name = "ProjectCacheCommon",
+                    TempDir = RootDirectory / "cache"
+                },
+                new HashGeneratorCommonProps
+                {
+                    Name = "HashGeneratorCommon",
+                    HashAlgorithmType = HashAlgorithmType.Sha256
                 }
             ]
         };
@@ -174,6 +187,10 @@ public class Build : NukeBuild
         settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
         settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
+        settings.ManagerNames.Add("project_cache", "Debug", "ProjectCacheCommon");
+        settings.ManagerNames.Add("project_cache", "Release", "ProjectCacheCommon");
+        settings.ManagerNames.Add("hash_generator", "Debug", "HashGeneratorCommon");
+        settings.ManagerNames.Add("hash_generator", "Release", "HashGeneratorCommon");
         
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
