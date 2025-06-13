@@ -91,7 +91,7 @@ public class Build : NukeBuild
                 Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeomCustomImportNet\project\main\.stbuild\ExtensionUtilityGeomCustomImportNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeometryImporterNet\project\main\.stbuild\ExtensionUtilityGeometryImporterNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeometryModelNet\project\main\.stbuild\ExtensionUtilityGeometryModelNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeomPickerNet\project\main\.stbuild\ExtensionUtilityGeomPickerNetProject.json"),
+                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeometryPickerNet\project\main\.stbuild\ExtensionUtilityGeometryPickerNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityImportSvgNet\project\main\.stbuild\ExtensionUtilityImportSvgNetProject.json"),
                 Path.Combine(RootDirectory.Parent, @"PLMIntegration\PLMExtensionDelphi\project\main\.stbuild\PLMExtensionDelphiProject.json"),
                 Path.Combine(RootDirectory.Parent, @"PLMIntegration\PLMExtensionNet\project\main\.stbuild\PLMExtensionNetProject.json"),
