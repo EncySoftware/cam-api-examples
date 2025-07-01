@@ -40,25 +40,19 @@ public class CamHelper : IDisposable
         
         // instance of main application - we should get it in the same thread
         var executeContext = new TExecuteContext();
-        _helper.Invoke(helper =>
+        using var instancesCom =
+            _helper.InvokeAndWrap(helper => helper.GetRunningCamAppList(ref executeContext));
+        if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
+            throw new Exception(executeContext.ResultStatus.Description);
+        
+        _application = instancesCom.InvokeAndWrap(instances =>
         {
-            if (helper == null)
-                throw new Exception("Can't get helper instance");
-            using var instancesCom = ComWrapper.Create(helper.GetRunningCamAppList(ref executeContext));
-            if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
-                throw new Exception(executeContext.ResultStatus.Description);
-            
-            instancesCom.Invoke(instances =>
-            {
-                if (instances == null)
-                    throw new Exception("Can't get running instances");
-                if (instances.Count == 0)
-                    throw new Exception("ENCY running instance not found");
-                _application = ComWrapper.Create(instances.Get(0, executeContext));
-                if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
-                    throw new Exception(executeContext.ResultStatus.Description);
-            });
+            if (instances.Count == 0)
+                throw new Exception("ENCY running instance not found");
+            return instances.Get(0, executeContext);
         });
+        if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
+            throw new Exception(executeContext.ResultStatus.Description);
     }
     
     /// <summary>
