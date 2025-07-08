@@ -33,9 +33,9 @@ public class PLMParameters : IPLMParameters
     /// <summary>
     /// Initializes a new instance of the <see cref="PLMParameters"/> class.
     /// </summary>
-    public PLMParameters()
+    public PLMParameters(string defaultDirectory)
     {
-        InitParameters();        
+        InitParameters(defaultDirectory);        
         ProjectPreview = new PLMProjectPreview();
         InitParameterValues();
     }
@@ -58,7 +58,7 @@ public class PLMParameters : IPLMParameters
     /// <returns>The parameter value as a string.</returns>
     public string this[string key] => GetParameterValue(key);
 
-    private void InitParameters()
+    private void InitParameters(string defaultDirectory)
     {
         var connectionParams = new List<PLMConnectionParameter>
         {
@@ -103,7 +103,7 @@ public class PLMParameters : IPLMParameters
             new() {
                 Id = "PLMFolder",
                 Name = "PLM Folder",
-                DefaultValue = string.Empty,
+                DefaultValue = defaultDirectory,
                 Order = 0
             }
         };

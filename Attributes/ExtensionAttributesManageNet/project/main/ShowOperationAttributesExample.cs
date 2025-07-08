@@ -7,6 +7,7 @@ using CAMAPI.UIDialogs;
 using CAMAPI.UIDialogs.DotnetHelper;
 using STCustomPropTypes;
 using CAMAPI.TechnologyForm;
+using System.Diagnostics;
 
 namespace ExtensionAttributesManageNet;
 
@@ -65,26 +66,18 @@ internal class OperationMenuItemClickHandler : ICamApiTechnologyFormOperationPop
         {
             // Get operation the user clicked on
             using var operation = ComWrapper.Create(context.SelectedOperation);
-
-            // Get ExtensionManager to ask Application instance
-            using var extensionManager = ExtensionManagerHelper.GetInstance();
-
-            // Ask Application from ExtensionManager
-            using var appGetter = ComWrapper.Create(extensionManager.It.GetSingletonExtension("Extension.Global.Singletons.Application", out resultStatus) as ICamApiApplicationSingleton);
-            using var app = ComWrapper.Create(appGetter.It.GetApplication(out resultStatus));
-
-            // Get attributes manager to ask for attributes of the Operation
-            using var manager = ComWrapper.Create(app.It.AttributesManager);
-
-            // Check the user created example library before we ask for attributes from this library
-            if (!LibraryChecker.CheckIsExampleLibraryAttached(manager.It)) 
-                return;
-
             // Cast operation to ICamApiObjectWithAttributes to get the attributes tree
             var operationObj = (ICamApiObjectWithAttributes)operation.It;
 
+            // Check the user created example library before we ask for attributes from this library
+            if (!LibraryChecker.CheckIsExampleLibraryAttached(operationObj)) 
+                return;
+
             // Attributes tree is an exploded tree of attributes INSTANCES copied from attributes TYPES described in the library
-            using var opAttributesTree = ComWrapper.Create(manager.It.GetAttributesForObject(operationObj));
+            using var opAttributesTree = ComWrapper.Create(operationObj.Attributes);
+
+            // Example of how to create and use attributes if you dont want to declare them in any library
+            AddUntypedAttributes(opAttributesTree);
 
             // Using the attributes tree we can view and modify values of attributes asking them by name or by TypeID.
             // We will use a "full name" of the attribute. Full name - is divided by "." symbol set of names of attribute nodes we
@@ -96,6 +89,7 @@ internal class OperationMenuItemClickHandler : ICamApiTechnologyFormOperationPop
 
             // We can use iterator to visit all nodes of the attributes tree
             using var attributesIterator = ComWrapper.Create(opAttributesTree.It.CreateIterator());
+            attributesIterator.It.HideUndefinedNodes = true;
   
             // Enumerate attributes in Debug console
             AttributesDescriber.Describe(attributesIterator.It);
@@ -115,4 +109,75 @@ internal class OperationMenuItemClickHandler : ICamApiTechnologyFormOperationPop
             resultStatus.Description = e.Message;
         }
     }
+
+    private static void AddUntypedAttributes(ComWrapper<ICamApiCustomAttributesTree> opAttributesTree)
+    {
+        // Explicit declaration of attributes in libraries is not a prerequisite for their use. 
+        // Attributes that are not explicitly declared in any libraries are called untyped.
+        // In other words, you can call a method named "CreateUntyped*" in an instance of an object 
+        // with attributes, configure the properties of the created attribute, and simply start using it.
+        
+        // If we already added untyped attributes, do nothing
+        if (opAttributesTree.It.HasNode("Untyped attributes")) 
+            return;
+
+        // Create a category of untyped attributes for beauty
+        using var rootNode = ComWrapper.Create(opAttributesTree.It.Root);
+        using var categoryAttribute = ComWrapper.Create(rootNode.It.CreateUntypedCategoryChild("Untyped attributes"));
+        using var category = ComWrapper.Create(opAttributesTree.It.FindNodeByName("Untyped attributes"));
+        // This message will appear in hint by the question mark.
+        categoryAttribute.It.Description = 
+          "Demonstartion of Untyped attributes usage. Attributes inside the category was not defined in any library. They are created on the fly.";
+
+        // Add some attribute to the category
+        using var commentsAttribute = ComWrapper.Create(category.It.CreateUntypedStringChild("Comments"));
+        // And then just use it
+        opAttributesTree.It.Str.Value["Untyped attributes.Comments"] = "Here you can comment the operation";
+
+        // After adding the attribute, you can adjust it.
+        using (var a = ComWrapper.Create(category.It.CreateUntypedIntegerChild("Priority"))) 
+        {
+            a.It.Restrictions = TAttributeValueRestriction.avrEnum;
+            a.It.EnumValues.AddValue(0, "Low");
+            a.It.EnumValues.AddValue(1, "Medium");
+            a.It.EnumValues.AddValue(2, "High");
+            a.It.EnumValues.AddValue(3, "Critical");
+        }
+        // And then just use it 
+        opAttributesTree.It.Int.Value["Untyped attributes.Priority"] = 1;
+
+        // You can mark attributes as read-only, for example, if the user does not need to change them.
+        using (var a = ComWrapper.Create(category.It.CreateUntypedBooleanChild("Mandatory"))) 
+        {
+            a.It.ReadOnly = true;
+        }
+        // And then just use it 
+        opAttributesTree.It.Bol.Value["Untyped attributes.Mandatory"] = true;
+
+        // You can make invisible attributes, for example, if the user does not need to know about them
+        using (var a = ComWrapper.Create(category.It.CreateUntypedIntegerChild("Invisible number"))) 
+        {
+            a.It.Visible = false;
+        }
+        // But you still can use them
+        opAttributesTree.It.Int.Value["Untyped attributes.Invisible number"] = 12345;
+        opAttributesTree.It.Int.Value["Untyped attributes.Invisible number"] = 2*opAttributesTree.It.Int.Value["Untyped attributes.Invisible number"];
+
+        // You can make arrays of attributes
+        using var arrAtr = ComWrapper.Create(category.It.CreateUntypedArrayChild("Depth per pass"));
+        using var arr = ComWrapper.Create(opAttributesTree.It.FindNodeByName("Untyped attributes.Depth per pass"));
+        double depth = 0;
+        for (var i = 0; i < 4; i++)
+        {
+            depth = Math.Sqrt(1/(double)(i+1))*1.5 + depth;
+            using var ch =  ComWrapper.Create(arr.It.CreateUntypedFloatChild("Depth step"));
+            // We should define default attribute type if we want to allow the user to be able to create new attributes 
+            // of this type in the inspector window by changing the count of attributes
+            if (i==1)
+                arrAtr.It.DefaultAttributeType = ch.It;
+            // Otherwise we can just use it 
+            opAttributesTree.It.Flt.Value[$"Untyped attributes.Depth per pass({i})"] = depth;
+        }
+    }
+
 }

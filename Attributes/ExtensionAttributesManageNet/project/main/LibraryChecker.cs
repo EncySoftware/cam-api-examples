@@ -36,9 +36,10 @@ internal static class LibraryChecker
     /// <summary>
     /// Show message if user didnt create example attributes library before.
     /// </summary>
-    public static bool CheckIsExampleLibraryAttached(ICamApiCustomAttributesManager manager)
+    public static bool CheckIsExampleLibraryAttached(ICamApiObjectWithAttributes objectWithAttributes)
     {
-        var res = IsLibrarAttached(manager);
+        using var manager = ComWrapper.Create(objectWithAttributes.AttributesManager); 
+        var res = IsLibrarAttached(manager.It);
         if (!res)
         {
             using var dialogs = UIDialogs.CreateHelper();

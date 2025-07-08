@@ -2,6 +2,7 @@
     "name": "Attributes usage examples",
     "description": "Demonstrates ho to use custom attributes of different objects of CAM",
     "module_path": "${extensionJsonFolder}/ExtensionAttributesManageNet.dll",
+    "unload_mode": "umJustAfterExecution",
     "extensions": [
         {
             "utility": {

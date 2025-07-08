@@ -30,17 +30,14 @@ internal class ShowApplicationAttributesExample : IExtension, IExtensionUtility
             
             // Get application
             using var app = ComWrapper.Create(context.CamApplication);
+            var appObj = (ICamApiObjectWithAttributes)app.It;
             
-            // Get attributes manager to ask for attributes of the application
-            using var manager = ComWrapper.Create(app.It.AttributesManager);
-
             // Check the user created example library before we ask for attributes from this library
-            if (!LibraryChecker.CheckIsExampleLibraryAttached(manager.It)) 
+            if (!LibraryChecker.CheckIsExampleLibraryAttached(appObj)) 
                 return;
 
             // Attributes tree is an exploded tree of attributes INSTANCES copied from attributes TYPES described in the library
-            var appObj = (ICamApiObjectWithAttributes)app.It;
-            using var appAttributesTree = ComWrapper.Create(manager.It.GetAttributesForObject(appObj));
+            using var appAttributesTree = ComWrapper.Create(appObj.Attributes);
 
             var allCorrect = false;
             do
