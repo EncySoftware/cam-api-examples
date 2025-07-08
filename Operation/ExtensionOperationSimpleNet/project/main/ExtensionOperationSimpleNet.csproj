@@ -6,12 +6,11 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RootNamespace>ExtensionNetProject</RootNamespace>
     <OutDir>bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.2" />
   </ItemGroup>
   
   <ItemGroup>

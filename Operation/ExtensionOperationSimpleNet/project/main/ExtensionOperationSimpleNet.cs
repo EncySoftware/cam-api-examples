@@ -7,7 +7,7 @@ using STCustomPropTypes;
 using STTypes;
 using STXMLPropTypes;
 
-namespace ExtensionNetProject;
+namespace ExtensionOperationSimpleNet;
 
 /// <summary>
 /// Simple operation to make work path as rectangle or circle

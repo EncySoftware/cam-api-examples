@@ -7,21 +7,9 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutDir>bin\$(Configuration)\</OutDir>
-    <CAMPath>C:\repo\links\CamExe</CAMPath>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
-<!--    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1-dev.26" />
-      <Reference Include="$(CAMPath)\CAMAPI.ResultStatus.dll" />
-      <Reference Include="$(CAMPath)\CAMAPI.DotnetHelper.dll" />
-      <Reference Include="$(CAMPath)\CAMAPI.Application.dll" />
-      <Reference Include="$(CAMPath)\CAMAPI.Extensions.dll" />
-      <Reference Include="$(CAMPath)\CAMAPI.Singletons.dll" />
-      <Reference Include="$(CAMPath)\CAMAPI.Project.dll" />
-      <Reference Include="$(CAMPath)\CAMAPI.GeomImporter.dll" />
-      <Reference Include="$(CAMPath)\STGeomApiTypes.dll" />
-      <Reference Include="$(CAMPath)\Geometry.VecMatrLib.dll" />
-      <Reference Include="$(CAMPath)\STTypes.dll" />-->
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.2" />
   </ItemGroup>
 </Project>

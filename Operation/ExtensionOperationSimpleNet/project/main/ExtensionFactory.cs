@@ -31,7 +31,7 @@ public class ExtensionFactory : IExtensionFactory
         {
             ret = default;
             if (extensionIdent == "Extension.Operation.Simple.Net")
-                return new ExtensionOperationSimpleNet();
+                return new ExtensionOperationSimpleNet.ExtensionOperationSimpleNet();
             throw new Exception("Unknown extension identifier: " + extensionIdent);
         }
         catch (Exception e)
