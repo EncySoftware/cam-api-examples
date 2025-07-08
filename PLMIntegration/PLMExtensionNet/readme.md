@@ -17,13 +17,9 @@ To add this extension to the application:
 3. Open the **Connection** tab and configure the extension:
    - Required: set a **PLMFolder** parameter — a local or network folder where all items will be stored.
 
-For detailed setup instructions, refer to the Full Documentation (https://docs.encycam.com/ENCY/1/en/10602.html).
-
 ## Usage
 
 After the extension is installed and properly configured:
 
 - Additional buttons will appear in the relevant windows of the CAM application.
 - These buttons enable interaction with the external system using the specified directory structure.
-
-Further information is available in the Full Documentation (https://docs.encycam.com/ENCY/1/en/10602.html).
