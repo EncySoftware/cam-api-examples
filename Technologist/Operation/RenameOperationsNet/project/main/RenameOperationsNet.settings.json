@@ -1,0 +1,14 @@
+{
+    "name": "Rename operations to put order in the name",
+    "description": "Rename operations to put order in the name",
+    "module_path": "${extensionJsonFolder}/RenameOperationsNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Rename operations to put order in the name",
+                "caption": "Rename operations to put order in the name",
+                "id": "Extension.Utility.RenameOperations.Net"
+            }
+        }
+    ]
+}
