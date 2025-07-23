@@ -1,6 +1,6 @@
 {
 	"type": "CSharp",
-	"project_path": "../ApplicationEmptyNet.csproj",
+	"project_path": "../ApplicationCreateOperations.csproj",
 	"sources": [
 		"../*.cs",
 		"../*.csproj",

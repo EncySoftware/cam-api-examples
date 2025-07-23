@@ -71,7 +71,7 @@ public class Build : NukeBuild
         {
             Projects = new HashSet<string>
             {
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionEmptyNetProject.json")
+                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "GeometryImporterProject.json")
             },
             Variants = new VariantList
             {

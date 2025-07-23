@@ -3,10 +3,10 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
-        <UseWindowsForms>true</UseWindowsForms>
+        <UseWPF>true</UseWPF>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.1" />
+        <PackageReference Include="EncySoftware.CAMIPC.Sdk.Net" Version="1.3.3-dev.5" />
     </ItemGroup>
 </Project>
