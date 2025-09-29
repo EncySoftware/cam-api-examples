@@ -68,7 +68,7 @@ public class Build : NukeBuild
         {
             Projects =
             [
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionEmptyNetProject.json")
+                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionGeomCLDataConverterNetProject.json")
             ],
             Variants =
             [

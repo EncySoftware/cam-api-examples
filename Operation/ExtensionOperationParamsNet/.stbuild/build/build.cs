@@ -68,7 +68,7 @@ public class Build : NukeBuild
         {
             Projects =
             [
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionOperationSimpleNetProject.json")
+                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionOperationParamsNetProject.json")
             ],
             Variants =
             [
@@ -152,10 +152,10 @@ public class Build : NukeBuild
                 File.Copy(jsonPath, Path.ChangeExtension(dllPath, ".settings.json"), true);  
 
                 // copy xml file
-                var sourceXmlPath = Path.Combine(mainProjectFolder, "OperationSimpleNet.xml");
+                var sourceXmlPath = Path.Combine(mainProjectFolder, "OperationParamsNet.xml");
                 if (!File.Exists(sourceXmlPath))
                     throw new Exception($"{sourceXmlPath} file not found");
-                var targetXmlPath = Path.Combine(dllFolder, "OperationSimpleNet.xml");
+                var targetXmlPath = Path.Combine(dllFolder, "OperationParamsNet.xml");
                 File.Copy(sourceXmlPath, targetXmlPath, true);
             }
         });

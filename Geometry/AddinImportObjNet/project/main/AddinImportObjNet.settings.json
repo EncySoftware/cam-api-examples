@@ -1,0 +1,13 @@
+{
+    "name": "Import OBJ",
+    "description": "Import OBJ",
+    "module_path": "${extensionJsonFolder}\\AddinImportObjNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Import OBJ",
+                "id": "Extension.Utility.Geometry.Importer.Obj.Net"
+            }
+        }
+    ]
+}
