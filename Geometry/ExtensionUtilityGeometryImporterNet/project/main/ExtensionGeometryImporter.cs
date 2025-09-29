@@ -23,27 +23,43 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
         resultStatus = default;
         try
         {
-            using var pathsHelper = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
+            using var pathsHelperCom = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
             using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
-            var application = applicationCom.Instance;
+            var modelFileName = pathsHelperCom.Invoke(pathsHelper => Path.Combine(pathsHelper.ModelsFolder, "Milling_25D", "Part1.igs"));
+
+            //var application = applicationCom.Instance;
 
             // active project
-            using var activeProjectCom =
-                new ComWrapper<ICamApiProject>(application.GetActiveProject(out resultStatus));
-            if (resultStatus.Code == TResultStatusCode.rsError)
-                throw new Exception("Can't get active project: " + resultStatus.Description);
+            // using var activeProjectCom =
+            //     new ComWrapper<ICamApiProject>(application.GetActiveProject(out resultStatus));
+            using var activeProjectCom = applicationCom.InvokeAndWrap(application =>
+                (application.GetActiveProject(out var status), status));
+
+            // if (resultStatus.Code == TResultStatusCode.rsError)
+            //     throw new Exception("Can't get active project: " + resultStatus.Description);
             if (activeProjectCom == null)
                 throw new Exception("Active project is not found");
-            var activeProject = activeProjectCom.Instance;
+            //var activeProject = activeProjectCom.Instance;
 
             // geometry importer
-            using var geomImporterCom = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
-            var importer = geomImporterCom.Instance;
+            // using var geomImporterCom = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
+            // var importer = geomImporterCom.Instance;
 
-            var modelFileName = Path.Combine(pathsHelper.Instance.ModelsFolder, "Milling_25D", "Part1.igs");
-            resultStatus = importer.ImportFile(modelFileName, @"", true);
-            if (resultStatus.Code == TResultStatusCode.rsError)
-                throw new Exception("Can't import file: " + resultStatus.Description);
+            
+
+            using var geomImporterCom = activeProjectCom.InvokeAndWrap(project => project.GeomImporter);
+            geomImporterCom.Invoke(importer =>
+            {
+                var resultStatus = importer.ImportFile(modelFileName, @"", true);
+                if (resultStatus.Code == TResultStatusCode.rsError)
+                    throw new Exception("Can't import file: " + resultStatus.Description);
+            });
+
+            // resultStatus = importer.ImportFile(modelFileName, @"", true);
+            // if (resultStatus.Code == TResultStatusCode.rsError)
+            //     throw new Exception("Can't import file: " + resultStatus.Description);
+                
+            
         }
         catch (Exception e)
         {
