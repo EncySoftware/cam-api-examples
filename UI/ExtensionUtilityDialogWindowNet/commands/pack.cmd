@@ -1,8 +1,10 @@
 @echo off
 cd /D %~dp0
 
-call ..\.stbuild\build.cmd --Target Pack --Variant Release
+call ..\.stbuild\build.cmd --Target Pack --Variant Release --no-logo
 
-pause
+if NOT "%nopause%"=="true" (
+    pause
+)
 
 EXIT /B %EXIT_CODE%

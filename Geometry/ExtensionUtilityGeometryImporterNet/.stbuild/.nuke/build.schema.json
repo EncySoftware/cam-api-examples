@@ -65,6 +65,7 @@
             "type": "string",
             "enum": [
               "Clean",
+              "CleanAll",
               "Compile",
               "Pack"
             ]
@@ -77,6 +78,7 @@
             "type": "string",
             "enum": [
               "Clean",
+              "CleanAll",
               "Compile",
               "Pack"
             ]

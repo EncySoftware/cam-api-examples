@@ -141,6 +141,47 @@ public class Build : NukeBuild
             BuildSpace.Projects.Clean("Debug");
             BuildSpace.Projects.Clean("Release");
         });
+        
+    /// <summary>
+    /// Removes all temporary files
+    /// </summary>
+    // ReSharper disable once UnusedMember.Local
+    private Target CleanAll => _ => _
+        .Description("Full clean - removes all temporary files")
+        .DependsOn(Clean)
+        .Executes(() =>
+        {
+            var tempDirectories = new[]
+            {
+                RootDirectory.Parent / "bin",
+                RootDirectory.Parent / "obj",
+                RootDirectory.Parent / "temp",
+                RootDirectory.Parent / ".stbuild" / "temp",
+                RootDirectory.Parent / ".stbuild" / ".nuke" / "temp",
+                RootDirectory.Parent / ".stbuild" / "build" / "bin",
+                RootDirectory.Parent / ".stbuild" / "build" / "obj",
+                RootDirectory.Parent / "project" / "main" / "bin",
+                RootDirectory.Parent / "project" / "main" / "obj"
+            };
+
+            foreach (var dirPath in tempDirectories)
+            {
+                string dir = dirPath.ToString(); 
+                
+                if (Directory.Exists(dir))
+                {
+                    try
+                    {
+                        Directory.Delete(dir, recursive: true);
+                        Logger.head($"✅  Successfully deleted: {dir}");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Logger.head($"⚠️  Could not delete {dir}: {ex.Message}");
+                    }
+                }
+            }
+        });
 
     /// <summary>
     /// Create .dext file, which can be injected
@@ -160,16 +201,16 @@ public class Build : NukeBuild
                 var projectFolder = Path.GetDirectoryName(project.MainFilePath)
                                     ?? throw new Exception("Main file path is null");
                 var jsonPath = Path.Combine(projectFolder, Path.GetFileNameWithoutExtension(dllPath) + ".settings.json");
-                
 
-                
+
+
                 // make new dext
                 var outputFolder = Path.GetDirectoryName(dllPath)
                                    ?? throw new Exception("Parent folder of dll path is null");
                 var dextPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(dllPath) + ".dext");
                 if (File.Exists(dextPath))
                     File.Delete(dextPath);
-                
+
                 using var zipToOpen = new FileStream(dextPath, FileMode.Create);
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));

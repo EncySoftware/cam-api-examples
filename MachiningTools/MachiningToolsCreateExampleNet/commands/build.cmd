@@ -3,6 +3,8 @@ cd /D %~dp0
 
 dotnet build ..\MachiningToolsCreateExampleNet.csproj
 
-pause
+if NOT "%nopause%"=="true" (
+    pause
+)
 
 EXIT /B %EXIT_CODE%

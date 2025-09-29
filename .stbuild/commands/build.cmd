@@ -3,6 +3,8 @@ cd /D %~dp0
 
 call ..\build.cmd --Target Compile --Variant Debug
 
-pause
+if NOT "%nopause%"=="true" (
+    pause
+)
 
 EXIT /B %EXIT_CODE%

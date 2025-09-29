@@ -4,4 +4,6 @@ SETLOCAL
 echo Building the DIN4000ImportPluginNet project
 call dotnet build %~dp0..\DIN4000ImportPluginNet.csproj
 
-pause
+if NOT "%nopause%"=="true" (
+    pause
+)

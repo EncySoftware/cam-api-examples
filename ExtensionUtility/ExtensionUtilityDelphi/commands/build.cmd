@@ -1,8 +1,10 @@
 @echo off
 cd /D %~dp0
 
-call ..\.stbuild\build.cmd --Target Compile --Variant Debug
+call ..\.stbuild\build.cmd --Target Compile --Variant Debug --no-logo
 
-pause
+if NOT "%nopause%"=="true" (
+    pause
+)
 
 EXIT /B %EXIT_CODE%

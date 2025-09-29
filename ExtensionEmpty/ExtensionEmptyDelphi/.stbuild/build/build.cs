@@ -167,6 +167,47 @@ public class Build : NukeBuild
             BuildSpace.Projects.Clean("Debug");
             BuildSpace.Projects.Clean("Release");
         });
+        
+    /// <summary>
+    /// Removes all temporary files
+    /// </summary>
+    // ReSharper disable once UnusedMember.Local
+    private Target CleanAll => _ => _
+        .Description("Full clean - removes all temporary files")
+        .DependsOn(Clean)
+        .Executes(() =>
+        {
+            var tempDirectories = new[]
+            {
+                RootDirectory.Parent / "bin",
+                RootDirectory.Parent / "obj",
+                RootDirectory.Parent / "temp",
+                RootDirectory.Parent / ".stbuild" / "temp",
+                RootDirectory.Parent / ".stbuild" / ".nuke" / "temp",
+                RootDirectory.Parent / ".stbuild" / "build" / "bin",
+                RootDirectory.Parent / ".stbuild" / "build" / "obj",
+                RootDirectory.Parent / "project" / "main" / "bin",
+                RootDirectory.Parent / "project" / "main" / "obj"
+            };
+
+            foreach (var dirPath in tempDirectories)
+            {
+                string dir = dirPath.ToString(); 
+                
+                if (Directory.Exists(dir))
+                {
+                    try
+                    {
+                        Directory.Delete(dir, recursive: true);
+                        Logger.head($"✅  Successfully deleted: {dir}");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Logger.head($"⚠️  Could not delete {dir}: {ex.Message}");
+                    }
+                }
+            }
+        });
 
     /// <summary>
     /// Create .dext file, which can be injected
