@@ -76,9 +76,6 @@ public class Build : NukeBuild
         {
             Projects =
             [
-                Path.Combine(RootDirectory.Parent, @"ApplicationEmpty\ApplicationEmptyNet\project\main\.stbuild\ApplicationEmptyNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ApplicationSgfCreator\ApplicationSgfCreatorNet\project\main\.stbuild\ApplicationSgfCreatorNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"CLData\ExtensionGeomCLDataConverterNet\project\main\.stbuild\ExtensionGeomCLDataConverterNetProject.json"),
                 // Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyCpp\project\main\.stbuild\ExtensionEmptyCppProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyDelphi\project\main\.stbuild\ExtensionEmptyDelphiProject.json"),
                 Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyNet\project\main\.stbuild\ExtensionEmptyNetProject.json"),

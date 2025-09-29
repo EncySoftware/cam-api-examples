@@ -1,6 +1,6 @@
 {
 	"type": "CSharp",
-	"project_path": "../ApplicationSgfCreatorNet.csproj",
+	"project_path": "../GeometryImporter.csproj",
 	"sources": [
 		"../*.cs",
 		"../*.csproj",
