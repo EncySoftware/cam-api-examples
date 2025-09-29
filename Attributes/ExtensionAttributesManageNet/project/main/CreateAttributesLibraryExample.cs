@@ -210,7 +210,7 @@ internal class CreateLibraryExample : IExtension, IExtensionUtility
         using var partCategoryW = ComWrapper.Create(manager.CreateCategoryType());
         var partCategory = partCategoryW.It;
         partCategory.Name = "My Part attributes";
-        partCategory.TypeCategoryID = InterfaceInfo.IID<ICamApiPartItem>();
+        partCategory.TypeCategoryID = InterfaceInfo.IID<ICamApiPart>();
         lib.Attributes.AddAttribute(partCategory);
 
         using (var aw = ComWrapper.Create(manager.CreateStringType()))

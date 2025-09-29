@@ -61,16 +61,18 @@ internal class PartMenuItemClickHandler : ICamApiTechnologyFormOperationPopupIte
         try
         {
             // Get operation the user clicked on
-            using var partOperation = ComWrapper.Create(context.SelectedOperation);
+            using var partOperationCom = ComWrapper.Create(context.SelectedOperation);
+            var partIndex = partOperationCom.Invoke(op => op.PartIndex);
             
             // Get the Technologist  - a tree of operations of the project
-            using var tech = ComWrapper.Create((ICamApiTechnologist)partOperation.It.Technologist);
+            using var technologistCom = partOperationCom.InvokeAndWrap(operation => (ICamApiTechnologist)operation.Technologist);
             
             // Get the Part item that related to the current operation
-            using var part = ComWrapper.Create(tech.It.PartItem[partOperation.It.PartIndex]);
+            using var partAndStageListCom = technologistCom.InvokeAndWrap(t => t.PartAndStageList);
+            using var partCom = partAndStageListCom.InvokeAndWrap(list => list.Part[partIndex]);
 
             // Cast to ICamApiObjectWithAttributes to get the attributes tree
-            var partObj = (ICamApiObjectWithAttributes)part.It;
+            var partObj = (ICamApiObjectWithAttributes)partCom.It;
 
             // Check the user created example library before we ask for attributes from this library
             if (!LibraryChecker.CheckIsExampleLibraryAttached(partObj)) 
@@ -95,7 +97,7 @@ internal class PartMenuItemClickHandler : ICamApiTechnologyFormOperationPopupIte
 
             // Create window to show attributes tree in inspector window
             using var window = new CamApiInspectorWindow();
-            window.Caption = "Attributes of the Part: " + part.It.ExternalID;
+            window.Caption = "Attributes of the Part: " + partCom.It.ExternalID;
             // The attributes tree iterator (ICamApiCustomAttributesTreeIterator) can be casted to IST_CustomPropIterator the window wants to show.
             window.SetPropIterator((IST_CustomPropIterator)attributesIterator.It);
             window.SetButtons((ushort)TUIButtonTypeFlags.btfOk);
