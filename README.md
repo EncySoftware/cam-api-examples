@@ -14,7 +14,6 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 ## Projects information
 
 ### Quick-start examples
-- ApplicationSgfCreator - [**ApplicationSgfCreator**](./ApplicationSgfCreator/ApplicationSgfCreatorNet/project/main/README.md) 
 - ExtensionEmptyNet - [**ExtensionEmptyNet**](./ExtensionEmpty/ExtensionEmptyNet/project/main/README.md)
 - ExtensionGlobalNet - [**ExtensionGlobalNet**](./ExtensionGlobal/ExtensionGlobalNet/project/main/README.md)
 - ExtensionUtilityNet - [**ExtensionUtilityNet**](./ExtensionUtility/ExtensionUtilityNet/project/main/README.md)
