@@ -1,0 +1,30 @@
+<Window x:Class="ExtensionOperationsNet.TextInputWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Enter Text" Height="320" Width="640"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Please select operation:" Margin="0,0,0,10"/>
+        <ListBox x:Name="ItemsListBox" Grid.Row="1" Margin="0,0,0,5"
+                 MouseDoubleClick="ItemsListBox_MouseDoubleClick"
+                 SelectionChanged="ItemsListBox_SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancel" Width="80" Margin="0,0,10,0" Click="Cancel_Click"/>
+            <Button Content="OK" Width="80" Click="Ok_Click" x:Name="OkButton" IsEnabled="False"/>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,28 @@
+{
+    "name": "Operation usage example",
+    "description": "Demonstrates how to create different operation objects of CAM",
+    "module_path": "${extensionJsonFolder}/ExtensionOperationsNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Create a new operation",
+                "caption": "Operation: create operation",
+                "id": "Extension.Operation.CreateOperation.Net"
+            }
+        },
+        {
+            "utility": {
+                "name": "Create a new setup stage",
+                "caption": "Operation: create setup stage",
+                "id": "Extension.Operation.CreateSetupStage.Net"
+            }
+        },
+        {
+            "utility": {
+                "name": "Create a new part",
+                "caption": "Operation: create part",
+                "id": "Extension.Operation.CreatePart.Net"
+            }
+        }
+    ]
+}
