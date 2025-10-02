@@ -1,0 +1,21 @@
+{
+    "name": "Operation`s tool usage example",
+    "description": "Demonstrates how to operate with tools of CAM",
+    "module_path": "${extensionJsonFolder}/ExtensionOperationToolNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Show tool list",
+                "caption": "Operation: show tool list",
+                "id": "Extension.Operation.Tool.ShowToolList.Net"
+            }
+        },
+        {
+            "utility": {
+                "name": "Change current tool",
+                "caption": "Operation: change current tool",
+                "id": "Extension.Operation.Tool.ChangeTool.Net"
+            }
+        }
+    ]
+}
