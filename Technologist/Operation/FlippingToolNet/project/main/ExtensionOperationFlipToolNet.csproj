@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutDir>bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+     <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.4-dev.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ExtensionOperationFlipToolNet.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
