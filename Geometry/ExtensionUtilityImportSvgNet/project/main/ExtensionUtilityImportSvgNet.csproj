@@ -10,8 +10,8 @@
     <OutDir>bin/</OutDir>
   </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Svg" Version="3.4.7" />
-      <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.3" />
+  <ItemGroup>
+    <PackageReference Include="Svg" Version="3.4.7" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.9" />
   </ItemGroup>
 </Project>

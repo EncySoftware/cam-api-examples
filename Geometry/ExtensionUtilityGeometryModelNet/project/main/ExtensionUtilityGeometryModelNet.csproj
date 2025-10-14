@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -11,6 +10,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.3" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.9" />
   </ItemGroup>
 </Project>

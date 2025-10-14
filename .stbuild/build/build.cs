@@ -3,24 +3,22 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Compression;
-using BuildSystem.Builder.Dotnet;
-using BuildSystem.Builder.MsCpp;
+using BuildSystem;
+using BuildSystem.Core.Builders.Dotnet;
+using BuildSystem.Core.Builders.MsCpp;
+using BuildSystem.Core.Builders.MsDelphi;
+using BuildSystem.Core.Cleaner;
+using BuildSystem.Core.HashGenerator;
+using BuildSystem.Core.ProjectCache;
 using Nuke.Common;
-using BuildSystem.Builder.MsDelphi;
-using BuildSystem.BuildSpace;
-using BuildSystem.BuildSpace.Common;
-using BuildSystem.Cleaner.Common;
-using BuildSystem.HashGenerator.Common;
 using BuildSystem.Info;
-using BuildSystem.Loggers;
-using BuildSystem.Logging;
 using BuildSystem.ManagerObject.Interfaces;
-using BuildSystem.ProjectCache.Common;
-using BuildSystem.Restorer.Nuget;
-using BuildSystem.SettingsReader;
-using BuildSystem.SettingsReader.Object;
-using BuildSystem.Variants;
-using LoggingLevel = BuildSystem.Logging.LogLevel;
+using BuildSystem.ManagerObject.Interfaces.Package;
+using BuildSystem.ManagerObject.Interfaces.Variants;
+using BuildSystem.ProjectList;
+using BuildSystem.ProjectList.Restorer;
+using Loggers;
+using Logging;
 
 // ReSharper disable AllUnderscoreLocalParameterName
 
@@ -31,7 +29,7 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling target by default
     /// </summary>
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => x.Compile);
 
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
@@ -54,11 +52,11 @@ public class Build : NukeBuild
     private ILogger InitLogger() {
         // logging to console
         var console = new LoggerConsole();
-        console.setMinLevel(LoggingLevel.info);
+        console.setMinLevel(Logging.LogLevel.info);
 
         // logging to file
         var file = new LoggerFile(Path.Combine(RootDirectory, "logs"), "log", 7);
-        file.setMinLevel(LoggingLevel.debug);
+        file.setMinLevel(Logging.LogLevel.debug);
         
         // singleton to transfer logs to all other loggers
         var logger = new LoggerBroadCaster();
@@ -74,6 +72,10 @@ public class Build : NukeBuild
         
         var settings = new SettingsObject
         {
+            ProjectListProps = new ProjectListCommonProps(Logger)
+            {
+                SetStorageInfo = (_, _, _) => []
+            },
             Projects =
             [
                 // Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyCpp\project\main\.stbuild\ExtensionEmptyCppProject.json"),
@@ -111,13 +113,13 @@ public class Build : NukeBuild
                     Name = "Debug",
                     Configurations = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Debug"
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodeConfig] = "Debug"
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64",
-                        [BuildSystem.Variants.Variant.NodePlatform + "_csharp"] = "x64",
-                        [BuildSystem.Variants.Variant.NodePlatform + "_cpp"] = "x64"
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform] = "Win64",
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_csharp"] = "x64",
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_cpp"] = "x64"
                     }
                 },
 
@@ -126,13 +128,13 @@ public class Build : NukeBuild
                     Name = "Release",
                     Configurations = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Release"
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodeConfig] = "Release"
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64",
-                        [BuildSystem.Variants.Variant.NodePlatform + "_csharp"] = "x64",
-                        [BuildSystem.Variants.Variant.NodePlatform + "_cpp"] = "x64"
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform] = "Win64",
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_csharp"] = "x64",
+                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_cpp"] = "x64"
                     }
                 }
             ],
@@ -188,6 +190,7 @@ public class Build : NukeBuild
         settings.ManagerNames.Add("project_cache", "Release", "ProjectCacheCommon");
         settings.ManagerNames.Add("hash_generator", "Debug", "HashGeneratorCommon");
         settings.ManagerNames.Add("hash_generator", "Release", "HashGeneratorCommon");
+        settings.ReaderLocalVars["package_namespace"] = "ENCY";
         
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
@@ -200,7 +203,7 @@ public class Build : NukeBuild
     private Target Compile => _ => _
         .Executes(() =>
         {
-            BuildSpace.Projects.Restore(Variant);
+            //BuildSpace.Projects.Restore(Variant);
             BuildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
@@ -230,7 +233,7 @@ public class Build : NukeBuild
         });
 
     /// <summary>
-    /// Create .dext file, which can be injected
+    /// Create .dext-file, which can be injected
     /// </summary>
     // ReSharper disable once UnusedMember.Local
     private Target Pack => _ => _
@@ -239,11 +242,11 @@ public class Build : NukeBuild
         {
             foreach (var project in BuildSpace.Projects)
             {
-                // path to dll (to be included into dext)
+                // path to dll (to be included in dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
                               ?? throw new Exception("Build results with dll type not found");
 
-                // path to json, describing extension (to be included into dext)
+                // path to JSON, describing extension (to be included in dext)
                 var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
                 if (!File.Exists(jsonPath)) {
                     Logger.head($"Create of dext file skipped for: {project.MainFilePath}");
@@ -265,7 +268,7 @@ public class Build : NukeBuild
         });
     
     /// <summary>
-    /// Inject early created .dext file into the application
+    /// Inject an early created .dext-file into the application
     /// </summary>
     // ReSharper disable once UnusedMember.Local
     private Target Inject => _ => _
@@ -274,11 +277,11 @@ public class Build : NukeBuild
         {
             foreach (var project in BuildSpace.Projects)
             {
-                // path to dll (to be included into dext)
+                // path to dll (to be included in dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
                               ?? throw new Exception("Build results with dll type not found");
 
-                // path to json, describing extension (to be included into dext)
+                // path to JSON, describing extension (to be included in dext)
                 var jsonPath = Path.ChangeExtension(dllPath, ".settings.json");
                 if (!File.Exists(jsonPath)) {
                     Logger.head($"Injecting of dext file skipped for: {project.MainFilePath}");

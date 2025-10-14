@@ -1,14 +1,14 @@
 ﻿using System.Diagnostics;
 using CAMAPI.Application;
+using CAMAPI.DotnetHelper;
 using CAMAPI.Extensions;
 using CAMAPI.Project;
 using CAMAPI.ResultStatus;
-using CAMAPI.DotnetHelper;
 
-namespace ExtensionNetProject;
+namespace ExtensionEmptyNet;
 
 /// <summary>
-/// Show parameters of project
+/// Show parameters of a project
 /// </summary>
 public class ExtensionTest : IExtension, IExtensionUtility
 {

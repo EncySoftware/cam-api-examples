@@ -6,11 +6,16 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RootNamespace>ExtensionNetProject</RootNamespace>
     <OutDir>bin\$(Configuration)\</OutDir>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.3" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ExtensionEmptyNet.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
