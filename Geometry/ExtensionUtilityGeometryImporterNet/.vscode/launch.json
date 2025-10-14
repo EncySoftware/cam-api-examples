@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "C:/Program Files/ENCY Software/ENCY 2/Bin64/ency.exe",
+            "program": "C:/Program Files/ENCY Software/ENCY NB 2/Bin64/ency.exe",
             "args": [
                 "/EXTENSION_DEBUG_FOLDER=\"${workspaceFolder}/project/main/bin/Debug\""
             ],
