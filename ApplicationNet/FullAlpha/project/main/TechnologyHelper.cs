@@ -468,7 +468,7 @@ public static class TechnologyHelper
             ?? throw new Exception("Error creating settings: settings is not ICamIpcMakeCncSppxSettings"));
         var resultNcCodeFile = settingsSppxCom.Invoke(settings =>
         {
-            settings.SetOutputFolder(AppDomain.CurrentDomain.BaseDirectory, ref executeContext);
+            settings.SetOutputFolder(Path.GetTempPath(), ref executeContext);
             if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception(executeContext.ResultStatus.Description);
             
@@ -476,7 +476,7 @@ public static class TechnologyHelper
             if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception(executeContext.ResultStatus.Description);
             
-            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, OutputFile);
+            return Path.Combine(Path.GetTempPath(), OutputFile);
         });
         var settingsSppx = settingsSppxCom.Instance;
         
