@@ -1,0 +1,13 @@
+{
+    "name": "Utility to analyze selected model item",
+    "description": "Utility to analyze selected model item",
+    "module_path": "${extensionJsonFolder}\\UtilityGeometryEntityReader.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to analyze selected model item",
+                "id": "Extension.Utility.Geometry.EntityReader"
+            }
+        }
+    ]
+}
