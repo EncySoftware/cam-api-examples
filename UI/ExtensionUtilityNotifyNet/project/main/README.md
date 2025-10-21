@@ -6,5 +6,5 @@ This example demonstrates how to create an extension that will show notify messa
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
 2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityNotifyNet.settings.json**.
-3. Restart Ency.
+3. Restart ENCY.
 4. In the utilities menu, select the "**Utility to put notify message by C#**" item. The notify message will appear in the CAM system.

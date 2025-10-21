@@ -6,5 +6,5 @@ This example demonstrates how to create an extension that will generate G code o
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
 2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityNCMakerNet.settings.json**.
-3. Restart Ency.
+3. Restart ENCY.
 4. In the utilities menu, select the "**Extension on C# to generate G code**" item. A **Notepad** window will open containing the G code of the current toolpath and log information.

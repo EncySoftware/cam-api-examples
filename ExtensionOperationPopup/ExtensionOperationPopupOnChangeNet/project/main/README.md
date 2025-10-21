@@ -6,5 +6,5 @@ This example demonstrates how to create an extension that will go to the entry p
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
 2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionOperationPopupOnChangeNet.settings.json**.
-3. Restart Ency.
+3. Restart ENCY.
 4. Add a new operation or load an existing project with operation, open the **Operation pop-up menu** of the added operation (right-click on the operation name) and you will get to the entry point.
