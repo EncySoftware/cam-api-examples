@@ -26,8 +26,9 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 
 ### CAMIPC examples
-- ApplicationEmptyNet - [**ApplicationEmptyNet**](./ApplicationEmpty/ApplicationEmptyNet/project/main/README.md)
-
+- ApplicationCreateOperations - [**ApplicationCreateOperations**](./ApplicationNet/CreateOperations/project/main/README.md)
+- ApplicationNetFullAlpha - [**ApplicationNetFullAlpha**](./ApplicationNet/FullAlpha/project/main/README.md)
+- ApplicationGeometryImporter - [**ApplicationGeometryImporter**](./ApplicationNet/GeometryImporter/project/main/README.md)  
 
 ### Geometry examples
 - AddinImportObjNet - [**AddinImportObjNet**](./Geometry/AddinImportObjNet/project/main/README.md)
@@ -37,6 +38,7 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - ExtensionUtilityGeometryModelNet - [**ExtensionUtilityGeometryModelNet**](./Geometry/ExtensionUtilityGeometryModelNet/project/main/README.md)
 - ExtensionUtilityGeometryPickerNet - [**ExtensionUtilityGeometryPickerNet**](./Geometry/ExtensionUtilityGeometryPickerNet/project/main/README.md)
 - ExtensionUtilityImportSvgNet - [**ExtensionUtilityImportSvgNet**](./Geometry/ExtensionUtilityImportSvgNet/project/main/README.md)
+- ExtensionUtilityLCSCreatorNet - [**ExtensionUtilityLCSCreatorNet**](./Geometry/ExtensionUtilityLCSCreatorNet/project/main/README.md)
 - ExtensionGeomCLDataConverterNet - [**ExtensionGeomCLDataConverterNet**](./CLData/ExtensionGeomCLDataConverterNet/project/main/README.md)
 - OSDMakerExampleNet - [**OSDMakerExampleNet**](./Geometry/OSDMakerExampleNet/README.md)
 
@@ -52,6 +54,10 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - ExtensionOperationParamsNet - [**ExtensionOperationParamsNet**](./Operation/ExtensionOperationParamsNet/project/main/README.md)
 - ExtensionOperationSimpleNet - [**ExtensionOperationSimpleNet**](./Operation/ExtensionOperationSimpleNet/project/main/README.md)
 - ExtensionUtilityProjectMachineInfoNet - [**ExtensionUtilityProjectMachineInfoNet**](./ProjectMachine/ExtensionUtilityProjectMachineInfoNet/project/main/README.md)
+- FlippingToolNet - [**FlippingToolNet**](./Technologist/Operation/FlippingToolNet/project/main/README.md)
+- OperationNet - [**OperationNet**](./Technologist/Operation/OperationNet/project/main/README.md)
+- OperationToolChangeNet - [**OperationToolChangeNet**](./Technologist/Operation/OperationToolChangeNet/project/main/README.md)
+- RenameOperationsNet - [**RenameOperationsNet**](./Technologist/Operation/RenameOperationsNet/project/main/README.md)
 
 
 ### Tool examples
