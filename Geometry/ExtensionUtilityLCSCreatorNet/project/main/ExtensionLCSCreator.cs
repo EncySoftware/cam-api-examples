@@ -67,6 +67,10 @@ public class ExtensionLCSCreator
 
             // properties to provide to user
             using var propIterator = new SimplePropIterator();
+            // name of cs
+            propIterator.AddStringProp("New CS name",
+                () => currentValues.StringValue,
+                value => currentValues.StringValue = value);
             // property with dropdown menu
             propIterator.AddEnumIdProp("Choose parent CS",
                 () => currentValues.EnumIdValue,
@@ -83,50 +87,32 @@ public class ExtensionLCSCreator
             // property for X
             propIterator.AddDoubleProp("X:",
                 () => currentValues.DoubleXValue,
-                value => { 
-                    double newValue = EnsureRotWithinRange(value, -32767, 32767);
-                    currentValues.DoubleXValue = newValue;
-                }
+                value => currentValues.DoubleXValue = value
             );
             // property for Y
             propIterator.AddDoubleProp("Y:",
                 () => currentValues.DoubleYValue,
-                value => { 
-                    double newValue = EnsureRotWithinRange(value, -32767, 32767);
-                    currentValues.DoubleYValue = newValue;
-                }
+                value => currentValues.DoubleYValue = value
             );
             // property for Z
             propIterator.AddDoubleProp("Z:",
                 () => currentValues.DoubleZValue,
-                value => { 
-                    double newValue = EnsureRotWithinRange(value, -32767, 32767);
-                    currentValues.DoubleZValue = newValue;
-                }
+                value => currentValues.DoubleZValue = value
             );
             // property for RX
             propIterator.AddDoubleProp("RX`:",
                 () => currentValues.DoubleRXValue,
-                value => { 
-                    double newValue = EnsureRotWithinRange(value, -360, 360);
-                    currentValues.DoubleRXValue = newValue;
-                }
+                value => currentValues.DoubleRXValue = value
             );
             // property for RY
             propIterator.AddDoubleProp("RY`:",
                 () => currentValues.DoubleRYValue,
-                value => { 
-                    double newValue = EnsureRotWithinRange(value, -360, 360);
-                    currentValues.DoubleRYValue = newValue;
-                }
+                value => currentValues.DoubleRYValue = value
             );
             // property for RZ
             propIterator.AddDoubleProp("RZ`:",
                 () => currentValues.DoubleRZValue,
-                value => { 
-                    double newValue = EnsureRotWithinRange(value, -360, 360);
-                    currentValues.DoubleRZValue = newValue;
-                }
+                value => currentValues.DoubleRZValue = value
             );
         
             window.SetPropIterator(propIterator);
@@ -165,15 +151,13 @@ public class ExtensionLCSCreator
                     // final matrix with rotation & shifting
                     var newMatrix = rotMatrix * shiftMatrix;
                     coordSystemListCom.InvokeAndWrap(coordSystem =>
-                        coordSystem.Add("New_LCS", newMatrix, currentValues.EnumIdValue, out var resultStatus));
+                        coordSystem.Add(currentValues.StringValue, newMatrix, currentValues.EnumIdValue, out var resultStatus));
                     if (resultStatus.Code == TResultStatusCode.rsError)
                         throw new Exception(resultStatus.Description);
                     break;
                 case TUIButtonType.btCancel:
-                    throw new Exception("Cancel button pressed");
                     break;
                 default:
-                    throw new Exception("Unknown button pressed");
                     break;
             }
         }

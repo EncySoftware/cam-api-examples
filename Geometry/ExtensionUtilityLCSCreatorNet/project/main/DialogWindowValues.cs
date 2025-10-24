@@ -6,9 +6,13 @@ namespace ExtensionUtilityLCSCreatorNet;
 public class DialogWindowValues
 {
     /// <summary>
+    /// Some string value
+    /// </summary>
+    public string StringValue { get; set; } = "New_LCS";
+    /// <summary>
     /// Some enum value
     /// </summary>
-    public string EnumIdValue { get; set; } = "";
+    public string EnumIdValue { get; set; } = "Global CS";
     /// <summary>
     /// Some x value
     /// </summary>
