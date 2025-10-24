@@ -84,11 +84,21 @@ internal class ExtensionCreateOperation : IExtension, IExtensionUtility
                 throw new Exception(resultStatus.Description);
             var id = operationCom.Invoke(operation => operation.Id);
 
-            using var xmlPropsCom = operationCom.InvokeAndWrap(operation => operation.XMLProp);
-            xmlPropsCom.Invoke(xmlProps =>
+
+            var operationType = operationCom.Invoke(operation => operation.OperationType);
+            // Changing XML - props for TSTWaterlineOp 
+            if (operationType == "TSTWaterlineOp")
             {
-                xmlProps.Bol["Roughing"] = true; //for TSTWaterlineOp
-            });
+                using var xmlPropsCom = operationCom.InvokeAndWrap(operation => operation.XMLProp);
+                xmlPropsCom.Invoke(xmlProps =>
+                {
+                    xmlProps.Bol["Roughing"] = true;
+                    xmlProps.Str["Strategy"] = "Equidistant";
+                    xmlProps.Int["StepCount"] = 8;
+                    xmlProps.Str["UniteType"] = "ByLevel";
+                    xmlProps.Flt["RoughingStep"] = 10.0;
+                });
+            }
         }
         catch (Exception e)
         {

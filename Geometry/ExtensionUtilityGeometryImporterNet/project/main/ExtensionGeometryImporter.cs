@@ -27,25 +27,10 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
             using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
             var modelFileName = pathsHelperCom.Invoke(pathsHelper => Path.Combine(pathsHelper.ModelsFolder, "Milling_25D", "Part1.igs"));
 
-            //var application = applicationCom.Instance;
-
-            // active project
-            // using var activeProjectCom =
-            //     new ComWrapper<ICamApiProject>(application.GetActiveProject(out resultStatus));
             using var activeProjectCom = applicationCom.InvokeAndWrap(application =>
                 (application.GetActiveProject(out var status), status));
-
-            // if (resultStatus.Code == TResultStatusCode.rsError)
-            //     throw new Exception("Can't get active project: " + resultStatus.Description);
             if (activeProjectCom == null)
                 throw new Exception("Active project is not found");
-            //var activeProject = activeProjectCom.Instance;
-
-            // geometry importer
-            // using var geomImporterCom = new ComWrapper<ICAMAPIGeometryImporter>(activeProject.GeomImporter);
-            // var importer = geomImporterCom.Instance;
-
-            
 
             using var geomImporterCom = activeProjectCom.InvokeAndWrap(project => project.GeomImporter);
             geomImporterCom.Invoke(importer =>
@@ -54,12 +39,6 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
                 if (resultStatus.Code == TResultStatusCode.rsError)
                     throw new Exception("Can't import file: " + resultStatus.Description);
             });
-
-            // resultStatus = importer.ImportFile(modelFileName, @"", true);
-            // if (resultStatus.Code == TResultStatusCode.rsError)
-            //     throw new Exception("Can't import file: " + resultStatus.Description);
-                
-            
         }
         catch (Exception e)
         {
