@@ -1,4 +1,4 @@
-﻿using ExtensionOperationToolNet;
+﻿using ExtensionOperationToolPopupNet;
 
 // ReSharper disable once CheckNamespace
 namespace CAMAPI;
@@ -25,24 +25,22 @@ public class ExtensionFactory : IExtensionFactory
     }
     
     /// <summary>
-    /// Create a new instance of our extension
+    /// Create new instance of our extension
     /// </summary>
     /// <param name="extensionIdent">
-    /// Unique identifier, if our library has more than one extension. Should accord with
-    /// value in settings JSON, describing this library
+    /// Unique identifier, if out library has more than one extension. Should accord with
+    /// value in settings json, describing this library
     /// </param>
     /// <param name="ret">Error to return it, because throw exception will not work</param>
-    /// <returns>Instance of our extension</returns>
+    /// <returns>Instance of out extension</returns>
     public IExtension? Create(string extensionIdent, out TResultStatus ret)
     {
         try
         {
             ret = default;
-            if (extensionIdent == "Extension.Operation.Tool.ShowToolList.Net")
-                return new ExtensionShowToolList();
-            else if (extensionIdent == "Extension.Operation.Tool.ChangeTool.Net")
-                return new ExtensionToolChange();
-            throw new Exception("Unknown extension identifier: " + extensionIdent);   
+            if (extensionIdent == "Extension.OperationToolPopup.Example.Net")
+                return new ExtensionOperationToolPopup();
+            throw new Exception("Unknown extension identifier: " + extensionIdent);
         }
         catch (Exception e)
         {

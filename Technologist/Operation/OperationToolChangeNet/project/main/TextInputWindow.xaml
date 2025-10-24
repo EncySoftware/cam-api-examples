@@ -1,28 +1,77 @@
-<Window x:Class="ExtensionOperationToolNet.TextInputWindow"
+<Window x:Class="ExtensionOperationToolPopupNet.TextInputWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="List of tools" Height="320" Width="640"
+        Title="List of tools" Height="450" Width="700"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="List of tools:" Margin="0,0,0,10"/>
-        <ListBox x:Name="ItemsListBox" Grid.Row="1" Margin="0,0,0,5"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <!-- Top Section - ListBox -->
+        <Border Grid.Row="0" BorderBrush="LightGray" BorderThickness="1" Margin="0,0,0,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="List of tools:" FontWeight="Bold" Margin="5"/>
+                <ListBox x:Name="ItemsListBox" Grid.Row="1" 
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="5,2"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="OK" Width="80" Click="Ok_Click" x:Name="OkButton"/>
-        </StackPanel>
+        <!-- Separator -->
+        <Separator Grid.Row="1" Margin="0,5,0,15" Background="Gray"/>
+
+        <!-- Bottom Section - Import -->
+        <Border Grid.Row="2" BorderBrush="LightGray" BorderThickness="1" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+               
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Import Header -->
+                <TextBlock Text="Add tool from library" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                          Margin="0,0,0,15" FontWeight="Bold" FontSize="14"/>
+
+                <!-- Name Input -->
+                <TextBlock Text="Name of library:" Grid.Row="1" Grid.Column="0"
+                          VerticalAlignment="Center" Margin="0,0,10,10"/>
+                <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBox x:Name="NameTextBox" Width="250" Height="25"/>
+                    <Button Content="..." Width="30" Margin="10,0,0,0" Click="Import_Click"/>
+                </StackPanel>
+
+                <!-- Id Input -->
+                <TextBlock Text="Tool id:" Grid.Row="2" Grid.Column="0"
+                          VerticalAlignment="Center" Margin="0,0,10,10"/>
+                <TextBox x:Name="IdTextBox" Grid.Row="2" Grid.Column="1" 
+                         Width="250" Height="25" Margin="0,0,0,10"/>
+
+                <!-- Add Button -->
+                <Button Content="Add tool" Width="80" Height="30" Grid.Row="1" Grid.Column="2" Grid.RowSpan="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" 
+                        x:Name="AddButton" Margin="10,0,0,0" Click="AddButton_Click"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

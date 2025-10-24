@@ -43,7 +43,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/project/main/ExtensionOperationToolNet.csproj",
+                "${workspaceFolder}/project/main/ExtensionOperationToolPopupNet.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
