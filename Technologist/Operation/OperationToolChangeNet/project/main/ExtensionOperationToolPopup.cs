@@ -1,4 +1,6 @@
-﻿using CAMAPI.Extensions;
+﻿using System.Runtime.InteropServices;
+using CAMAPI.DotnetHelper;
+using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;
 using CAMAPI.TechnologyForm;
@@ -24,6 +26,7 @@ public class ExtensionOperationToolPopup : IExtension, IExtensionOperationPopup
 
         try
         {
+            ComWrapperSettings.ApplicationApartmentState = ApartmentState.STA;
             var popupItems = context.OperationPopup;
             popupItems.AddItem("Select tool for operation", "Select tool for operation", true, new SelectToolOnClicked(), out resultStatus);
         }
