@@ -23,7 +23,7 @@ public static class Program
         var sgfFilePath = args.Length > 1 ? args[1] : "temp.sgf";
             
         // connect STGeomFile.dll
-        var dllPath = Path.Combine(@"C:\Program Files\ENCY Software\ENCY NB 2\Bin64", "STGeomFile.dll");
+        var dllPath = Path.Combine(@"C:\Program Files\ENCY Software\ENCY 2\Bin64", "STGeomFile.dll");
         if (!File.Exists(dllPath))
             throw new Exception($"{dllPath} not found");
         if (!File.Exists(dllPath))

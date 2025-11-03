@@ -9,7 +9,7 @@ namespace STConsoleApp
     partial class Program
     {
         private static string _myToolStorageFilePath = "TestStorage.db";
-        private static string _binCAMDir = @"C:\Program Files\ENCY Software\ENCY NB 2\Bin64"; // Path to the installed ENCY folder
+        private static string _binCAMDir = @"C:\Program Files\ENCY Software\ENCY 2\Bin64"; // Path to the installed ENCY folder
 
         static void Main(string[] args)
         {

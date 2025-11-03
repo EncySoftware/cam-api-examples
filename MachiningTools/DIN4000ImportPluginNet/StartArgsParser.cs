@@ -7,7 +7,7 @@ namespace DIN4000ImportPlugin
         public List<string> ZipFiles;
         public List<string> CsvFiles;
         public string ResultDBFile;
-        public string SCInstallFolder = @"C:\Program Files\ENCY Software\ENCY NB 2";
+        public string SCInstallFolder = @"C:\Program Files\ENCY Software\ENCY 2";
 
         public StartArgs()
         {

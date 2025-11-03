@@ -24,7 +24,7 @@ public class CamHelper : IDisposable
     public CamHelper()
     {
         // path to CAM application
-        const string camFolder = @"C:\Program Files\ENCY Software\ENCY NB 2\Bin64";
+        const string camFolder = @"C:\Program Files\ENCY Software\ENCY 2\Bin64";
         var helperPath = Path.Combine(camFolder, "CAMIPC.Helper.Cam.dll");
         if (!File.Exists(helperPath))
             throw new Exception($"{helperPath} not found");
