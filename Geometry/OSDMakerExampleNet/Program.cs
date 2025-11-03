@@ -16,7 +16,7 @@ public delegate IntPtr CreateGeometryLibraryPointer();
 
 public class Program
 {
-    private static string binCAMDir = @"C:/Program Files/ENCY Software/ENCY 2/Bin64";
+    private static string binCAMDir = @"C:/Program Files/ENCY Software/ENCY NB 2/Bin64";
     private static string modelName = @"Milling_3D\49-1.igs";
 
     static void Main(string[] args)

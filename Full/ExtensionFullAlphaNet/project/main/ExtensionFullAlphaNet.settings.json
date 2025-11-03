@@ -1,0 +1,14 @@
+{
+    "name": "Create full project (alpha)",
+    "description": "Create full project (alpha)",
+    "module_path": "${extensionJsonFolder}/ExtensionFullAlphaNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Create full project (alpha)",
+                "caption": "Create full project (alpha)",
+                "id": "Extension.Utility.Full.Alpha.Net"
+            }
+        }
+    ]
+}
