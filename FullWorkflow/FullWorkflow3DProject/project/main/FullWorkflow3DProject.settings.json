@@ -1,0 +1,14 @@
+{
+    "name": "Create full 3D project",
+    "description": "Create full 3D project",
+    "module_path": "${extensionJsonFolder}/FullWorkflow3DProject.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Create full 3D project",
+                "caption": "Create full 3D project",
+                "id": "Extension.Utility.FullWorkflow.3DProject"
+            }
+        }
+    ]
+}
