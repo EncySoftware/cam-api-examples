@@ -1,14 +1,14 @@
 # cam-api-examples
 Examples of using API of EncyCAM
 
-Documentation: https://docs.encycam.com/CAMAPI/1/en/
+Documentation: https://docs.encycam.com/CAMAPI/2/en/
 
-Lessons: https://docs.encycam.com/CAMAPI/1/en/src/Lessons/Main.html
+Lessons: https://docs.encycam.com/CAMAPI/2/en/src/Lessons/Main.html
 
-AI generated docs: https://deepwiki.com/EncySoftware/cam-api-examples/1-overview
+AI generated docs: https://deepwiki.com/EncySoftware/cam-api-examples/2-overview
 
-To be possible **to build examples** from this repository you should first add our server to the nuget package sources list.
-To do this just **run addNugetSources.cmd** script from the root of this repository.
+To be possible **to build examples** from this repository, you should first add our server to the nuget package sources list.
+To do this, just **run addNugetSources.cmd** script from the root of this repository.
 
 
 ## Projects information
@@ -23,11 +23,6 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - ExtensionUtilityDialogWindowNet - [**ExtensionUtilityDialogWindowNet**](./UI/ExtensionUtilityDialogWindowNet/project/main/README.md)
 - ExtensionUtilityDialogWindowNet - [**ExtensionUtilityDialogWindowNet**](./UI/ExtensionUtilityMessageBoxNet/project/main/README.md)
 - ExtensionUtilityNotifyNet - [**ExtensionUtilityNotifyNet**](./UI/ExtensionUtilityNotifyNet/project/main/README.md)
-
-
-### CAMIPC examples
-- ApplicationEmptyNet - [**ApplicationEmptyNet**](./ApplicationEmpty/ApplicationEmptyNet/project/main/README.md)
-
 
 ### Geometry examples
 - AddinImportObjNet - [**AddinImportObjNet**](./Geometry/AddinImportObjNet/project/main/README.md)
@@ -62,3 +57,6 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 ### PLM examples
 - PLMExtensionNet - [**PLMExtensionNet**](./PLMIntegration/PLMExtensionNet/readme.md)
+
+### Full workflow examples
+- FullWorkflow3DProject - [**FullWorkflow3DProject**](./FullWorkflow/FullWorkflow3DProject/project/main/README.md)
