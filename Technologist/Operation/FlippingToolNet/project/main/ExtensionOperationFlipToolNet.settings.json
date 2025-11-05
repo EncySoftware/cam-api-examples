@@ -1,13 +1,13 @@
 {
     "name": "Tool usage example",
     "description": "Demonstrates how to change machine`s state ",
-    "module_path": "${extensionJsonFolder}/ExtensionOperationFlipToolNet.dll",
+    "module_path": "${extensionJsonFolder}\\ExtensionOperationFlipToolNet.dll",
     "extensions": [
         {
             "utility": {
-                "name": "Change machine`s state",
+                "name": "Set the final position",
                 "caption": "Tool: set the final position of the tool",
-                "id": "Extension.Operation.FlipTool.Net"
+                "id": "Extension.Operation.CalcAxes.Net"
             }
         },
         {

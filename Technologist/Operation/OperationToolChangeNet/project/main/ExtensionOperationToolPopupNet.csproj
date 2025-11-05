@@ -8,11 +8,10 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutDir>bin\$(Configuration)\</OutDir>
-    <CAMPath>C:\Program Files\ENCY Software\ENCY NB\Bin64</CAMPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.4-dev.7" />
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="1.4.4-dev.8" />
   </ItemGroup>
 
   <ItemGroup>
