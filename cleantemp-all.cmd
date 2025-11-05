@@ -3,8 +3,9 @@ cd /D %~dp0
 
 SET nopause=true
 
-call :CLEANTEMPPROJECT "ApplicationEmpty\ApplicationEmptyNet\commands\cleantemp.cmd"
-call :CLEANTEMPPROJECT "ApplicationSgfCreator\ApplicationSgfCreatorNet\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "ApplicationNet\CreateOperations\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "ApplicationNet\FullWorkflow3DProject\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "ApplicationNet\GeometryImporter\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "Attributes\ExtensionAttributesManageNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "CLData\ExtensionGeomCLDataConverterNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "ExtensionEmpty\ExtensionEmptyCpp\commands\cleantemp.cmd"
@@ -16,6 +17,7 @@ call :CLEANTEMPPROJECT "ExtensionOperationPopup\ExtensionOperationPopupOnChangeN
 call :CLEANTEMPPROJECT "ExtensionUtility\ExtensionUtilityCpp\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "ExtensionUtility\ExtensionUtilityDelphi\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "ExtensionUtility\ExtensionUtilityNet\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "FullWorkflow\ExtensionFullWorkflow3DProject\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "GCodeGeneration\ExtensionUtilityNCMakerNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "Geometry\AddinImportObjNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "Geometry\AddinImportSvgNet\commands\cleantemp.cmd"
@@ -33,6 +35,10 @@ call :CLEANTEMPPROJECT "PLMIntegration\PLMExtensionDelphi\commands\cleantemp.cmd
 call :CLEANTEMPPROJECT "PLMIntegration\PLMExtensionNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "ProjectMachine\ExtensionUtilityProjectMachineInfoNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "ProjectToolsList\ExtensionUtilityProjectToolsListNet\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "Technologist\Operation\FlippingToolNet\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "Technologist\Operation\OperationNet\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "Technologist\Operation\OperationToolChangeNet\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "Technologist\Operation\RenameOperationsNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "UI\ExtensionUtilityDialogWindowNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "UI\ExtensionUtilityMessageBoxNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "UI\ExtensionUtilityNotifyNet\commands\cleantemp.cmd"
