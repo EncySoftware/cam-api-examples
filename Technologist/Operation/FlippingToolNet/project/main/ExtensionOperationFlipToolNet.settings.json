@@ -12,9 +12,9 @@
         },
         {
             "utility": {
-                "name": "Change machine`s state",
+                "name": "Calculate machine`s axis parameters",
                 "caption": "Tool: calculate machine`s axis parameters",
-                "id": "Extension.Operation.CalcAxes.Net"
+                "id": "Extension.Operation.FlipTool.Net"
             }
         }
     ]

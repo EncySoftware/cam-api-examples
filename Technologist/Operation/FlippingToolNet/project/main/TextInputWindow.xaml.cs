@@ -10,13 +10,17 @@ namespace ExtensionOperationFlipToolNet;
 public partial class TextInputWindow
 {
     private readonly List<AxesInfo> _axes;
-    private readonly Dictionary<string, TextBox> _axesTextboxes = new();
-    private readonly Dictionary<string, CheckBox> _axesCheckboxes = new();
-    public event Action<ToolParameters>? SettingsApplied;
-    public ToolParameters Settings { get; private set; }
+    private readonly Dictionary<string, TextBox> _axesTextboxes = [];
+    private readonly Dictionary<string, CheckBox> _axesCheckboxes = [];
     /// <summary>
-    /// User input from the text box
+    /// Tool params
     /// </summary>
+    public event Action<ToolParameters>? SettingsApplied;
+    /// <summary>
+    /// Tool params
+    /// </summary>
+    public ToolParameters Settings { get; private set; }
+    
 
     /// <summary>
     /// Simple window to ask user for text input
