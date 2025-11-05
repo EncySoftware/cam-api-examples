@@ -27,7 +27,7 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 ### CAMIPC examples
 - ApplicationCreateOperations - [**ApplicationCreateOperations**](./ApplicationNet/CreateOperations/project/main/README.md)
-- ApplicationNetFullAlpha - [**ApplicationNetFullAlpha**](./ApplicationNet/FullAlpha/project/main/README.md)
+- ApplicationNetFullWorkflow3DProject - [**ApplicationNetFullWorkflow3DProject**](./ApplicationNet/FullWorkflow3DProject/project/main/README.md)
 - ApplicationGeometryImporter - [**ApplicationGeometryImporter**](./ApplicationNet/GeometryImporter/project/main/README.md)  
 
 ### Geometry examples
