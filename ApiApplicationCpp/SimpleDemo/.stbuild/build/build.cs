@@ -1,9 +1,8 @@
-using System;
 using System.IO;
 using System.Collections.Generic;
-using System.IO.Compression;
 using Nuke.Common;
 using BuildSystem.Builder.Dotnet;
+using BuildSystem.Builder.MsCpp;
 using BuildSystem.BuildSpace;
 using BuildSystem.BuildSpace.Common;
 using BuildSystem.Cleaner.Common;
@@ -25,7 +24,7 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling target by default
     /// </summary>
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => x.Compile);
 
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
@@ -69,11 +68,11 @@ public class Build : NukeBuild
         {
             Projects = new HashSet<string>
             {
-                Path.Combine(RootDirectory.Parent, "main", ".stbuild", "CamRunnerProject.json")
+                Path.Combine(RootDirectory.Parent, "main", ".stbuild", "SimpleDemoProject.json")
             },
-            Variants = new VariantList
-            {
-                new()
+            Variants =
+            [
+                new Variant
                 {
                     Name = "Debug",
                     Configurations = new Dictionary<string, string>
@@ -82,10 +81,11 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
                     }
                 },
-                new()
+
+                new Variant
                 {
                     Name = "Release",
                     Configurations = new Dictionary<string, string>
@@ -94,15 +94,17 @@ public class Build : NukeBuild
                     },
                     Platforms = new Dictionary<string, string>
                     {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
+                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
                     }
                 }
-            },
+            ],
             ManagerProps =
             [
-                new BuilderDotnetProps
+                new BuilderMsCppProps
                 {
-                    Name = "BuilderDotnet"
+                    Name = "BuilderCpp",
+                    MsBuilderPath =
+                        "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
                 },
 
                 new RestorerNugetProps
@@ -116,8 +118,8 @@ public class Build : NukeBuild
                 }
             ]
         };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet"); 
+        settings.ManagerNames.Add("builder", "Debug", "BuilderCpp");
+        settings.ManagerNames.Add("builder", "Release", "BuilderCpp"); 
         settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
         settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
         settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
@@ -187,42 +189,6 @@ public class Build : NukeBuild
                         Logger.head($"⚠️  Could not delete {dir}: {ex.Message}");
                     }
                 }
-            }
-        });
-
-    /// <summary>
-    /// Create .dext file, which can be injected
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private Target Pack => _ => _
-        .DependsOn(Compile)
-        .Executes(() =>
-        {
-            foreach (var project in BuildSpace.Projects)
-            {
-                // path to dll (to be included into dext)
-                var dllPath = project.GetBuildResultPath(Variant, "dll")
-                              ?? throw new Exception("Build results with dll type not found");
-
-                // path to json, describing extension (to be included into dext)
-                var projectFolder = Path.GetDirectoryName(project.MainFilePath)
-                                    ?? throw new Exception("Main file path is null");
-                var jsonPath = Path.Combine(projectFolder, Path.GetFileNameWithoutExtension(dllPath) + ".settings.json");
-
-
-
-                // make new dext
-                var outputFolder = Path.GetDirectoryName(dllPath)
-                                   ?? throw new Exception("Parent folder of dll path is null");
-                var dextPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(dllPath) + ".dext");
-                if (File.Exists(dextPath))
-                    File.Delete(dextPath);
-
-                using var zipToOpen = new FileStream(dextPath, FileMode.Create);
-                using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
-                archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
-                archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
-                Logger.head($"Created dext file: {dextPath}");
             }
         });
 }

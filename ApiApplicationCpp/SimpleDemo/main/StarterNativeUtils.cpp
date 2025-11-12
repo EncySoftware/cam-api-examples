@@ -6,10 +6,9 @@
 #include <comutil.h> // для SysAllocString и _bstr_t (если нужно)
 #include <chrono>
 
-const IID IID_ISCStarterNativeUtils =
-{ 0x8737E4D6, 0xAD3B, 0x4145, { 0x96, 0x4A, 0x0E, 0x2A, 0x2E, 0x0A, 0x51, 0xD6 } };
-
-// Keep the DLL handle inside this translation unit
+/// <summary>
+/// Keep the DLL handle inside this translation unit
+/// </summary>
 static HMODULE hModule = nullptr;
 
 ISCStarterNativeUtils* StarterNativeUtils::GetLibrary() {
@@ -18,30 +17,24 @@ ISCStarterNativeUtils* StarterNativeUtils::GetLibrary() {
         hModule = NativeLibLoader::LoadDll(dllName);
     }
 
+    // call
     auto getLibFunc = NativeLibLoader::GetProc<GetLibPointer>(
         hModule, "GetLibPointer"
     );
-
-    IUnknown* pUnknown = getLibFunc();
-    if (!pUnknown)
+    if (!getLibFunc)
+        throw std::runtime_error("Failed to get GetLibPointer function.");
+    auto rawPtr = getLibFunc();
+    if (!rawPtr)
         throw std::runtime_error("GetLibPointer returned nullptr.");
 
-    ISCStarterNativeUtils* pLib = nullptr;
-    HRESULT hr = pUnknown->QueryInterface(IID_ISCStarterNativeUtils, reinterpret_cast<void**>(&pLib));
-
-    if (FAILED(hr))
-        throw std::runtime_error("QueryInterface for ISCStarterNativeUtils failed, HRESULT=0x" +
-                                 std::to_string(hr));
-    pUnknown->Release();
-
+    // build result
+    auto* pLib = reinterpret_cast<ISCStarterNativeUtils*>(rawPtr);
     std::cout << "ISCStarterNativeUtils interface acquired successfully." << std::endl;
     return pLib;
 }
 
 IST_Logger* StarterNativeUtils::InitLogs(bool aprocDependentFileName) {
     ISCStarterNativeUtils* lib = GetLibrary();
-    if (!lib)
-        throw std::runtime_error("Failed to get ISCStarterNativeUtils instance.");
 
     HRESULT hr = lib->InitLogs(aprocDependentFileName);
     if (FAILED(hr))

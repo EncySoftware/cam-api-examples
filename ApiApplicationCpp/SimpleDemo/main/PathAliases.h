@@ -1,13 +1,11 @@
 ﻿#pragma once
 #include <Unknwn.h>
-#include <windows.h>
 #include <PathAliasesInterface.h>
 #include <string>
 
-// GUID of the IST_PathAliasLibrary interface
-extern const IID IID_IST_PathAliasLibrary;
-
-// Type of function exported from the DLL
+/// <summary>
+/// Type of function exported from the DLL
+/// </summary>
 typedef IUnknown* (__stdcall *GetPathAliasLibPointer)();
 
 class PathAliases {

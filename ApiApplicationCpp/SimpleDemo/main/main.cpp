@@ -2,7 +2,6 @@
 #include <codecvt>
 #include <filesystem>
 #include <iostream>
-#include <locale>
 
 #include "PathAliases.h"
 #include "CamApplication.h"
@@ -30,6 +29,7 @@ int main(int argc, char* argv[]) {
 
     IST_Logger* logger = nullptr;
     ICamApiApplication* application;
+    TResultStatus resultStatus = {};
     try {
         // init paths
         auto list = PathAliases::InitFolders(L"SCConsole.exe", false);
@@ -48,20 +48,19 @@ int main(int argc, char* argv[]) {
         if (!logger)
             throw std::runtime_error("Logger initialization failed.");
 
-        // run CAM
+        // convert params
         std::wcout << L"Received " << argc - 1 << L" argument(s):" << std::endl;
-
         for (int i = 1; i < argc; ++i) {
             std::wcout << L"  arg" << i << L": " << argv[i] << std::endl;
         }
 
-        // например, передать всё строкой в CamApplication::Run
         std::wstring params;
         for (int i = 1; i < argc; ++i) {
             if (i > 1) params += L" ";
             params += Utf8ToWide(argv[i]);
         }
 
+        // run CAM
         application = CamApplication::Run(params);
         BSTR path = nullptr;
         hr = application->get_ExecutablePath(&path);
@@ -70,6 +69,22 @@ int main(int argc, char* argv[]) {
             SysFreeString(path);
         } else {
             wprintf(L"Error: 0x%08X\n", hr);
+        }
+
+        // get extension manager
+        IExtensionManager* pExtMgr = nullptr;
+        hr = application->GetExtensionManager(&resultStatus, &pExtMgr);
+        if (FAILED(hr)) {
+            throw std::runtime_error("GetExtensionManager failed.");
+        }
+
+        // call simple method to be sure extension manager works
+        hr = pExtMgr->get_ApiVersion(&path);
+        if (SUCCEEDED(hr)) {
+            std::wcout << L"Extension Manager API Version: " << path << std::endl;
+            SysFreeString(path);
+        } else {
+            wprintf(L"Error getting API Version: 0x%08X\n", hr);
         }
     }
     catch (const std::exception& ex) {

@@ -3,13 +3,14 @@
 #include "NativeLibLoader.h"
 #include <iostream>
 
-const IID IID_ICamApiApplication =
-{ 0x79A78312, 0xDA90, 0x46E8, { 0x84, 0x18, 0xC4, 0xE7, 0x1B, 0xBD, 0x16, 0x27 } };
-
-// кэшируем хэндл DLL
+/// <summary>
+/// Keep the DLL handle inside this translation unit
+/// </summary>
 static HMODULE hModule = nullptr;
 
-// сигнатуры возможных экспортов
+/// <summary>
+/// Function pointer type for RunApplication
+/// </summary>
 using RunSCConsole = int (__stdcall*)(LPCWSTR);
 
 ICamApiApplication* CamApplication::Run(const std::wstring& params) {
@@ -19,7 +20,7 @@ ICamApiApplication* CamApplication::Run(const std::wstring& params) {
 
     auto runFunc = NativeLibLoader::GetProc<RunApplication>(hModule, "RunApplication");
 
-    // Конвертация параметров из wstring → UTF-8
+    // converting wstring → UTF-8
     std::string utf8Params;
     {
         int size = WideCharToMultiByte(CP_UTF8, 0, params.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -27,13 +28,14 @@ ICamApiApplication* CamApplication::Run(const std::wstring& params) {
         WideCharToMultiByte(CP_UTF8, 0, params.c_str(), -1, utf8Params.data(), size, nullptr, nullptr);
     }
 
-    // Вызов функции
+    // call RunApplication
     auto rawPtr = runFunc(utf8Params.c_str());
     if (!rawPtr)
         throw std::runtime_error("RunApplication returned nullptr.");
 
-    // Приведение к COM-интерфейсу
-    ICamApiApplication* pApp = reinterpret_cast<ICamApiApplication*>(rawPtr);
+    // build result
+    auto* pApp = reinterpret_cast<ICamApiApplication*>(rawPtr);
+    std::cout << "ICamApiApplication interface acquired successfully." << std::endl;
     return pApp;
 }
 

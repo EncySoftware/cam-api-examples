@@ -2,10 +2,9 @@
 #include "PathAliases.h"
 #include "NativeLibLoader.h"
 
-const IID IID_IST_PathAliasLibrary =
-{ 0x4D6DAEC4, 0x3A84, 0x4D68, { 0x84, 0xDB, 0x2C, 0x6D, 0xAA, 0xDC, 0x27, 0x3F } };
-
-// Keep the DLL handle inside this translation unit
+/// <summary>
+/// Cache the DLL handle inside this translation unit
+/// </summary>
 static HMODULE hModule = nullptr;
 
 IST_PathAliasLibrary* PathAliases::GetLibrary() {
@@ -14,22 +13,18 @@ IST_PathAliasLibrary* PathAliases::GetLibrary() {
         hModule = NativeLibLoader::LoadDll(dllName);
     }
 
+    // call
     auto getPathAliasLibrary = NativeLibLoader::GetProc<GetPathAliasLibPointer>(
         hModule, "GetPathAliasLibPointer"
     );
-
-    IUnknown* pUnknown = getPathAliasLibrary();
-    if (!pUnknown)
+    if (!getPathAliasLibrary)
+        throw std::runtime_error("Failed to get GetPathAliasLibPointer function.");
+    auto rawPtr = getPathAliasLibrary();
+    if (!rawPtr)
         throw std::runtime_error("GetPathAliasLibPointer returned nullptr.");
 
-    IST_PathAliasLibrary* pLib = nullptr;
-    HRESULT hr = pUnknown->QueryInterface(IID_IST_PathAliasLibrary, reinterpret_cast<void**>(&pLib));
-
-    if (FAILED(hr))
-        throw std::runtime_error("QueryInterface for IST_PathAliasLibrary failed, HRESULT=0x" +
-                                 std::to_string(hr));
-    pUnknown->Release();
-
+    // build result
+    auto* pLib = reinterpret_cast<IST_PathAliasLibrary*>(rawPtr);
     std::cout << "IST_PathAliasLibrary interface acquired successfully." << std::endl;
     return pLib;
 }
@@ -37,8 +32,6 @@ IST_PathAliasLibrary* PathAliases::GetLibrary() {
 IST_AliasesList* PathAliases::InitFolders(const std::wstring& clientDllName, bool includePrIdInPath) {
     // Get COM interface
     IST_PathAliasLibrary* lib = GetLibrary();
-    if (!lib)
-        throw std::runtime_error("Failed to get IST_PathAliasLibrary instance.");
 
     // Call InitializeCAMFolders2
     IST_AliasesList* list = nullptr;

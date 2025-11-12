@@ -2,6 +2,7 @@
 #include "oaidl.h"
 #include "ocidl.h"
 #include <Unknwn.h>
+#include "CAMAPI.ResultStatus.h"
 #include <CAMAPI.EventHandler.h>
 #include <CAMAPI.Generic.List.h>
 #include <STTypes.h>
