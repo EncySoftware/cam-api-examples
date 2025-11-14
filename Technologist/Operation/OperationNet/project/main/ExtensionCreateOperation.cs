@@ -19,16 +19,16 @@ internal class ExtensionCreateOperation : IExtension, IExtensionUtility
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
 
-    private static string? SelectOperation(List<string> items)
+    private static OperationTypeInfo? SelectOperation(List<OperationTypeInfo> items)
     {
-        string? result = null;
+        OperationTypeInfo? result = null;
 
         var thread = new Thread(() =>
         {
             var window = new TextInputWindow(items);
 
             if (window.ShowDialog() == true)
-                result = window.UserInput;
+                result = window.SelectedItem;
         });
 
         thread.SetApartmentState(ApartmentState.STA);
@@ -60,23 +60,33 @@ internal class ExtensionCreateOperation : IExtension, IExtensionUtility
             // get technologist
             using var technologistCom = projectCom.InvokeAndWrap(project => project.Technologist);
 
+            // List for operation types
+            var operationTypeInfos = new List<OperationTypeInfo>();
             // get the list of operations
-            var ids = new List<string>();
-            technologistCom.Invoke(technologist =>
+            var enumOperationTypes = technologistCom.EnumerateOperationTypes();
+            using (var enumerator = enumOperationTypes.GetEnumerator())
             {
-                var operationTypes = technologist.GetAvailableOperationTypeIds(out var executeContext);
-                if (executeContext.Code == TResultStatusCode.rsError)
-                    throw new Exception(executeContext.Description);
+                while (enumerator.MoveNext())
+                {
+                    var currentOperationType = enumerator.Current;
+                    var currentOpTypeInstance = currentOperationType.Instance;
 
-                for (var i = 0; i < operationTypes.Count(); i++)
-                    ids.Add(operationTypes.Get(i));
-            });
+                    var operationTypeId = currentOpTypeInstance.Id;
+                    var operationTypeCaption = currentOpTypeInstance.Caption;
+                    var operationTypeDeclarationXmlFilePath = currentOpTypeInstance.DeclarationXmlFilePath;
+                    operationTypeInfos.Add(
+                        new OperationTypeInfo(operationTypeId, operationTypeCaption, operationTypeDeclarationXmlFilePath));
+                }
+            }
 
             // get user`s choice
-            string selectedId = SelectOperation(ids);
-            if (selectedId == null)
+            OperationTypeInfo selectedOperation = SelectOperation(operationTypeInfos);
+            // if not selected
+            if (selectedOperation == null)
                 return;
 
+            string selectedId = selectedOperation.Id;
+            
             // create operation
             using var operationCom = technologistCom.InvokeAndWrap(technologist =>
                 technologist.CreateOperation(selectedId, "", "", out var resultStatus));

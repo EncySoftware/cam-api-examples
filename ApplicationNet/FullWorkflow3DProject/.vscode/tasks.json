@@ -43,7 +43,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/project/main/ExtensionOperationsNet.csproj",
+                "${workspaceFolder}/project/main/FullWorkflow3DProject.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],

@@ -38,11 +38,12 @@ public class ExtensionFactory : IExtensionFactory
         try
         {
             ret = default;
-            if (extensionIdent == "Extension.Operation.FlipTool.Net")
-                return new ExtensionOperationFlipTool();
-            else if (extensionIdent == "Extension.Operation.CalcAxes.Net")
-                return new ExtensionOperationCalcAxesNet();
-            throw new Exception("Unknown extension identifier: " + extensionIdent);   
+            return extensionIdent switch
+            {
+                "Extension.Operation.FlipTool.Net" => new ExtensionOperationFlipTool(),
+                "Extension.Operation.CalcAxes.Net" => new ExtensionOperationCalcAxesNet(),
+                _ => throw new Exception("Unknown extension identifier: " + extensionIdent)
+            };
         }
         catch (Exception e)
         {

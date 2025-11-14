@@ -28,6 +28,11 @@ internal class ExtensionOperationFlipTool : IExtension, IExtensionUtility
         var thread = new Thread(() =>
         {
             var window = new TextInputWindow(axes);
+            window.SettingsApplied += (settings) =>
+            {
+                result = settings;
+            
+            };
             if (window.ShowDialog() == true)
                 result = window.Settings;
         });
@@ -74,12 +79,16 @@ internal class ExtensionOperationFlipTool : IExtension, IExtensionUtility
                 for (var i = 0; i < axesCount; i++)
                 {
                     var axisId = machineConfiguration.AxisId[i];
-                    var axisEnabled = machineConfiguration.AxisEnabled[i];
+                    var axisDefined = machineConfiguration.AxisDefined[i];
                     var axisValue = machineConfiguration.AxisValue[i];
-                    
-                    axesLines.Add(
-                        new AxesInfo { Id = axisId, Enabled = axisEnabled, Value = axisValue}
-                    );
+                    var axisAvailable = machineConfiguration.AxisAvailable[i];
+
+                    if (axisAvailable)
+                    {
+                        axesLines.Add(
+                            new AxesInfo { Id = axisId, Defined = axisDefined, Value = axisValue }
+                        );
+                    }
                 }
             });
 
@@ -87,15 +96,19 @@ internal class ExtensionOperationFlipTool : IExtension, IExtensionUtility
             if (settings == null)
                 return;
 
-           
+            var axesDict = settings.Axes.ToDictionary(a => a.Id, a => a);
             machineConfigurationCom.Invoke(machineConfiguration =>
             {
                 var axesCount = machineConfiguration.AxesCount;
                 for (var i = 0; i < axesCount; i++)
                 {
-                    var axesInfo = settings.Axes[i];
-                    //machineConfiguration.AxisEnabled[i] = false;
-                    machineConfiguration.AxisValue[i] = axesInfo.Value;
+                    var axesId = machineConfiguration.AxisId[i];
+                    if (settings.AxesIds.Contains(axesId) && axesDict.TryGetValue(axesId, out var axesInfo))
+                    {
+                        //var axesInfo = settings.Axes[i];
+                        machineConfiguration.AxisDefined[i] = axesInfo.Defined;
+                        machineConfiguration.AxisValue[i] = axesInfo.Value;
+                    }
                 }
             });
         

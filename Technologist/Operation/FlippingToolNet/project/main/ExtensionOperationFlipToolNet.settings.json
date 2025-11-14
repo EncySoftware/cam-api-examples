@@ -7,14 +7,14 @@
             "utility": {
                 "name": "Change machine`s state",
                 "caption": "Tool: set the final position of the tool",
-                "id": "Extension.Operation.FlipTool.Net"
+                "id": "Extension.Operation.CalcAxes.Net"
             }
         },
         {
             "utility": {
                 "name": "Change machine`s state",
                 "caption": "Tool: calculate machine`s axis parameters",
-                "id": "Extension.Operation.CalcAxes.Net"
+                "id": "Extension.Operation.FlipTool.Net"
             }
         }
     ]

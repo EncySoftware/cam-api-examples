@@ -1,8 +1,6 @@
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
 using Microsoft.Win32;
-
+using System.Collections.ObjectModel;
 namespace ExtensionOperationToolPopupNet;
 
 /// <summary>
@@ -11,39 +9,58 @@ namespace ExtensionOperationToolPopupNet;
 public partial class TextInputWindow
 {
     /// <summary>
-    /// Path for file dialog
+    /// Name of library
     /// </summary>
-    public string InitialDirectory { get; set; } = @"C:\ProgramData\ENCY Software\ENCY NB\Version 1\Libraries\Tools\Examples";
-
-    /// <summary>
-    /// Selected file path
-    /// </summary>
-    public string? SelectedFilePath { get; private set; }
     public string? LibraryName { get; private set; }
+    /// <summary>
+    /// Tool id
+    /// </summary>
     public string? ToolId { get; private set; }
+    /// <summary>
+    /// Action to add tool(LibraryName, ToolId for args)
+    /// </summary>
+    public event Action<string, string>? OnToolAdded;
+    private ObservableCollection<string> itemsCollection;
     /// <summary>
     /// Simple window to ask user for text input
     /// </summary>
     public TextInputWindow(List<string> items)
     {
         InitializeComponent();
-        ItemsListBox.ItemsSource = items;
+        itemsCollection = new ObservableCollection<string>(items);
+        ItemsListBox.ItemsSource = itemsCollection;
     }
-
+    /// <summary>
+    /// Updating list of items after adding new element
+    /// </summary>
+    public void UpdateItems(List<string> newItems)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            itemsCollection.Clear();
+            foreach (var item in newItems)
+            {
+                itemsCollection.Add(item);
+            }
+            
+            NameTextBox.Text = "";
+            IdTextBox.Text = "";
+        });
+    }
     private void Import_Click(object sender, RoutedEventArgs e)
     {
         var openFileDialog = new OpenFileDialog
         {
             Filter = "Database files (*.db)|*.db|All files (*.*)|*.*",
             FilterIndex = 1,
-            InitialDirectory = InitialDirectory,
             Title = "Select database file"
         };
 
         if (openFileDialog.ShowDialog() == true)
         {
-            SelectedFilePath = openFileDialog.FileName;
-            NameTextBox.Text = System.IO.Path.GetFileNameWithoutExtension(SelectedFilePath);           
+            string selectedPath = openFileDialog.FileName; 
+            string folderName = System.IO.Path.GetFileName(selectedPath); 
+            NameTextBox.Text = folderName; 
         }
     }
 
@@ -66,16 +83,14 @@ public partial class TextInputWindow
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(SelectedFilePath) && !string.IsNullOrWhiteSpace(LibraryName))
-        {
-         
-            string filename = LibraryName;
-            if (!filename.EndsWith(".db", StringComparison.OrdinalIgnoreCase))
-            {
-                filename += ".db";
-            }
-            SelectedFilePath = System.IO.Path.Combine(InitialDirectory, filename);
-        }
-        //DialogResult = true;
+        OnToolAdded?.Invoke(LibraryName, ToolId);
+    }
+    /// <summary>
+    /// Message if it couldn`t find tool with exact id
+    /// </summary>
+    public void HandleToolNotFound(string toolId, string filePath)
+    {
+        MessageBox.Show($"Tool with Id: {toolId} not found in {filePath}", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 }

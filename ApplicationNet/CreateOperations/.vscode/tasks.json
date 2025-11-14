@@ -43,7 +43,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/project/main/ExtensionOperationFlipToolNet.csproj",
+                "${workspaceFolder}/project/main/ApplicationCreateOperations.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],

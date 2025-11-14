@@ -24,17 +24,6 @@ public class ExtensionLCSCreator
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
 
-
-    public double EnsureRotWithinRange(double value, double min, double max)
-    {
-        if (value > max)
-            return max;
-        else if (value < min)
-            return min;
-        else
-            return value;
-    }
-
     /// <inheritdoc />
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
