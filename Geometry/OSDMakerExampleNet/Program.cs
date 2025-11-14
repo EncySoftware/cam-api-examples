@@ -16,7 +16,7 @@ public delegate IntPtr CreateGeometryLibraryPointer();
 
 public class Program
 {
-    private static string binCAMDir = @"C:/Program Files/ENCY Software/ENCY/Bin64";
+    private static string binCAMDir = @"C:/Program Files/ENCY Software/ENCY 2/Bin64";
     private static string modelName = @"Milling_3D\49-1.igs";
 
     static void Main(string[] args)
@@ -33,7 +33,7 @@ public class Program
 
             var osdMakerPath = Path.Combine(binCAMDir, "OSDMaker.dll");   
             var importFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments),
-                    @"ENCY\Version 1\Models", modelName);
+                    @"ENCY\Version 2\Models", modelName);
             var exportDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "CAMAPI Geometry examples");
 
             osdMakerHandle = NativeLibLoader.LoadDll(osdMakerPath);

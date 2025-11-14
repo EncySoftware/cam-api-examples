@@ -4,9 +4,9 @@ using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
 using CAMAPI.DotnetHelper;
 using CAMAPI.CustomAttributes;
+using CAMAPI.PartStage;
 using CAMAPI.TechOperation;
 using CAMAPI.Project;
-using CAMAPI.Technologist;
 using CAMAPI.Tools;
 
 namespace ExtensionAttributesManageNet;

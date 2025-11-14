@@ -90,3 +90,6 @@ modules/
 
 *.res
 *.user
+
+cmake-build-debug
+x64

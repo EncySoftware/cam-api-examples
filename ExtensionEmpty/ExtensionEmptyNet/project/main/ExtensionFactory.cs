@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once CheckNamespace
 
-using ExtensionNetProject;
+using ExtensionEmptyNet;
 
 namespace CAMAPI;
 

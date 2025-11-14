@@ -39,16 +39,16 @@ public partial class MainWindow
             if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception(executeContext.ResultStatus.Description);
             
-            // get the list of operations
+            // get the list of operations types
             var ids = new List<string>();
-            technologistCom.Invoke(technologist =>
+            using var operationTypesCom = technologistCom.InvokeAndWrap(technologist => technologist.OperationTypes);
+            operationTypesCom.Invoke(operationTypes =>
             {
-                var operationTypes = technologist.GetAvailableOperationTypeIds(ref executeContext);
-                if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
-                    throw new Exception(executeContext.ResultStatus.Description);
-                
-                for (var i = 0; i < operationTypes.Count(); i++)
-                    ids.Add(operationTypes.Get(i));
+                do
+                {
+                    using var operationTypeCom = ComWrapper.Create(operationTypes.Current());
+                    ids.Add(operationTypeCom.Invoke(operationType => $"{operationType.Id}"));
+                } while (operationTypes.Next());
             });
             
             // fill the list with available operations
