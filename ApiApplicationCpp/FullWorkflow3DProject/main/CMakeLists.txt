@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 include_directories("${CMAKE_SOURCE_DIR}/../../../SDK/tlb")
 add_executable(FullWorkflow3DProject main.cpp
+        pch.cpp
+        pch.h
         NativeLibLoader.cpp
         NativeLibLoader.h
         PathAliases.cpp
@@ -25,4 +27,9 @@ add_executable(FullWorkflow3DProject main.cpp
         Helpers/ProjectHelper.h
         Helpers/TechnologyHelper.cpp
         Helpers/TechnologyHelper.h
+        Helpers/SimulationHelper.cpp
+        Helpers/SimulationHelper.h
+)
+target_include_directories(FullWorkflow3DProject PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
 )

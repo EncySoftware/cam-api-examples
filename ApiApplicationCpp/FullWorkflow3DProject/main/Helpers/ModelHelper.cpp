@@ -33,6 +33,7 @@ HRESULT ModelHelper::PrepareModel(ICamApiApplication* application,
         if (FAILED(hr) || !modelsFolder)
             throw std::runtime_error("get_ModelsFolder failed.");
         fs::path importFile = fs::path(modelsFolder) / importFilePath;
+        std::cout << "Import file: " << importFile << "\n";
         if (!fs::exists(importFile))
             throw std::runtime_error("Cannot find file to import: " + importFile.string());
 
@@ -49,6 +50,8 @@ HRESULT ModelHelper::PrepareModel(ICamApiApplication* application,
             throw std::runtime_error("ImportFile failed: " + Utils::BSTRToString(resultStatus.Description));
         if (FAILED(hr))
             throw std::runtime_error("ImportFile failed.");
+
+        std::cout << "Model import completed." << std::endl;
     }
     catch (const std::exception& ex) {
         std::cerr << "Error in PrepareModel(): " << ex.what() << std::endl;

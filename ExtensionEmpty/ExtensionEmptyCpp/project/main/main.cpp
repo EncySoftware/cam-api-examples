@@ -6,38 +6,9 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include "CamApi.SDK.h"
 
 #pragma comment(lib, "Shell32.lib")
-
-#import <STTypes.tlb> no_namespace, named_guids
-#import <STXmlPropTypes.tlb> no_namespace, named_guids
-#import <STCustomPropTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.MeshTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.CurveTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.SurfaceTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.ModelFormerTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.Logger.tlb> no_namespace, named_guids
-#import <CAMAPI.ResultStatus.tlb> no_namespace, named_guids
-#import "CAMAPI.Generic.List.tlb" no_namespace, named_guids
-#import "STGeomApiTypes.tlb" no_namespace, named_guids
-#import "CAMAPI.Singletons.tlb" no_namespace, named_guids
-#import "CAMAPI.Extensions.tlb" no_namespace, named_guids
-#import "CAMAPI.NCMaker.tlb" no_namespace, named_guids
-#import "CAMAPI.Machine.tlb" no_namespace, named_guids
-#import "CAMAPI.Tools.tlb" no_namespace, named_guids
-#import "CAMAPI.TechOperation.tlb" no_namespace, named_guids
-#import "CAMAPI.Technologist.tlb" no_namespace, named_guids
-#import "CAMAPI.Snapshot.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomImporter.tlb" no_namespace, named_guids
-#import "CAMAPI.ToolsList.tlb" no_namespace, named_guids
-#import "CAMAPI.Project.tlb" no_namespace, named_guids
-#import "CAMAPI.TechnologyForm.tlb" no_namespace, named_guids
-#import "CAMAPI.ApplicationMainForm.tlb" no_namespace, named_guids
-#import "CAMAPI.Extension.PLM.tlb" no_namespace, named_guids
-#import "CAMAPI.CustomAttributes.tlb" no_namespace, named_guids
-#import "CAMAPI.Application.tlb" no_namespace, named_guids
 
 namespace fs = std::filesystem;
 
@@ -96,22 +67,30 @@ private:
     struct IExtensionInfo* info = nullptr;
 
 public:
-    HRESULT STDMETHODCALLTYPE QueryInterface(
-        /* [in] */ REFIID riid,
-        /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject
-    ) override {
-        if (riid == __uuidof(IExtension)) {
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
+    {
+        if (!ppvObject)
+            return E_POINTER;
+
+        *ppvObject = nullptr;
+
+        if (riid == __uuidof(IUnknown) ||
+            riid == __uuidof(IExtension))
+        {
             *ppvObject = static_cast<IExtension*>(this);
-            return S_OK;
         }
-
-        if (riid == __uuidof(IExtensionUtility)) {
+        else if (riid == __uuidof(IExtensionUtility))
+        {
             *ppvObject = static_cast<IExtensionUtility*>(this);
-            return S_OK;
+        }
+        else
+        {
+            return E_NOINTERFACE;
         }
 
-        return S_FALSE;
-    };
+        AddRef();
+        return S_OK;
+    }
 
     ULONG STDMETHODCALLTYPE AddRef() override {
         return InterlockedIncrement(&m_refCount);
@@ -151,22 +130,34 @@ public:
         return S_OK;
     }
 
-    HRESULT __stdcall raw_Run(
+    HRESULT __stdcall Run(
         IExtensionUtilityContext* context,
         TResultStatus* ResultStatus
     ) override {
         ICamApiApplication* application = nullptr;
         ICamApiProject* project = nullptr;
 
+        BSTR id = nullptr;
+        BSTR path = nullptr;
         try {
             // get project
             HRESULT hr = context->get_CamApplication(&application);
             if (FAILED(hr) || !application)
                 throw std::runtime_error("Failed to get CamApplication from context");
 
-            project = application->GetActiveProject(ResultStatus);
+            hr = application->GetActiveProject(ResultStatus , &project);
             if (FAILED(hr) || ResultStatus->Code == rsError)
                 throw std::runtime_error("Error getting project: " + BSTRToString(ResultStatus->Description));
+
+            // get project id
+            hr = project->get_Id(&id);
+            if (FAILED(hr))
+                throw std::runtime_error("Error in project->get_Id");
+
+            // get file path
+            hr = project->get_FilePath(&path);
+            if (FAILED(hr))
+                throw std::runtime_error("Error in project->get_FilePath");
 
             // save params in some temp file to show it later
             fs::path tempDir = fs::temp_directory_path();
@@ -179,21 +170,22 @@ public:
                 if (!file)
                     throw std::runtime_error("Failed to open file for writing");
 
-                file << "Project file path: " << BSTRToString(project->FilePath) << "\n";
-                file << "Project id: " << BSTRToString(project->Id) << "\n";
+                file << "Project file path: " << BSTRToString(path) << "\n";
+                file << "Project id: " << BSTRToString(id) << "\n";
                 file.close();
             }
 
-            HINSTANCE result = ShellExecute(
+            HINSTANCE result = ShellExecuteW(
                 NULL,
                 L"open",
                 L"notepad.exe",
-                tempFilePath.c_str(),
+                tempFilePath.wstring().c_str(),
                 NULL,
                 SW_SHOWNORMAL
             );
 
-            ResultStatus = {};
+            ResultStatus->Code = rsSuccess;
+            ResultStatus->Description = nullptr;
         }
         catch (const std::exception& e) {
             ResultStatus->Code = rsError;
@@ -203,14 +195,17 @@ public:
         // Release the COM objects
         if (application)
             application->Release();
+        if (path)
+            SysFreeString(path);
+        if (id)
+            SysFreeString(id);
 
         return S_OK;
     }
 };
 
 extern "C" __declspec(dllexport) void* __stdcall CreateInstanceOfExtension(const wchar_t* PluginID) {
-    IExtensionPtr resultPtr = new ExtensionUtilityExample();
-    resultPtr.AddRef();
-    void* res = resultPtr.GetInterfacePtr();
-    return (res);
+    auto* ext = new ExtensionUtilityExample();
+    ext->AddRef();
+    return static_cast<IExtension*>(ext);
 }

@@ -5,39 +5,12 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
+#include <codecvt>
+#include <comutil.h>
 #include "ExtensionManagerHelper.h"
+#include "CAMAPI.SDK.h"
 
 #pragma comment(lib, "Shell32.lib")
-
-#import <STTypes.tlb> no_namespace, named_guids
-#import <STXmlPropTypes.tlb> no_namespace, named_guids
-#import <STCustomPropTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.MeshTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.CurveTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.SurfaceTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.ModelFormerTypes.tlb> no_namespace, named_guids
-#import <CAMAPI.Logger.tlb> no_namespace, named_guids
-#import <CAMAPI.ResultStatus.tlb> no_namespace, named_guids
-#import "CAMAPI.Generic.List.tlb" no_namespace, named_guids
-#import "STGeomApiTypes.tlb" no_namespace, named_guids
-#import "CAMAPI.Singletons.tlb" no_namespace, named_guids
-#import "CAMAPI.Extensions.tlb" no_namespace, named_guids
-#import "CAMAPI.NCMaker.tlb" no_namespace, named_guids
-#import "CAMAPI.Machine.tlb" no_namespace, named_guids
-#import "CAMAPI.Tools.tlb" no_namespace, named_guids
-#import "CAMAPI.TechOperation.tlb" no_namespace, named_guids
-#import "CAMAPI.Technologist.tlb" no_namespace, named_guids
-#import "CAMAPI.Snapshot.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomModel.tlb" no_namespace, named_guids
-#import "CAMAPI.GeomImporter.tlb" no_namespace, named_guids
-#import "CAMAPI.ToolsList.tlb" no_namespace, named_guids
-#import "CAMAPI.Project.tlb" no_namespace, named_guids
-#import "CAMAPI.TechnologyForm.tlb" no_namespace, named_guids
-#import "CAMAPI.ApplicationMainForm.tlb" no_namespace, named_guids
-#import "CAMAPI.Extension.PLM.tlb" no_namespace, named_guids
-#import "CAMAPI.CustomAttributes.tlb" no_namespace, named_guids
-#import "CAMAPI.Application.tlb" no_namespace, named_guids
 
 namespace fs = std::filesystem;
 
@@ -97,22 +70,30 @@ private:
     struct IExtensionInfo* info = nullptr;
 
 public:
-    HRESULT STDMETHODCALLTYPE QueryInterface(
-        /* [in] */ REFIID riid,
-        /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR* __RPC_FAR* ppvObject
-    ) override {
-        if (riid == __uuidof(IExtension)) {
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
+    {
+        if (!ppvObject)
+            return E_POINTER;
+
+        *ppvObject = nullptr;
+
+        if (riid == __uuidof(IUnknown) ||
+            riid == __uuidof(IExtension))
+        {
             *ppvObject = static_cast<IExtension*>(this);
-            return S_OK;
         }
-
-        if (riid == __uuidof(IExtensionUtility)) {
+        else if (riid == __uuidof(IExtensionUtility))
+        {
             *ppvObject = static_cast<IExtensionUtility*>(this);
-            return S_OK;
+        }
+        else
+        {
+            return E_NOINTERFACE;
         }
 
-        return S_FALSE;
-    };
+        AddRef();
+        return S_OK;
+    }
 
     ULONG STDMETHODCALLTYPE AddRef() override {
         return InterlockedIncrement(&m_refCount);
@@ -152,36 +133,41 @@ public:
         return S_OK;
     }
 
-    HRESULT __stdcall raw_Run(
+    HRESULT __stdcall Run(
         IExtensionUtilityContext* context,
         TResultStatus* ResultStatus
     ) override {
-        ICamApiPaths* paths = nullptr;
+        ICamApiApplication* application;
+        BSTR name = nullptr;
+        IExtension* extension = nullptr;
+        IExtensionManager* extension_manager = nullptr;
+        ICamApiPaths* cam_paths = nullptr;
+        BSTR main_program_folder = nullptr;
         try
         {
             TResultStatus resultStatus;
 
-			// get global context			
-            IUnknown* extension = 
-                ExtensionManagerHelper::GetInstance()->GetSingletonExtension(
-				"Extension.Global.Singletons.Paths", &resultStatus);
-			if (resultStatus.Code == TResultStatusCode::rsError)
-				throw std::runtime_error("Error getting global context: " + BSTRToString(resultStatus.Description));
-            if (!extension)
-                throw std::runtime_error("Error: extension is nullptr");
-            HRESULT hr = extension->QueryInterface(__uuidof(ICamApiPaths), (void**)&paths);
-            if (FAILED(hr) || !paths)
-                throw std::runtime_error("Error querying ICamApiPaths interface");
-			if (!paths)
-				throw std::runtime_error("Error casting to ICamApiPaths");
+			// get global context
+            HRESULT hr = context->get_CamApplication(&application);
+            if (FAILED(hr) || !application)
+                throw std::runtime_error("get_CamApplication failed.");
 
-            // export
-            _bstr_t currentFolder = paths->GetMainProgramFolder();
-            if (currentFolder.length() == 0)
-                throw std::runtime_error("Cannot get MainProgramFolder");
-            _bstr_t exportedFile = (_bstr_t)currentFolder + L"\\exported.stcp";
-            ICamApiApplication* application = context->CamApplication;
-            hr = application->ExportCurrentProject(exportedFile, true, &resultStatus);
+            const _bstr_t name(L"Extension.Global.Singletons.Paths");
+            hr = ExtensionManagerHelper::GetInstance()->GetSingletonExtension(
+                name, &resultStatus, &extension);
+            if (FAILED(hr) || !extension)
+                throw std::runtime_error("GetSingletonExtension failed.");
+
+            hr = extension->QueryInterface(IID_ICamApiPaths, (void**)&cam_paths);
+            if (FAILED(hr) || !cam_paths)
+                throw std::runtime_error("QueryInterface for ICamApiPaths failed.");
+
+            // save
+            hr = cam_paths->get_MainProgramFolder(&main_program_folder);
+            if (FAILED(hr) || !main_program_folder)
+                throw std::runtime_error("get_MainProgramFolder failed.");
+            _bstr_t exportedFile = (_bstr_t)main_program_folder + L"\\exported.stcp";
+            hr = application->SaveCurrentProject(exportedFile, &resultStatus);
             if (FAILED(hr) || resultStatus.Code == rsError)
                 throw std::runtime_error("Error exporting project: " + BSTRToString(resultStatus.Description));
         }
@@ -192,14 +178,25 @@ public:
         }
 
         // Release the COM objects
-        if (paths)
-            paths->Release();
+        if (main_program_folder)
+            SysFreeString(main_program_folder);
+        if (cam_paths)
+            cam_paths->Release();
+        if (extension_manager)
+            extension_manager->Release();
+        if (extension)
+            extension->Release();
+        if (name)
+            SysFreeString(name);
+        if (application)
+            application->Release();
+
+        return S_OK;
     }
 };
 
 extern "C" __declspec(dllexport) void* __stdcall CreateInstanceOfExtension(const wchar_t* PluginID) {
-    IExtensionPtr resultPtr = new ExtensionUtilityExample();
-    resultPtr.AddRef();
-    void* res = resultPtr.GetInterfacePtr();
-    return (res);
+    auto* ext = new ExtensionUtilityExample();
+    ext->AddRef();
+    return static_cast<IExtension*>(ext);
 }
