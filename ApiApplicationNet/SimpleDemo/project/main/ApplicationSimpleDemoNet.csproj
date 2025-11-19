@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+        <CAMPath>C:\Program Files\ENCY Software\ENCY NB 2\Bin64</CAMPath>
+        <OutDir>C:\Program Files\ENCY Software\ENCY NB 2\Bin64</OutDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="EncySoftware.CAMIPC.Sdk.Net" Version="2.0.11-dev.2" />
+        <Reference Include="$(CAMPath)\PathAliasesInterface.dll" />
+        <Reference Include="$(CAMPath)\AssemblyLoaderTypes.dll" />
+        <Reference Include="$(CAMPath)\AppStarterInterface.dll" />
+        <Reference Include="$(CAMPath)\STLoggingInterface.dll" />
+    </ItemGroup>
+</Project>
