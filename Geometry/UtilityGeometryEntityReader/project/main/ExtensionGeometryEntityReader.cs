@@ -31,30 +31,29 @@ public class ExtensionGeometryEntityReader: IExtension,
             using var geomModelCom = activeProjectCom.InvokeAndWrap(project => project.CAMAPIGeomModel);
             using var iteratorCom =
                 geomModelCom.InvokeAndWrap(geomModel => (geomModel.GetNodes(out var status), status));
-            var nodes = new List<ICAMAPIGeometryTreeNode>();
-            foreach (var node in iteratorCom.AsEnumerable())
+            var nodes = new List<ComWrapper<ICAMAPIGeometryTreeNode>>();
+            foreach (var nodeCom in iteratorCom.AsEnumerable())
             {
-                if (!node.Selected)
+                if (!nodeCom.Selected())
                     continue;
-                nodes.Add(node);
+                nodes.Add(nodeCom.TransferOwnership());
             }
 
             // read selected nodes
             var message = "";
-            foreach (var node in nodes)
+            foreach (var nodeCom in nodes)
             {
-                using var nodeEntityCom = ComWrapper.Create(node.GeometryEntity);
-                var localMessage = nodeEntityCom.Invoke(nodeEntity =>
+                var localMessage = nodeCom.Invoke(node =>
                 {
-                    if (nodeEntity is ICamApiCSGeometryEntity entityCs)
+                    if (node.GeometryEntity is ICamApiCSGeometryEntity entityCs)
                         return ReadEntityCs(entityCs);
-                    if (nodeEntity is ICamApiCurveGeometryEntity entityCurve)
+                    if (node.GeometryEntity is ICamApiCurveGeometryEntity entityCurve)
                         return ReadEntityCurve(entityCurve);
-                    if (nodeEntity is ICamApiFaceGeometryEntity entityFace)
+                    if (node.GeometryEntity is ICamApiFaceGeometryEntity entityFace)
                         return ReadEntityFace(entityFace);
                     return "Unknown entity type";
                 });
-                message += $"{node.FullName} {localMessage}\n-----\n";
+                message += $"{nodeCom.FullName} {localMessage}\n-----\n";
             }
             
             // show the message
