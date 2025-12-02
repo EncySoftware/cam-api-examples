@@ -1,0 +1,14 @@
+{
+    "name": "Machine`s props changing example",
+    "description": "Demonstrates how to change machine`s props in CAM",
+    "module_path": "${extensionJsonFolder}/ExtensionMachinePropsChangeNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Change machine props",
+                "caption": "Machine: change props",
+                "id": "Extension.Machine.Props.Change.Net"
+            }
+        }
+    ]
+}

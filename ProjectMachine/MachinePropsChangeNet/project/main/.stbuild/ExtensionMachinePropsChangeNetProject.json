@@ -1,6 +1,6 @@
 {
 	"type": "CSharp",
-	"project_path": "../ExtensionOperationToolNet.csproj",
+	"project_path": "../ExtensionMachinePropsChangeNet.csproj",
 	"sources": [
 		"../*.cs",
 		"../*.csproj",
