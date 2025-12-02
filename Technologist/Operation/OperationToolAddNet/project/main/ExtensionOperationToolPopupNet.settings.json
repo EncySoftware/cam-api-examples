@@ -1,0 +1,13 @@
+{
+    "name": "Operation`s tool usage example",
+    "description": "Demonstrates how to operate with tools of CAM",
+    "module_path": "${extensionJsonFolder}/ExtensionOperationToolPopupNet.dll",
+    "extensions": [
+        {
+            "operation_popup": {
+                "name": "Select tool for operation on C#",
+                "id": "Extension.OperationToolPopup.Example.Net"
+            }
+        }
+    ]
+}

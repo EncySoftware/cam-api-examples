@@ -1,6 +1,6 @@
-# ExtensionUtility usage example
+# ExtensionFullWorkflow3DProject usage example
 
-This example demonstrates how to create an extension that will create copy of current project in another folder in the CAM system.
+This example demonstrates how to create an extension that will create a full project (alpha), including file import, operation creation, simulation, and CNC generation in the CAM system.
 
 # How to build
 

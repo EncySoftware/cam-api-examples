@@ -1,0 +1,20 @@
+{
+	"type": "Cpp",
+	"project_path": "../SimpleDemo.vcxproj",
+	"sources": [
+		"$native_project:sources$",
+		"../*.cpp",
+		"../*.h",
+		"../*.vcxproj",
+		"*.json"
+	],
+	"dependencies": [
+		{
+			"PackageDependency": {
+				"id": "EncySoftware.CAMAPI.SDK.tlb",
+				"version": "2.0.11-dev.5",
+				"out_dir": "../../../../SDK"
+			}
+		}
+	]
+}

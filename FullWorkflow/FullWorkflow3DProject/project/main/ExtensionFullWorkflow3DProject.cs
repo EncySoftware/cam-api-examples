@@ -48,8 +48,6 @@ public class ExtensionFullWorkflow3DProject : IExtension, IExtensionUtility
         if (activeProjectCom == null)
             throw new Exception("Active project is not found");
         using var geometryModelCom = activeProjectCom.InvokeAndWrap(project => project.CAMAPIGeomModel);
-        using var geometryTreeIteratorCom =
-            geometryModelCom.InvokeAndWrap(model => (model.GetNodes(out var status), status));
         using var technologistCom = activeProjectCom.InvokeAndWrap(project => project.Technologist);
             
         try

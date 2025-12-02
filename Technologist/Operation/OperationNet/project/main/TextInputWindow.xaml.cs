@@ -10,14 +10,14 @@ namespace ExtensionOperationsNet;
 public partial class TextInputWindow
 {
     /// <summary>
-    /// User input from the text box
+    /// User`s selected item from the text box
     /// </summary>
-    public string? UserInput { get; private set; }
+    public OperationTypeInfo? SelectedItem { get; private set; }
 
     /// <summary>
     /// Simple window to ask user for text input
     /// </summary>
-    public TextInputWindow(List<string> items)
+    public TextInputWindow(List<OperationTypeInfo> items)
     {
         InitializeComponent();
         ItemsListBox.ItemsSource = items;
@@ -25,9 +25,9 @@ public partial class TextInputWindow
 
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
-        if (ItemsListBox.SelectedItem != null)
+        if (ItemsListBox.SelectedItem is OperationTypeInfo selected)
         {
-            UserInput = ItemsListBox.SelectedItem.ToString();
+            SelectedItem = selected;
             DialogResult = true;
             Close();
         }
@@ -35,16 +35,16 @@ public partial class TextInputWindow
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        UserInput = null;
+        SelectedItem = null;
         DialogResult = false;
         Close();
     }
 
     private void ItemsListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (ItemsListBox.SelectedItem != null)
+        if (ItemsListBox.SelectedItem is OperationTypeInfo selected)
         {
-            UserInput = ItemsListBox.SelectedItem.ToString();
+            SelectedItem = selected;
             DialogResult = true;
             Close();
         }
