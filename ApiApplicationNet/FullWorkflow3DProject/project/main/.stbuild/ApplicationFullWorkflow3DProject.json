@@ -1,0 +1,10 @@
+{
+	"type": "CSharp",
+	"project_path": "../ApplicationFullWorkflow3DProjectNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"../json.cs",
+		"*.json"
+	]
+}
