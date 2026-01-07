@@ -12,4 +12,10 @@
   <ItemGroup>
     <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.15-dev.1" />
   </ItemGroup>
+
+    <ItemGroup>
+        <None Update="ExtensionGlobalNet.settings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

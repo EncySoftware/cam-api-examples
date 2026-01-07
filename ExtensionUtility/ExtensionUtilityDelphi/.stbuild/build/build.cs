@@ -16,6 +16,8 @@ using BuildSystem.Restorer.Nuget;
 using BuildSystem.SettingsReader;
 using BuildSystem.SettingsReader.Object;
 using BuildSystem.Variants;
+using System.Linq;
+using Nuke.Common.Utilities.Collections;
 using LoggingLevel = BuildSystem.Logging.LogLevel;
 
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -27,7 +29,15 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling target by default
     /// </summary>
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main()
+    {
+        var parentDirectory = new DirectoryInfo(EnvironmentInfo.WorkingDirectory)
+            .DescendantsAndSelf(x => x.Parent ?? throw new Exception("Parent directory is null for " + x.FullName))
+            .First(x => x.GetDirectories(".stbuild").Any())
+            .FullName;
+        Environment.SetEnvironmentVariable("root", Path.Combine(parentDirectory, ".stbuild"));
+        return Execute<Build>(x => x.Pack);
+    }
 
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
@@ -117,7 +127,7 @@ public class Build : NukeBuild
                         new()
                         {
                             PackageId = "EncySoftware.CAMAPI.SDK.bpl.x64",
-                            Version = "1.2.1",
+                            Version = "2.0.12-dev.7",
                             OutDir = Path.Combine(RootDirectory.Parent?.Parent?.Parent, "SDK")
                         }
                     }

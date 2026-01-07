@@ -74,10 +74,8 @@ modules/
 **/obj/
 **/.vs/
 
-# Ignore .stbuild folder, except .nuke & .json configs
+# Ignore .nuke
 **/.stbuild/.nuke/*
-!**/.stbuild/.nuke/
-!**/.stbuild/.nuke/*.json
 
 **/.stbuild/logs/
 **/.stbuild/temp/
