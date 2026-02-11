@@ -1,0 +1,57 @@
+﻿<Window x:Class="ExtensionManageViewNet.ViewControlWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="View Control" Height="400" Width="400"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Text="ViewCube Control" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+        
+        <TabControl Grid.Row="1">
+            <TabItem Header="Faces">
+                <UniformGrid Columns="3">
+                    <Button Content="Top" Click="Face_Click" Tag="vcrmFaceTop" Margin="5"/>
+                    <Button Content="Bottom" Click="Face_Click" Tag="vcrmFaceBottom" Margin="5"/>
+                    <Button Content="Front" Click="Face_Click" Tag="vcrmFaceFront" Margin="5"/>
+                    <Button Content="Back" Click="Face_Click" Tag="vcrmFaceBack" Margin="5"/>
+                    <Button Content="Left" Click="Face_Click" Tag="vcrmFaceLeft" Margin="5"/>
+                    <Button Content="Right" Click="Face_Click" Tag="vcrmFaceRight" Margin="5"/>
+                </UniformGrid>
+            </TabItem>
+            <TabItem Header="Edges">
+                <ScrollViewer>
+                    <UniformGrid Columns="2">
+                        <Button Content="Top Front" Click="Face_Click" Tag="vcrmEdgeTopFront" Margin="2"/>
+                        <Button Content="Top Back" Click="Face_Click" Tag="vcrmEdgeTopBack" Margin="2"/>
+                        <Button Content="Top Left" Click="Face_Click" Tag="vcrmEdgeTopLeft" Margin="2"/>
+                        <Button Content="Top Right" Click="Face_Click" Tag="vcrmEdgeTopRight" Margin="2"/>
+                        <Button Content="Bottom Front" Click="Face_Click" Tag="vcrmEdgeBottomFront" Margin="2"/>
+                        <Button Content="Bottom Back" Click="Face_Click" Tag="vcrmEdgeBottomBack" Margin="2"/>
+                        <Button Content="Bottom Left" Click="Face_Click" Tag="vcrmEdgeBottomLeft" Margin="2"/>
+                        <Button Content="Bottom Right" Click="Face_Click" Tag="vcrmEdgeBottomRight" Margin="2"/>
+                        <Button Content="Front Left" Click="Face_Click" Tag="vcrmEdgeFrontLeft" Margin="2"/>
+                        <Button Content="Front Right" Click="Face_Click" Tag="vcrmEdgeFrontRight" Margin="2"/>
+                        <Button Content="Back Left" Click="Face_Click" Tag="vcrmEdgeBackLeft" Margin="2"/>
+                        <Button Content="Back Right" Click="Face_Click" Tag="vcrmEdgeBackRight" Margin="2"/>
+                    </UniformGrid>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Corners">
+                <UniformGrid Columns="2">
+                    <Button Content="Top Front Left" Click="Face_Click" Tag="vcrmCornerTopFrontLeft" Margin="2"/>
+                    <Button Content="Top Front Right" Click="Face_Click" Tag="vcrmCornerTopFrontRight" Margin="2"/>
+                    <Button Content="Top Back Left" Click="Face_Click" Tag="vcrmCornerTopBackLeft" Margin="2"/>
+                    <Button Content="Top Back Right" Click="Face_Click" Tag="vcrmCornerTopBackRight" Margin="2"/>
+                    <Button Content="Bottom Front Left" Click="Face_Click" Tag="vcrmCornerBottomFrontLeft" Margin="2"/>
+                    <Button Content="Bottom Front Right" Click="Face_Click" Tag="vcrmCornerBottomFrontRight" Margin="2"/>
+                    <Button Content="Bottom Back Left" Click="Face_Click" Tag="vcrmCornerBottomBackLeft" Margin="2"/>
+                    <Button Content="Bottom Back Right" Click="Face_Click" Tag="vcrmCornerBottomBackRight" Margin="2"/>
+                </UniformGrid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
