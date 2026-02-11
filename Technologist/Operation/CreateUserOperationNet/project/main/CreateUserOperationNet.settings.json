@@ -1,0 +1,14 @@
+{
+    "name": "Create user operation",
+    "description": "Create user operation",
+    "module_path": "${extensionJsonFolder}/CreateUserOperationNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Create user operation",
+                "caption": "Create user operation",
+                "id": "Extension.Utility.CreateUserOperation.Net"
+            }
+        }
+    ]
+}
