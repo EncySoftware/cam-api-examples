@@ -1,0 +1,51 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    # List of projects
+    strategy:
+      matrix:
+        project_path: [
+          './Technologist/Operation/RenameOperationsNet/project/main/RenameOperationsNet.csproj'
+        ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore "${{ matrix.project_path }}"
+
+      - name: Build
+        run: dotnet build "${{ matrix.project_path }}" --configuration Release --no-restore
+
+      - name: Pack
+        id: pack_step
+        shell: pwsh
+        run: |
+          if (Test-Path "${{ matrix.project_path }}/out") { Remove-Item -Recurse -Force "${{ matrix.project_path }}/out" }
+          New-Item -ItemType Directory -Path "${{ matrix.project_path }}/out" -Force
+          dotnet pack "${{ matrix.project_path }}" --configuration Release -o out
+          $package = Get-ChildItem -Path "${{ matrix.project_path }}/out/*.nupkg" | Select-Object -ExpandProperty FullName -First 1
+          echo "PACKAGE_PATH=$package" >> $env:GITHUB_ENV
+          Write-Host "Found package: $package"
+
+      - name: Push to NuGet
+        shell: pwsh
+        run: |
+          dotnet nuget push "${{ env.PACKAGE_PATH }}" `
+            --api-key ${{ secrets.NUGET_TEST_AUTH_TOKEN }} `
+            --source https://apiint.nugettest.org/v3/index.json `
+            --skip-duplicate
