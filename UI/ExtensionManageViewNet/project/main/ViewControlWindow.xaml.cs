@@ -12,7 +12,7 @@ namespace ExtensionManageViewNet;
 public partial class ViewControlWindow : Window, IDisposable
 {
     private readonly ComWrapper<ICamApiViewPort> _viewPortCom;
-
+ 
     /// <summary>
     /// Interaction logic for ViewControlWindow.xaml
     /// </summary>
@@ -24,26 +24,25 @@ public partial class ViewControlWindow : Window, IDisposable
 
     private void Face_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.Tag is string tagStr)
+        if (sender is not Button { Tag: string tagStr })
+            return;
+        if (!Enum.TryParse<TViewCubeRotateMode>(tagStr, out var mode))
+            return;
+        
+        try
         {
-            if (Enum.TryParse<TViewCubeRotateMode>(tagStr, out var mode))
-            {
-                try
-                {
-                    _viewPortCom.ZoomAll(true);
-                    using var cubeCom = _viewPortCom.GetCube();
-                    cubeCom.Rotate(mode);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
+            _viewPortCom.ZoomAll(true);
+            using var cubeCom = _viewPortCom.GetCube();
+            cubeCom.Rotate(mode);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     /// <summary>
-    /// Dispose COM wrappers
+    /// Dispose of COM wrappers
     /// </summary>
     public void Dispose()
     {

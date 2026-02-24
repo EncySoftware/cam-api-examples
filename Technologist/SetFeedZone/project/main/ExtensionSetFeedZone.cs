@@ -3,49 +3,39 @@ using CAMAPI.DotnetHelper;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
 
-namespace ExtensionManageViewNet;
+namespace SetFeedZone;
 
 /// <summary>
 /// Utility to manage the main window view
 /// </summary>
-public class ExtensionManageView: IExtension, IExtensionUtility, IExtensionLazyUnloadable
+public class ExtensionSetFeedZone: ExtensionWindowLazyUnloadable, IExtension, IExtensionUtility
 {
-    private bool _canUnload;
-
+    
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
     
     /// <inheritdoc />
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
-    {
+    { 
         resultStatus = default;
         try
         {
             // arrange
+            ComWrapperSettings.ApplicationApartmentState = ApartmentState.STA;
             using var applicationCom = ComWrapper.Create(context.CamApplication);
-            using var applicationMainFormCom = applicationCom.MainForm();
-            var mainWindowHandle = applicationMainFormCom.MainWindowHandle();
-            var viewPortCom = applicationMainFormCom.MainViewPort();
+            SetOwnerHandle(applicationCom);
+            using var projectCom = applicationCom.GetActiveProject();
+            using var technologistCom = projectCom.Technologist();
+            using var operationCom = technologistCom.CurrentOperation();
+            var jobAssignmentCom = operationCom.ModelFormerJobAssignment();
             
             // show form
-            WindowHelper.ShowStaWindow(mainWindowHandle, 
-                () => new ViewControlWindow(viewPortCom),
-                () => _canUnload = true);
+            ShowWindow(() => new ViewControlWindow(jobAssignmentCom));
         }
         catch (Exception e)
         {
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
         }
-    }
-
-    
-    /// <summary>
-    /// Allow unloading only when a window is closed
-    /// </summary>
-    public bool CanUnload
-    {
-        get => _canUnload;
-        set { }
     }
 }
