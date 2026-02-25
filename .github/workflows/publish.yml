@@ -35,10 +35,18 @@ jobs:
         id: pack_step
         shell: pwsh
         run: |
-          if (Test-Path "${{ matrix.project_path }}/out") { Remove-Item -Recurse -Force "${{ matrix.project_path }}/out" }
-          New-Item -ItemType Directory -Path "${{ matrix.project_path }}/out" -Force
-          dotnet pack "${{ matrix.project_path }}" --configuration Release -o out
-          $package = Get-ChildItem -Path "${{ matrix.project_path }}/out/*.nupkg" | Select-Object -ExpandProperty FullName -First 1
+          $projectFile = "${{ matrix.project_path }}"
+          $projectDir = Split-Path -Path $projectFile -Parent
+          $outDir = Join-Path -Path $projectDir -ChildPath "out"
+          Write-Host "Project Directory: $projectDir"
+          Write-Host "Target Output Directory: $outDir"
+
+          if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
+          New-Item -ItemType Directory -Path $outDir -Force
+          dotnet pack $projectFile --configuration Release -o $outDir
+          $package = Get-ChildItem -Path "$outDir/*.nupkg" | Select-Object -ExpandProperty FullName -First 1
+          if ($null -eq $package) { throw "Package not found in $outDir" }
+
           echo "PACKAGE_PATH=$package" >> $env:GITHUB_ENV
           Write-Host "Found package: $package"
 
