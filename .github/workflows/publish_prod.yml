@@ -1,4 +1,4 @@
-name: Publish to NuGetTest
+name: Publish to NuGet
 
 on:
   push:
@@ -54,6 +54,6 @@ jobs:
         shell: pwsh
         run: |
           dotnet nuget push "${{ env.PACKAGE_PATH }}" `
-            --api-key ${{ secrets.NUGET_TEST_AUTH_TOKEN }} `
-            --source https://apiint.nugettest.org/v3/index.json `
+            --api-key ${{ secrets.NUGET_AUTH_TOKEN }} `
+            --source https://api.nuget.org/v3/index.json `
             --skip-duplicate
