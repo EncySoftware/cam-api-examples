@@ -4,7 +4,7 @@
     <NoWarn>NETSDK1138;1591</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Authors>ENCY</Authors>
     <PackageId>EncySoftware.RenameOperations</PackageId>
     <PackageTags>cam-extension;utility</PackageTags>
