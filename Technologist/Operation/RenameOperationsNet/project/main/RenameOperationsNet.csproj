@@ -4,7 +4,7 @@
     <NoWarn>NETSDK1138;1591</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>ENCY</Authors>
     <PackageId>EncySoftware.RenameOperations</PackageId>
     <PackageTags>cam-extension;utility</PackageTags>
@@ -22,8 +22,11 @@
   
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" /> 
-    <None Include="RenameOperationsNet.settings.json" Pack="true" PackagePath="contentFiles\any\any\;lib\net8.0-windows\">
+  
+    <None Include="RenameOperationsNet.settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>contentFiles\any\any\</PackagePath>
     </None>
-  </ItemGroup>
+</ItemGroup>
 </Project>
