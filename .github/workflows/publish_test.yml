@@ -1,0 +1,59 @@
+name: Publish to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    # List of projects
+    strategy:
+      matrix:
+        project_path: [
+          './Technologist/Operation/RenameOperationsNet/project/main/RenameOperationsNet.csproj'
+        ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore "${{ matrix.project_path }}"
+
+      - name: Build
+        run: dotnet build "${{ matrix.project_path }}" --configuration Release --no-restore
+
+      - name: Pack
+        id: pack_step
+        shell: pwsh
+        run: |
+          $projectFile = "${{ matrix.project_path }}"
+          $projectDir = Split-Path -Path $projectFile -Parent
+          $outDir = Join-Path -Path $projectDir -ChildPath "out"
+          Write-Host "Project Directory: $projectDir"
+          Write-Host "Target Output Directory: $outDir"
+
+          if (Test-Path $outDir) { Remove-Item -Recurse -Force $outDir }
+          New-Item -ItemType Directory -Path $outDir -Force
+          dotnet pack $projectFile --configuration Release -o $outDir
+          $package = Get-ChildItem -Path "$outDir/*.nupkg" | Select-Object -ExpandProperty FullName -First 1
+          if ($null -eq $package) { throw "Package not found in $outDir" }
+
+          echo "PACKAGE_PATH=$package" >> $env:GITHUB_ENV
+          Write-Host "Found package: $package"
+
+      - name: Push to NuGet
+        shell: pwsh
+        run: |
+          dotnet nuget push "${{ env.PACKAGE_PATH }}" `
+            --api-key ${{ secrets.NUGET_AUTH_TOKEN }} `
+            --source https://api.nuget.org/v3/index.json `
+            --skip-duplicate
