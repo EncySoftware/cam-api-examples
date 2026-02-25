@@ -52,8 +52,8 @@ jobs:
 
       - name: Push to NuGet
         shell: pwsh
-        run: |
-          dotnet nuget push "${{ env.PACKAGE_PATH }}" `
-            --api-key ${{ secrets.NUGET_AUTH_TOKEN }} `
-            --source https://api.nuget.org/v3/index.json `
-            --skip-duplicate
+        run: >
+          dotnet nuget push "${{ env.PACKAGE_PATH }}"
+          --api-key ${{ secrets.NUGET_AUTH_TOKEN }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
