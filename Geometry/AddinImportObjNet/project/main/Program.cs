@@ -54,28 +54,31 @@ public static class Program
         // beginning of the file
         if (!geomFile.StartFile(outputFile))
             throw new Exception("Can't start file: " + outputFile);
+
+        if (geomFile is not ISTGeomReceiver geomReceiver)
+            throw new Exception("Can`t cast geomFile to geomReceiver");
         try
         {
             try
             {
                 // set point, we are going to use it as a coordinate system
-                geomFile.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
+                geomReceiver.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
                     
                 // item in geometry objects tree
-                geomFile.StartGroupEntity("obj_entities");
+                geomReceiver.StartGroupEntity("obj_entities");
                 try
                 {
-                    objReader.BuildModel(geomFile);
+                    objReader.BuildModel(geomReceiver);
                     succeed = true;
                 }
                 finally
                 {
-                    geomFile.CloseGroupEntity();
+                    geomReceiver.CloseGroupEntity();
                 }
             }
             finally
             {
-                geomFile.CloseModel();
+                geomReceiver.CloseModel();
             }
         }
         finally

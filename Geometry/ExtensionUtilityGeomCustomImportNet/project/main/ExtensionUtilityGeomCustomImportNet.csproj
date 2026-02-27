@@ -7,9 +7,51 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutDir>bin\$(Configuration)\</OutDir>
+    <CAMPath>C:\Program Files\ENCY Software\ENCY NB 2\Bin64</CAMPath>
   </PropertyGroup>
-  
+ 
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.15-dev.1" />
+    <Reference Include="$(CAMPath)\STTypes.dll" />
+    <Reference Include="$(CAMPath)\STGeomApiTypes.dll" />
+    <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
+    <Reference Include="$(CAMPath)\Geometry.VecMatrLib.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Application.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ApplicationMainForm.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.CurveTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.CustomAttributes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.DotnetHelper.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.EventHandler.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Extension.PLM.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Extension.Util.Common.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ExtensionManager.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Extensions.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Generic.Dictionary.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Generic.List.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.GeomImporter.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.GeomLibrary.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.GeomModel.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Logger.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Machine.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.MCDFormerTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.MeshTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ModelFormerTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.NCMaker.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Project.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ResultStatus.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Singletons.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Snapshot.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.SurfaceTypes.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Technologist.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.TechnologyForm.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.TechOperation.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.TechSolvers.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Tools.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.ToolsList.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.DotnetHelper.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.15-dev.1" /> -->
   </ItemGroup>
 </Project>

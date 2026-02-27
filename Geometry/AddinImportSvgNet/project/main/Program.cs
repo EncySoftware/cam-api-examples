@@ -44,7 +44,7 @@ public static class Program
 
     }
     
-    private static void ReadSvg(string svgFile, ISTGeomFiler geomFile)
+    private static void ReadSvg(string svgFile, ISTGeomReceiver geomReceiver)
     {
         var converter = new SvgToCamConverter();
         
@@ -59,14 +59,14 @@ public static class Program
                 firstPoint = p;
                 id = entityId;
                 isFirst = false;
-                geomFile.StartCurve3d(id, p);
+                geomReceiver.StartCurve3d(id, p);
             },
 
             OnLineTo = p =>
             {
                 if (isFirst)
                     throw new Exception("First point is not set (by OnModeTo)");
-                geomFile.CutTo3d(p);
+                geomReceiver.CutTo3d(p);
             },
             
             OnCircleTo = (entityId, radius, centerX, centerY) =>
@@ -89,8 +89,8 @@ public static class Program
                     Y = 0,
                     Z = 0
                 };
-                geomFile.CreateCircle(entityId, radius, vT, vZ, vX);
-                geomFile.AddEntity(entityId, $"svg({entityId})");
+                geomReceiver.CreateCircle(entityId, radius, vT, vZ, vX);
+                geomReceiver.AddEntity(entityId, $"svg({entityId})");
             },
             
             OnEllipseTo = (entityId, majRadius, minRadius, centerX, centerY, rotationDegrees ) =>
@@ -114,26 +114,26 @@ public static class Program
                     Y = Math.Sin(angleRad),
                     Z = 0
                 };
-                geomFile.CreateEllipse(entityId, majRadius, minRadius, vT, vZ, vX);
-                geomFile.AddEntity(entityId, $"svg({entityId})");
+                geomReceiver.CreateEllipse(entityId, majRadius, minRadius, vT, vZ, vX);
+                geomReceiver.AddEntity(entityId, $"svg({entityId})");
             },
             
             OnSetLineColor = color =>
             {
-                geomFile.SetCurrentColor(color);
+                geomReceiver.SetCurrentColor(color);
             },
             
             OnSetLineWidth = width =>
             {
-                geomFile.SetCurrentLineWidth(width);
+                geomReceiver.SetCurrentLineWidth(width);
             },
 
             OnClosePath = closeCurve =>
             {
-                geomFile.CutTo3d(firstPoint);
+                geomReceiver.CutTo3d(firstPoint);
                 if (closeCurve)
-                    geomFile.CloseCurve3d(true);
-                geomFile.AddEntity(id, $"svg({id})");
+                    geomReceiver.CloseCurve3d(true);
+                geomReceiver.AddEntity(id, $"svg({id})");
                 isFirst = false;
             }
         };
@@ -150,28 +150,31 @@ public static class Program
         // beginning of the file
         if (!geomFile.StartFile(outputFile))
             throw new Exception("Can't start file: " + outputFile);
+
+        if (geomFile is not ISTGeomReceiver geomReceiver)
+            throw new Exception("Can`t cast geomFile to geomReceiver");
         try
         {
             try
             {
                 // set point, we are going to use it as a coordinate system
-                geomFile.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
+                geomReceiver.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
                     
                 // item in geometry objects tree
-                geomFile.StartGroupEntity("svg_entities");
+                geomReceiver.StartGroupEntity("svg_entities");
                 try
                 {
-                    ReadSvg(inputFile, geomFile);
+                    ReadSvg(inputFile, geomReceiver);
                     succeed = true;
                 }
                 finally
                 {
-                    geomFile.CloseGroupEntity();
+                    geomReceiver.CloseGroupEntity();
                 }
             }
             finally
             {
-                geomFile.CloseModel();
+                geomReceiver.CloseModel();
             }
         }
         finally

@@ -22,7 +22,7 @@ public class ExtensionImportCurve: IExtension, IExtensionUtility
     /// 1. 2 rectangles (front and back)
     /// 2. 4 lines (left_bottom, right_bottom, right_top, left_top)
     /// </summary>
-    private static void AddCurves(ISTGeomFiler geomFile)
+    private static void AddCurves(ISTGeomReceiver geomReceiver)
     {
         const int length = 1;
         const int width = 2;
@@ -37,41 +37,41 @@ public class ExtensionImportCurve: IExtension, IExtensionUtility
         var vertexRightTopBack = new TST3DPoint { X = length, Y = width, Z = height };
         var vertexLeftTopBack = new TST3DPoint { X = 0, Y = width, Z = height };
 
-        geomFile.StartCurve3d("front", vertexLeftBottomFront);
-        geomFile.CutTo3d(vertexLeftTopFront);
-        geomFile.CutTo3d(vertexRightTopFront);
-        geomFile.CutTo3d(vertexRightBottomFront);
-        geomFile.CutTo3d(vertexLeftBottomFront);
-        geomFile.CloseCurve3d(true);
-        geomFile.AddEntity("front", "curve3d(front)");
+        geomReceiver.StartCurve3d("front", vertexLeftBottomFront);
+        geomReceiver.CutTo3d(vertexLeftTopFront);
+        geomReceiver.CutTo3d(vertexRightTopFront);
+        geomReceiver.CutTo3d(vertexRightBottomFront);
+        geomReceiver.CutTo3d(vertexLeftBottomFront);
+        geomReceiver.CloseCurve3d(true);
+        geomReceiver.AddEntity("front", "curve3d(front)");
         
-        geomFile.StartCurve3d("back", vertexLeftBottomBack);
-        geomFile.CutTo3d(vertexLeftTopBack);
-        geomFile.CutTo3d(vertexRightTopBack);
-        geomFile.CutTo3d(vertexRightBottomBack);
-        geomFile.CutTo3d(vertexLeftBottomBack);
-        geomFile.CloseCurve3d(true);
-        geomFile.AddEntity("back", "curve3d(back)");
+        geomReceiver.StartCurve3d("back", vertexLeftBottomBack);
+        geomReceiver.CutTo3d(vertexLeftTopBack);
+        geomReceiver.CutTo3d(vertexRightTopBack);
+        geomReceiver.CutTo3d(vertexRightBottomBack);
+        geomReceiver.CutTo3d(vertexLeftBottomBack);
+        geomReceiver.CloseCurve3d(true);
+        geomReceiver.AddEntity("back", "curve3d(back)");
         
-        geomFile.StartCurve3d("left_bottom", vertexLeftBottomFront);
-        geomFile.CutTo3d(vertexLeftBottomBack);
-        geomFile.CloseCurve3d(false);
-        geomFile.AddEntity("left_bottom", "curve3d(left_bottom)");
+        geomReceiver.StartCurve3d("left_bottom", vertexLeftBottomFront);
+        geomReceiver.CutTo3d(vertexLeftBottomBack);
+        geomReceiver.CloseCurve3d(false);
+        geomReceiver.AddEntity("left_bottom", "curve3d(left_bottom)");
         
-        geomFile.StartCurve3d("right_bottom", vertexRightBottomFront);
-        geomFile.CutTo3d(vertexRightBottomBack);
-        geomFile.CloseCurve3d(false);
-        geomFile.AddEntity("right_bottom", "curve3d(right_bottom)");
+        geomReceiver.StartCurve3d("right_bottom", vertexRightBottomFront);
+        geomReceiver.CutTo3d(vertexRightBottomBack);
+        geomReceiver.CloseCurve3d(false);
+        geomReceiver.AddEntity("right_bottom", "curve3d(right_bottom)");
         
-        geomFile.StartCurve3d("right_top", vertexRightTopFront);
-        geomFile.CutTo3d(vertexRightTopBack);
-        geomFile.CloseCurve3d(false);
-        geomFile.AddEntity("right_top", "curve3d(right_top)");
+        geomReceiver.StartCurve3d("right_top", vertexRightTopFront);
+        geomReceiver.CutTo3d(vertexRightTopBack);
+        geomReceiver.CloseCurve3d(false);
+        geomReceiver.AddEntity("right_top", "curve3d(right_top)");
         
-        geomFile.StartCurve3d("left_top", vertexLeftTopFront);
-        geomFile.CutTo3d(vertexLeftTopBack);
-        geomFile.CloseCurve3d(false);
-        geomFile.AddEntity("left_top", "curve3d(left_top)");
+        geomReceiver.StartCurve3d("left_top", vertexLeftTopFront);
+        geomReceiver.CutTo3d(vertexLeftTopBack);
+        geomReceiver.CloseCurve3d(false);
+        geomReceiver.AddEntity("left_top", "curve3d(left_top)");
     }
 
     /// <inheritdoc />
@@ -90,6 +90,9 @@ public class ExtensionImportCurve: IExtension, IExtensionUtility
             var geomFile = wrapperGeomFile.Instance
                            ?? throw new Exception("Can't create geometry filer object");
             
+            if (geomFile is not ISTGeomReceiver geomReceiver)
+                throw new Exception("Can`t cast geomFile to geomReceiver");
+               
             // beginning of the file
             if (!geomFile.StartFile(sgfFilePath))
                 throw new Exception("Can't start file: " + sgfFilePath);
@@ -98,22 +101,22 @@ public class ExtensionImportCurve: IExtension, IExtensionUtility
                 try
                 {
                     // set point, we are going to use it as a coordinate system
-                    geomFile.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
+                    geomReceiver.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
                     
                     // item in geometry objects tree
-                    geomFile.StartGroupEntity("curves");
+                    geomReceiver.StartGroupEntity("curves");
                     try
                     {
-                        AddCurves(geomFile);
+                        AddCurves(geomReceiver);
                     }
                     finally
                     {
-                        geomFile.CloseGroupEntity();
+                        geomReceiver.CloseGroupEntity();
                     }
                 }
                 finally
                 {
-                    geomFile.CloseModel();
+                    geomReceiver.CloseModel();
                 }
             }
             finally
