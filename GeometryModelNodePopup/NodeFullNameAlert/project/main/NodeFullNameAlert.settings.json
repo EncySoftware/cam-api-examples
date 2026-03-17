@@ -1,0 +1,13 @@
+{
+    "name": "Example geometry model node popup extension on C#",
+    "description": "Example geometry model node popup extension on C#",
+    "module_path": "${extensionJsonFolder}\\NodeFullNameAlert.dll",
+    "extensions": [
+        {
+            "geom_model_node_popup": {
+                "name": "Example geometry model node popup extension on C#",
+                "id": "Extension.GeomModelNodePopup.Example.Net"
+            }
+        }
+    ]
+}
