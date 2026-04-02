@@ -1,0 +1,22 @@
+{
+    "name": "Export project information",
+    "description": "Export project information",
+    "module_path": "${extensionJsonFolder}/ExtensionUtilityExportInformationNet.dll",
+    "unload_mode": "umJustAfterExecution",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Export project information",
+                "caption": "Export project information",
+                "id": "Extension.Utility.ExportInformation.Net"
+            }
+        },
+        {
+            "utility": {
+                "name": "Import previous exported project information for test",
+                "caption": "Import exported project information for test",
+                "id": "Extension.Utility.ImportExportedInformation.Net"
+            }
+        }
+    ]
+}
