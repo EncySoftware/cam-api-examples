@@ -14,6 +14,7 @@
     <!-- <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.14" /> -->
      <Reference Include="$(CAMPath)\STTypes.dll" />
     <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
+    <Reference Include="$(CAMPath)\STGeomApiTypes.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Application.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.ApplicationMainForm.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.CurveTypes.dll" />

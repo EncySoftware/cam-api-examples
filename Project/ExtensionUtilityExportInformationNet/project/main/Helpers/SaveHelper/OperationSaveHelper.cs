@@ -49,6 +49,7 @@ namespace ExtensionUtilityExportInformationNet
                 throw new Exception("Create JSON builder!");
 
             _jsonBuilder.BeginArray(ListName);
+            ToolpathSaveHelper.ResetOperationIndex();
             foreach (var operationCom in TechOperationIteratorHelper.AsEnumerable(techOpIterCom))
                 SaveOperationData(operationCom, mode, evaluatorCom);
             _jsonBuilder.EndArray(); // OperationsList closing
@@ -222,10 +223,6 @@ namespace ExtensionUtilityExportInformationNet
                 TCamApiFeedInfo feedInfo = default;
                 TResultStatus rs = default;
 
-                operationCom.Invoke(op => { op.SetFeedValue(TFeedTypeFlag.affWorking, TCamApiFeedMeasurement.cfmPerRevolution, 13.0, out rs); });
-                operationCom.Invoke(op => { op.SetFeedOutputMeasurement(TFeedTypeFlag.affNext, TCamApiFeedMeasurement.cfmPerMinute, out rs); });
-                operationCom.Invoke(op => { op.SetFeedOutputMeasurement(TFeedTypeFlag.affEngage, TCamApiFeedMeasurement.cfmPerTooth, out rs); });
-
                 operationCom.Invoke(op => {feedInfo = op.GetFeedValue(feedType, out rs);});
 
                 _jsonBuilder.BeginObject(); // One feed
@@ -279,7 +276,6 @@ namespace ExtensionUtilityExportInformationNet
                 TResultStatus rsGet = default;
                 var idx = i;
 
-                //operationCom.Invoke(op => { op.SetCoolantTubeState(idx, true, out var rs);});
                 
                 operationCom.Invoke(op => { info = op.GetCoolantTubeInfo(idx, out rsGet); });
                 if (rsGet.Code == TResultStatusCode.rsError)
@@ -307,14 +303,6 @@ namespace ExtensionUtilityExportInformationNet
                 throw new Exception("Create JSON builder!");
 
             TCamApiSpindleState spindleState = default;
-            
-            // Just set block for tests nothing special
-            // operationCom.Invoke(op=> op.SetSpindleRotationsToCSS(50));
-            operationCom.Invoke(op=> op.SetSpindleRotationsToRPM(123));
-            // operationCom.Invoke(op=> op.SetSpindleRotationByDefault());
-            operationCom.Invoke(op=> op.SetSpindleRotationDirection(TCamApiSpindleRotationDirection.srdReverse));
-            operationCom.Invoke(op=> op.SetSpindleMaxRPMValue(1007));
-            operationCom.Invoke(op=> op.SetSpindleGearBoxRange(7));
 
             operationCom.Invoke(op=>spindleState = op.GetSpindleState());
 

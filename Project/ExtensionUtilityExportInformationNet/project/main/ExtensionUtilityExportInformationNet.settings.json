@@ -13,9 +13,16 @@
         },
         {
             "utility": {
-                "name": "Import previous exported project information for test",
+                "name": "Import exported project information for test",
                 "caption": "Import exported project information for test",
-                "id": "Extension.Utility.ImportExportedInformation.Net"
+                "id": "ImportExportedInformation.Net"
+            }
+        },
+        {
+            "utility": {
+                "name": "Import exported toolpath information for test",
+                "caption": "Import exported toolpath information for test",
+                "id": "ImportExportedToolpathInformation.Net"
             }
         }
     ]
