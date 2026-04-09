@@ -4,9 +4,9 @@
     "module_path": "${extensionJsonFolder}\\ExtensionUtilityProjectToolsListNet.dll",
     "extensions": [
         {
-            "Utility": {
-                "name": "Utility to get project tools info by C#",
-                "id": "Extension.Utility.ProjectToolsList.Net"
+            "project_report_popup": {
+                "name": "Utility to get project tools info",
+                "id": "Extension.ProjectToolsListPopup.Example.Net"
             }
         }
     ]

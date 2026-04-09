@@ -38,8 +38,8 @@ public class ExtensionFactory : IExtensionFactory
         try
         {
             ret = default;
-            if (extensionIdent == "Extension.Utility.ProjectToolsList.Net")
-                return new ExtensionProjectProjectToolsList();
+            if (extensionIdent == "Extension.ProjectToolsListPopup.Example.Net")
+                return new ExtensionProjectReportPopup();
             throw new Exception("Unknown extension identifier: " + extensionIdent);
         }
         catch (Exception e)
