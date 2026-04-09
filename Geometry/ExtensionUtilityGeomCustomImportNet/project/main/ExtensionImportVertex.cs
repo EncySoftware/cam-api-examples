@@ -17,13 +17,13 @@ public class ExtensionImportVertex: IExtension, IExtensionUtility
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
     
-    private static void CreatePoint(ISTGeomFiler geomFile, string pointName, TST3DPoint point)
+    private static void CreatePoint(ISTGeomReceiver geomReceiver, string pointName, TST3DPoint point)
     {
-        geomFile.CreatePoint(pointName, point);
-        geomFile.AddEntity(pointName, $"point({point.X}; {point.Y}; {point.Z})");
+        geomReceiver.CreatePoint(pointName, point);
+        geomReceiver.AddEntity(pointName, $"point({point.X}; {point.Y}; {point.Z})");
     }
 
-    private static void CreateCoordinateSystem(ISTGeomFiler geomFile,
+    private static void CreateCoordinateSystem(ISTGeomReceiver geomReceiver,
         string name,
         TST3DPoint vertex1,
         TST3DPoint vertex2,
@@ -51,8 +51,8 @@ public class ExtensionImportVertex: IExtension, IExtensionUtility
             Z = 0
         };
 
-        geomFile.CreateCoordinateSystem(name, center, vZ, vX);
-        geomFile.AddEntity(name, $"coordinateSystem({name})");
+        geomReceiver.CreateCoordinateSystem(name, center, vZ, vX);
+        geomReceiver.AddEntity(name, $"coordinateSystem({name})");
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class ExtensionImportVertex: IExtension, IExtensionUtility
     /// 1. Vertexes of brick
     /// 2. Coordinate systems on center of each face
     /// </summary>
-    private static void AddVertexesCoordinateSystems(ISTGeomFiler geomFile)
+    private static void AddVertexesCoordinateSystems(ISTGeomReceiver geomReceiver)
     {
         const int length = 1;
         const int width = 2;
@@ -76,42 +76,42 @@ public class ExtensionImportVertex: IExtension, IExtensionUtility
         var vertexLeftTopBack = new TST3DPoint { X = 0, Y = width, Z = height };
         
         // add vertexes
-        CreatePoint(geomFile, "vertexLeftBottomFront", vertexLeftBottomFront);
-        CreatePoint(geomFile, "vertexRightBottomFront", vertexRightBottomFront);
-        CreatePoint(geomFile, "vertexRightTopFront", vertexRightTopFront);
-        CreatePoint(geomFile, "vertexLeftTopFront", vertexLeftTopFront);
-        CreatePoint(geomFile, "vertexLeftBottomBack", vertexLeftBottomBack);
-        CreatePoint(geomFile, "vertexRightBottomBack", vertexRightBottomBack);
-        CreatePoint(geomFile, "vertexRightTopBack", vertexRightTopBack);
-        CreatePoint(geomFile, "vertexLeftTopBack", vertexLeftTopBack);
+        CreatePoint(geomReceiver, "vertexLeftBottomFront", vertexLeftBottomFront);
+        CreatePoint(geomReceiver, "vertexRightBottomFront", vertexRightBottomFront);
+        CreatePoint(geomReceiver, "vertexRightTopFront", vertexRightTopFront);
+        CreatePoint(geomReceiver, "vertexLeftTopFront", vertexLeftTopFront);
+        CreatePoint(geomReceiver, "vertexLeftBottomBack", vertexLeftBottomBack);
+        CreatePoint(geomReceiver, "vertexRightBottomBack", vertexRightBottomBack);
+        CreatePoint(geomReceiver, "vertexRightTopBack", vertexRightTopBack);
+        CreatePoint(geomReceiver, "vertexLeftTopBack", vertexLeftTopBack);
         
         // add coordinate systems
-        CreateCoordinateSystem(geomFile, "coordinateSystemLeft",
+        CreateCoordinateSystem(geomReceiver, "coordinateSystemLeft",
             vertexLeftTopBack,
             vertexLeftTopFront,
             vertexLeftBottomBack,
             vertexLeftBottomFront);
-        CreateCoordinateSystem(geomFile, "coordinateSystemRight",
+        CreateCoordinateSystem(geomReceiver, "coordinateSystemRight",
             vertexRightTopBack,
             vertexRightTopFront,
             vertexRightBottomBack,
             vertexRightBottomFront);
-        CreateCoordinateSystem(geomFile, "coordinateSystemTop",
+        CreateCoordinateSystem(geomReceiver, "coordinateSystemTop",
             vertexRightTopBack,
             vertexRightTopFront,
             vertexLeftTopBack,
             vertexLeftTopFront);
-        CreateCoordinateSystem(geomFile, "coordinateSystemBottom",
+        CreateCoordinateSystem(geomReceiver, "coordinateSystemBottom",
             vertexRightBottomBack,
             vertexRightBottomFront,
             vertexLeftBottomBack,
             vertexLeftBottomFront);
-        CreateCoordinateSystem(geomFile, "coordinateSystemFront",
+        CreateCoordinateSystem(geomReceiver, "coordinateSystemFront",
             vertexRightTopFront,
             vertexRightBottomFront,
             vertexLeftTopFront,
             vertexLeftBottomFront);
-        CreateCoordinateSystem(geomFile, "coordinateSystemBack",
+        CreateCoordinateSystem(geomReceiver, "coordinateSystemBack",
             vertexRightTopBack,
             vertexRightBottomBack,
             vertexLeftTopBack,
@@ -137,27 +137,31 @@ public class ExtensionImportVertex: IExtension, IExtensionUtility
             // beginning of the file
             if (!geomFile.StartFile(sgfFilePath))
                 throw new Exception("Can't start file: " + sgfFilePath);
+
+            if (geomFile is not ISTGeomReceiver geomReceiver)
+                throw new Exception("Can`t cast geomFile to geomReceiver");
+                
             try
             {
                 try
                 {
                     // set point, we are going to use it as a coordinate system
-                    geomFile.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
+                    geomReceiver.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
 
                     // item in geometry objects tree
-                    geomFile.StartGroupEntity("vertexes");
+                    geomReceiver.StartGroupEntity("vertexes");
                     try
                     {
-                        AddVertexesCoordinateSystems(geomFile);
+                        AddVertexesCoordinateSystems(geomReceiver);
                     }
                     finally
                     {
-                        geomFile.CloseGroupEntity();
+                        geomReceiver.CloseGroupEntity();
                     }
                 }
                 finally
                 {
-                    geomFile.CloseModel();
+                    geomReceiver.CloseModel();
                 }
             }
             finally

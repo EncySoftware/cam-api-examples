@@ -1,0 +1,101 @@
+﻿<Window x:Class="SetFeedZone.ViewControlWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SetFeedZone"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:model="clr-namespace:CAMAPI.ModelFormerTypes;assembly=CAMAPI.ModelFormerTypes"
+        mc:Ignorable="d"
+        Title="Feed Zone Manager" Height="450" Width="1200" WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <ObjectDataProvider x:Key="FeedTypeEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="model:TModelFormerFeedType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider x:Key="ChangeModeEnum" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="model:TModelFormerFeedRateChangeType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <GroupBox Header="Curves" Grid.Column="0" Margin="0,0,5,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ListBox x:Name="CurvesListBox" Grid.Row="0" SelectionChanged="CurvesListBox_SelectionChanged"
+                         ItemsSource="{Binding Curves, RelativeSource={RelativeSource AncestorType=local:ViewControlWindow}}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Content="Refresh" Grid.Row="1" Margin="0,5,0,0" Click="RefreshCurves_Click"/>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Header="Feed Zones" Grid.Column="1" Margin="5,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <DataGrid x:Name="FeedZonesDataGrid" AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single" Margin="0,0,0,5"
+                          CellEditEnding="FeedZonesDataGrid_CellEditEnding">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Length" Binding="{Binding Length, UpdateSourceTrigger=LostFocus}" Width="80"/>
+                        <DataGridComboBoxColumn x:Name="DataGridFeedType"
+                                                Header="Type" 
+                                                ItemsSource="{Binding Source={StaticResource FeedTypeEnum}}" 
+                                                SelectedItemBinding="{Binding FeedType, UpdateSourceTrigger=PropertyChanged}" 
+                                                Width="100"/>
+                        <DataGridTextColumn Header="%" Binding="{Binding Percentage, UpdateSourceTrigger=LostFocus}" Width="60">
+                            <DataGridTextColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRapid}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Setter Property="Background" Value="LightGray"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.CellStyle>
+                        </DataGridTextColumn>
+                        <DataGridComboBoxColumn x:Name="DataGridFeedChangeMode"
+                                                Header="Change Mode" 
+                                                ItemsSource="{Binding Source={StaticResource ChangeModeEnum}}" 
+                                                SelectedItemBinding="{Binding ChangeMode, UpdateSourceTrigger=PropertyChanged}" 
+                                                Width="140">
+                            <DataGridComboBoxColumn.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRapid}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                            <Setter Property="Background" Value="LightGray"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridComboBoxColumn.CellStyle>
+                        </DataGridComboBoxColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Add" Width="75" Margin="5,0" Click="AddFeedZone_Click"/>
+                    <Button Content="Delete" Width="75" Margin="5,0" Click="DeleteFeedZone_Click"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</Window>

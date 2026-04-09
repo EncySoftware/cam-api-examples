@@ -9,9 +9,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <OutDir>bin/</OutDir>
+    <CAMPath>C:\Program Files\ENCY Software\ENCY 2\Bin64</CAMPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.14" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.17" />
   </ItemGroup>
 </Project>

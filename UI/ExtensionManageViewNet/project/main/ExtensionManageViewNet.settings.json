@@ -1,0 +1,13 @@
+{
+    "name": "Utility to manage main view window by C#",
+    "description": "Utility to manage main view window by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionManageViewNet.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to manage main view window by C#",
+                "id": "Extension.UI.ManagerView.Net"
+            }
+        }
+    ]
+}

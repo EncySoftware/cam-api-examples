@@ -51,6 +51,8 @@ public class PLMDataItem : IPLMDataItem
     /// <param name="filePaths">A collection of file paths to be added.</param>
     public void AddFiles(IEnumerable<string> filePaths) => plmFiles.AddFiles(filePaths);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the unique identifier for the connection.
+    /// </summary>
     public string? ConnectionId { get;}
 }

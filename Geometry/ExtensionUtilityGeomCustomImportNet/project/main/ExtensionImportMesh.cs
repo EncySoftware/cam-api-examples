@@ -20,7 +20,7 @@ public class ExtensionImportMesh: IExtension, IExtensionUtility
     /// <summary>
     /// Add rectangle as 6 meshes
     /// </summary>
-    private static void AddMeshes(ISTGeomFiler geomFile)
+    private static void AddMeshes(ISTGeomReceiver geomReceiver)
     {
         const int length = 1;
         const int width = 2;
@@ -35,37 +35,37 @@ public class ExtensionImportMesh: IExtension, IExtensionUtility
         var vertexRightTopBack = new TST3DPoint { X = length, Y = width, Z = height };
         var vertexLeftTopBack = new TST3DPoint { X = 0, Y = width, Z = height };
         
-        geomFile.StartMesh("brick");
+        geomReceiver.StartMesh("brick");
 
-        geomFile.AddMeshVertex(0, vertexLeftBottomFront);
-        geomFile.AddMeshVertex(1, vertexRightBottomFront);
-        geomFile.AddMeshVertex(2, vertexRightTopFront);
-        geomFile.AddMeshVertex(3, vertexLeftTopFront);
-        geomFile.AddMeshVertex(4, vertexLeftBottomBack);
-        geomFile.AddMeshVertex(5, vertexRightBottomBack);
-        geomFile.AddMeshVertex(6, vertexRightTopBack);
-        geomFile.AddMeshVertex(7, vertexLeftTopBack);
+        geomReceiver.AddMeshVertex(0, vertexLeftBottomFront);
+        geomReceiver.AddMeshVertex(1, vertexRightBottomFront);
+        geomReceiver.AddMeshVertex(2, vertexRightTopFront);
+        geomReceiver.AddMeshVertex(3, vertexLeftTopFront);
+        geomReceiver.AddMeshVertex(4, vertexLeftBottomBack);
+        geomReceiver.AddMeshVertex(5, vertexRightBottomBack);
+        geomReceiver.AddMeshVertex(6, vertexRightTopBack);
+        geomReceiver.AddMeshVertex(7, vertexLeftTopBack);
 
-        geomFile.AddMeshTriangle(0, 2, 1);
-        geomFile.AddMeshTriangle(0, 3, 2);
+        geomReceiver.AddMeshTriangle(0, 2, 1);
+        geomReceiver.AddMeshTriangle(0, 3, 2);
 
-        geomFile.AddMeshTriangle(4, 6, 5);
-        geomFile.AddMeshTriangle(4, 7, 6);
+        geomReceiver.AddMeshTriangle(4, 6, 5);
+        geomReceiver.AddMeshTriangle(4, 7, 6);
 
-        geomFile.AddMeshTriangle(0, 5, 1);
-        geomFile.AddMeshTriangle(0, 4, 5);
+        geomReceiver.AddMeshTriangle(0, 5, 1);
+        geomReceiver.AddMeshTriangle(0, 4, 5);
 
-        geomFile.AddMeshTriangle(1, 6, 2);
-        geomFile.AddMeshTriangle(1, 5, 6);
+        geomReceiver.AddMeshTriangle(1, 6, 2);
+        geomReceiver.AddMeshTriangle(1, 5, 6);
 
-        geomFile.AddMeshTriangle(2, 7, 3);
-        geomFile.AddMeshTriangle(2, 6, 7);
+        geomReceiver.AddMeshTriangle(2, 7, 3);
+        geomReceiver.AddMeshTriangle(2, 6, 7);
 
-        geomFile.AddMeshTriangle(3, 4, 0);
-        geomFile.AddMeshTriangle(3, 7, 4);
+        geomReceiver.AddMeshTriangle(3, 4, 0);
+        geomReceiver.AddMeshTriangle(3, 7, 4);
 
-        geomFile.CloseMesh();
-        geomFile.AddEntity("brick", "brick");
+        geomReceiver.CloseMesh();
+        geomReceiver.AddEntity("brick", "brick");
     }
 
     /// <inheritdoc />
@@ -88,28 +88,31 @@ public class ExtensionImportMesh: IExtension, IExtensionUtility
             if (!geomFile.StartFile(sgfFilePath))
                 throw new Exception("Can't start file: " + sgfFilePath);
             
-            geomFile.StartModel();
+            if (geomFile is not ISTGeomReceiver geomReceiver)
+                throw new Exception("Can`t cast geomFile to geomReceiver");
+                
+            geomReceiver.StartModel();
             try
             {
                 try
                 {
                     // set point, we are going to use it as a coordinate system
-                    geomFile.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
+                    geomReceiver.SetCurrentTransform(T3DMatrix.Unit.vT, T3DMatrix.Unit.vZ, T3DMatrix.Unit.vX);
                     
                     // item in geometry objects tree
-                    geomFile.StartGroupEntity("meshes");
+                    geomReceiver.StartGroupEntity("meshes");
                     try
                     {
-                        AddMeshes(geomFile);
+                        AddMeshes(geomReceiver);
                     }
                     finally
                     {
-                        geomFile.CloseGroupEntity();
+                        geomReceiver.CloseGroupEntity();
                     }
                 }
                 finally
                 {
-                    geomFile.CloseModel();
+                    geomReceiver.CloseModel();
                 }
             }
             finally

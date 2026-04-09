@@ -12,6 +12,7 @@ using CAMIPC.Application;
 using CAMIPC.ExecuteContext;
 using CAMIPC.GeomModel;
 using CAMIPC.ModelFormerTypes;
+using CAMIPC.DotnetHelper;
 using CAMIPC.NCMaker;
 using CAMIPC.Project;
 using CAMIPC.Singletons;
@@ -460,45 +461,34 @@ public static class TechnologyHelper
         });
         
         // generate CNC
-        ncMakerCom.Invoke(ncMaker =>
-        {
-            // make settings for CNC generating
-            using var settingsCom = ComWrapper.Create(
-                ncMaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, ref executeContext));
+        
+        using var settingsCom = ncMakerCom.InvokeAndWrap(ncmaker =>{
+            var settings = ncmaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, ref executeContext);
             if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception(executeContext.ResultStatus.Description);
+            return settings;
+        });
+        var resultNcCodeFile = settingsCom.Invoke(s =>
+        {
+            var sppx = (ICamApiMakeCncSppxSettings)s;
+            sppx.OutputFolder = Path.GetTempPath();
+            sppx.NcFileName   = OutputFile;
+            return Path.Combine(sppx.OutputFolder, sppx.NcFileName);
+        });
         
-            using var settingsSppxCom = settingsCom.InvokeAndWrap(settings =>
-                settings as ICamIpcMakeCncSppxSettings
-                ?? throw new Exception("Error creating settings: settings is not ICamIpcMakeCncSppxSettings"));
-            var resultNcCodeFile = settingsSppxCom.Invoke(settings =>
-            {
-                settings.SetOutputFolder(Path.GetTempPath(), ref executeContext);
-                if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
-                    throw new Exception(executeContext.ResultStatus.Description);
-            
-                settings.SetNcFileName(OutputFile, ref executeContext);
-                if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
-                    throw new Exception(executeContext.ResultStatus.Description);
-            
-                return Path.Combine(Path.GetTempPath(), OutputFile);
-            });
+        // get postprocessor from all users documents folder
+        var postProcessorFilePath = pathsHelperCom.Invoke(pathsHelper =>
+            Path.Combine(pathsHelper.PostprocessorsFolder, "Mill", "Fanuc (30i)_Mill.sppx"));
+        if (!File.Exists(postProcessorFilePath))
+            throw new Exception("Postprocessor not found: " + postProcessorFilePath);
         
-            // get postprocessor from all users documents folder
-            var postProcessorFilePath = pathsHelperCom.Invoke(pathsHelper =>
-                Path.Combine(pathsHelper.PostprocessorsFolder, "Mill", "Fanuc (30i)_Mill.sppx"));
-            if (!File.Exists(postProcessorFilePath))
-                throw new Exception("Postprocessor not found: " + postProcessorFilePath);
+        // generate CNC
+        ncMakerCom.Invoke(ncmaker => {
+            ncmaker.Generate(clDataFile, postProcessorFilePath, settingsCom.Instance, ref executeContext);
+            if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
+                throw new Exception(executeContext.ResultStatus.Description);
 
-            // generate CNC code
-            settingsSppxCom.Invoke(settingsSppx =>
-            {
-                ncMaker.Generate(clDataFile, postProcessorFilePath, settingsSppx, ref executeContext);
-                if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)
-                    throw new Exception(executeContext.ResultStatus.Description);
-
-                Process.Start("notepad.exe", resultNcCodeFile);
-            });
+            Process.Start("notepad.exe", resultNcCodeFile);
         });
     }
 }

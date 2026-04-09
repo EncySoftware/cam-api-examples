@@ -1,0 +1,13 @@
+{
+    "name": "Utility to set feed zones by C#",
+    "description": "Utility to set feed zones by C#",
+    "module_path": "${extensionJsonFolder}\\SetFeedZone.dll",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility to change feed zones of 5D curves",
+                "id": "Extension.SetFeedZone.Net"
+            }
+        }
+    ]
+}

@@ -21,13 +21,13 @@ public class ObjReader
     /// <summary>
     /// Reads an OBJ file and builds a 3D model using the provided geometry filer
     /// </summary>
-    public void BuildModel(ISTGeomFiler geomFile)
+    public void BuildModel(ISTGeomReceiver geomReceiver)
     {
-        BuildMesh(geomFile);
-        BuildFaces(geomFile);
+        BuildMesh(geomReceiver);
+        BuildFaces(geomReceiver);
     }
 
-    private void BuildFaces(ISTGeomFiler geomFile)
+    private void BuildFaces(ISTGeomReceiver geomReceiver)
     {
         foreach (var face in _model.Faces)
         {
@@ -36,25 +36,25 @@ public class ObjReader
 
             var isClosed = face.VertexIndices.Count > 2;
             const string contourName = "mesher";
-            geomFile.StartCurve3d(contourName, GetVertex(face.VertexIndices[0].VertexIndex));
+            geomReceiver.StartCurve3d(contourName, GetVertex(face.VertexIndices[0].VertexIndex));
 
             for (var i = 1; i < face.VertexIndices.Count; i++)
-                geomFile.CutTo3d(GetVertex(face.VertexIndices[i].VertexIndex));
+                geomReceiver.CutTo3d(GetVertex(face.VertexIndices[i].VertexIndex));
 
             if (isClosed)
-                geomFile.CutTo3d(GetVertex(face.VertexIndices[0].VertexIndex));
+                geomReceiver.CutTo3d(GetVertex(face.VertexIndices[0].VertexIndex));
 
-            geomFile.CloseCurve3d(isClosed);
-            geomFile.AddEntity(contourName, isClosed ? "face" : "edge");
+            geomReceiver.CloseCurve3d(isClosed);
+            geomReceiver.AddEntity(contourName, isClosed ? "face" : "edge");
         }
     }
 
-    private void BuildMesh(ISTGeomFiler geomFile)
+    private void BuildMesh(ISTGeomReceiver geomReceiver)
     {
-        geomFile.StartMesh("model_mesh");
+        geomReceiver.StartMesh("model_mesh");
 
         for (var i = 0; i < _model.Vertices.Count; i++)
-            geomFile.AddMeshVertex(i, GetVertex(i));
+            geomReceiver.AddMeshVertex(i, GetVertex(i));
 
         foreach (var face in _model.Faces)
         {
@@ -63,7 +63,7 @@ public class ObjReader
 
             for (var i = 2; i < face.VertexIndices.Count; i++)
             {
-                geomFile.AddMeshTriangle(
+                geomReceiver.AddMeshTriangle(
                     face.VertexIndices[0].VertexIndex,
                     face.VertexIndices[i - 1].VertexIndex,
                     face.VertexIndices[i].VertexIndex
@@ -71,8 +71,8 @@ public class ObjReader
             }
         }
 
-        geomFile.CloseMesh();
-        geomFile.AddEntity("model_mesh", "brick");
+        geomReceiver.CloseMesh();
+        geomReceiver.AddEntity("model_mesh", "brick");
     }
 
     private TST3DPoint GetVertex(int vertexIndex) =>

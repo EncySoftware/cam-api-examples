@@ -21,6 +21,11 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     public bool SupportProjectLoad { get => true; }
 
     /// <summary>
+    /// Gets a value indicating whether this PLM extension supports working with models.
+    /// </summary>
+    public bool SupportModelLoad { get => true; }
+
+    /// <summary>
     /// Gets a value indicating whether this PLM extension supports working with machines.
     /// </summary>
     public bool SupportMachineLoad { get => true; }
