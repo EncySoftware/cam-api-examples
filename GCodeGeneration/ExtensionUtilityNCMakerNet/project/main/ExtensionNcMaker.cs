@@ -76,15 +76,15 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("CLData saved to file: " + clDataFile);
 
             // make settings for CNC generating
-            var settings = ncMaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, out resultStatus) as ICamApiMakeCncSppxSettings;
-            if (resultStatus.Code == TResultStatusCode.rsError)
-                throw new Exception("Error creating settings: " + resultStatus.Description);
-            if (settings == null)
-                throw new Exception("Error creating settings: settings is null");
-            settings.OutputFolder = _tempDir;
-            settings.NcFileName = "example.nc";
-            resultGCodeFile = Path.Combine(settings.OutputFolder, settings.NcFileName);
-            WriteLog("Resulting G code file: " + Path.Combine(settings.OutputFolder, settings.NcFileName));
+            using var settingsCom = ncMakerCom.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx);
+            var resultFiles = settingsCom.Invoke(s =>
+            {
+                var sppx = (ICamApiMakeCncSppxSettings)s;
+                sppx.OutputFolder = _tempDir;
+                sppx.NcFileName   = "measurement.nc";
+                return Path.Combine(sppx.OutputFolder, sppx.NcFileName);
+            });
+            WriteLog("Resulting G code file: " + resultFiles);
             
             // get postprocessor from all users documents folder
             var postProcessor = Path.Combine(pathsHelper.Instance.PostprocessorsFolder, "Mill", "Sinumerik (840D)_Mill.sppx");
@@ -93,7 +93,7 @@ public class ExtensionNcMaker : IExtension, IExtensionUtility
             WriteLog("Postprocessor found: " + postProcessor);
             
             // generate CNC
-            ncMaker.Generate(clDataFile, postProcessor, settings, out resultStatus);
+            ncMakerCom.Generate(clDataFile, postProcessor, settingsCom);
             if (resultStatus.Code == TResultStatusCode.rsError)
                 throw new Exception("Error generating CNC: " + resultStatus.Description);
             WriteLog("CNC successfully generated");

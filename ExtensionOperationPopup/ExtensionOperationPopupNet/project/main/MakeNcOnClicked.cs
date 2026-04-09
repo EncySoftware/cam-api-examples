@@ -62,25 +62,14 @@ public class MakeNcOnClicked : ICamApiTechnologyFormOperationPopupItemOnClicked
             });
 
             // make settings for CNC generating
-            using var settingsCom = ncMakerCom.Invoke(ncMaker =>
+            string resultGCodeFile = "";
+            using var settingsCom = ncMakerCom.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx);
+            settingsCom.Invoke(s =>
             {
-                var result = ComWrapper.Create(
-                    ncMaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, out var status) as
-                        ICamApiMakeCncSppxSettings);
-                if (status.Code == TResultStatusCode.rsError)
-                    throw new Exception("Error creating settings: " + status.Description);
-                if (result == null)
-                    throw new Exception("Error creating settings: settings is null");
-                WriteLog("Settings created");
-                return result;
-            });
-            var resultGCodeFile = settingsCom.Invoke(settings =>
-            {
-                settings.OutputFolder = tempFolder;
-                settings.NcFileName = "example.nc";
-                var result = Path.Combine(settings.OutputFolder, settings.NcFileName);
-                WriteLog("Resulting G code file: " + result);
-                return result;
+                var sppx = (ICamApiMakeCncSppxSettings)s;
+                sppx.OutputFolder = tempFolder;
+                sppx.NcFileName   = "measurement.nc";
+                resultGCodeFile = Path.Combine(sppx.OutputFolder, sppx.NcFileName);
             });
             var settings = settingsCom.Instance
                            ?? throw new Exception("Error getting settings");
@@ -97,15 +86,10 @@ public class MakeNcOnClicked : ICamApiTechnologyFormOperationPopupItemOnClicked
             });
 
             // generate CNC
-            ncMakerCom.Invoke(ncMaker =>
-            {
-                ncMaker.Generate(clDataFile, postProcessor, settings, out var status);
-                if (status.Code == TResultStatusCode.rsError)
-                    throw new Exception("Error generating CNC: " + status.Description);
-                WriteLog("CNC successfully generated");
-                WriteLog(status.Description);
-            });
-
+            ncMakerCom.Generate(clDataFile, postProcessor, settingsCom);
+            WriteLog("CNC successfully generated");
+            
+            
             // show result
             if (File.Exists(resultGCodeFile))
                 Process.Start("notepad.exe", resultGCodeFile);
