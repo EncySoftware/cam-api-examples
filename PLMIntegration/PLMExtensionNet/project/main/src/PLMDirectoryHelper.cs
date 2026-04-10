@@ -6,6 +6,15 @@ using System.IO.Compression;
 public class PLMDirectoryHelper
 {
     private string _basePath = string.Empty;
+    
+    /// <summary>
+    /// Gets the base directory path.
+    /// </summary>
+    public string BaseDirectory 
+    { 
+        get => _basePath;
+        private set => _basePath = value;
+    }
 
     /// <summary>
     /// Gets the base directory path.
