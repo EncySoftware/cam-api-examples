@@ -283,44 +283,52 @@ class PLMExtensionNet : IExtensionPLM, IExtension
     {
         string[] directories;
         var addNewElement = false;
-        PLMDirectoryHelper? dirHelper;
+        PLMDirectoryHelper? dirHelper = null;
         try
         {
-            if (string.IsNullOrEmpty(parentItemId) || !parentItemId.Contains(emptyElementId))
+            switch (itemType)
             {
-                switch (itemType)
-                {
-                    case TPLMItemType.itMachine:
-                        dirHelper = machinesDirectoryHelper;
-                        break;
-                    case TPLMItemType.itPostprocessor:
-                        dirHelper = postprocessorsDirectoryHelper;
-                        break;
-                    case TPLMItemType.itModel:
-                    case TPLMItemType.itWorkpiece:
-                        dirHelper = modelsDirectoryHelper;
-                        break;
-                    case TPLMItemType.itProject:
-                        dirHelper = projectsDirectoryHelper;
-                        break;
-                    case TPLMItemType.itTool:
-                        dirHelper = toolsDirectoryHelper;
-                        break;
-                    default:
-                        items = new PLMTree();
-                        return ReturnSuccessfulResult();
-                }
-                var parentDir = dirHelper?.FindSubdirectoryByExactName(parentItemId) ?? string.Empty;
+                case TPLMItemType.itMachine:
+                    dirHelper = machinesDirectoryHelper;
+                    break;
+                case TPLMItemType.itPostprocessor:
+                    dirHelper = postprocessorsDirectoryHelper;
+                    break;
+                case TPLMItemType.itModel:
+                case TPLMItemType.itWorkpiece:
+                    dirHelper = modelsDirectoryHelper;
+                    break;
+                case TPLMItemType.itProject:
+                    dirHelper = projectsDirectoryHelper;
+                    break;
+                case TPLMItemType.itTool:
+                    dirHelper = toolsDirectoryHelper;
+                    break;
+                default:
+                    break;
+            }
+            if (dirHelper is null)
+            {
+                items = new PLMTree();
+                return new PLMResult {
+                    Code = 1,
+                    ErrorMessage = $"The item type {itemType} is not supported"
+                };                
+            }
+
+            if (!string.IsNullOrEmpty(parentItemId) && !parentItemId.Contains(emptyElementId))
+            {
+                var parentDir = dirHelper.FindSubdirectoryByExactName(parentItemId) ?? string.Empty;
                 var parentDirType = GetDirectoryPLMItemType(itemType, parentDir);
                 if (parentDirType != TPLMItemType.itNone)
                     directories = [];
                 else
-                    directories = dirHelper?.GetSubdirectories(parentItemId) ?? [];
+                    directories = dirHelper.GetSubdirectories(parentItemId) ?? [];
 
-                addNewElement = true;
+                addNewElement = false;
             }
             else
-                directories = [];
+                directories = [ dirHelper.BaseDirectory ];
         }
         catch (Exception ex)
         {
@@ -399,16 +407,16 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                         destFilePath = machinesDirectoryHelper?.CopyFilesFromPLMDirectory(items[i].Id, downloadPath).FirstOrDefault();
                         break;
                     case TPLMItemType.itPostprocessor:
-                        directory = machinesDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
+                        directory = postprocessorsDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
                         destFilePath = postprocessorsDirectoryHelper?.CopyFilesFromPLMDirectory(items[i].Id, downloadPath).FirstOrDefault();
                         break;
                     case TPLMItemType.itModel:
                     case TPLMItemType.itWorkpiece:
-                        directory = machinesDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
+                        directory = modelsDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
                         destFilePath = modelsDirectoryHelper?.CopyFilesFromPLMDirectory(items[i].Id, downloadPath).FirstOrDefault();
                         break;
                     case TPLMItemType.itTool:
-                        directory = machinesDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
+                        directory = toolsDirectoryHelper?.FindSubdirectoryByExactName(items[i].Id) ?? string.Empty;
                         destFilePath = toolsDirectoryHelper?.CopyFilesFromPLMDirectory(items[i].Id, downloadPath).FirstOrDefault();
                         break;
                     default:
@@ -523,7 +531,7 @@ class PLMExtensionNet : IExtensionPLM, IExtension
                 items.Add(project.ProjectFiles[i].FileName);
 
             var projectId = project.Id;
-            if (project.Id.Contains(emptyElementId))
+            if (project.Id.Contains(emptyElementId) || projectsDirectoryHelper?.IsElementGroup(projectId) == true)
             {
                 projectId = $"Project_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}";
                 string parentPath = project.Id.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
@@ -581,43 +589,46 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         }
 
         var copiedItems = new PLMDataItems();
+        PLMDirectoryHelper? dirHelper = null;
         try
         {
             switch (itemType)
             {
                 case TPLMItemType.itMachine:
-                    var machDirectory = itemId;
-                    if (itemId.Contains(emptyElementId))
-                    {
-                        string parentPath = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
-                        machDirectory = Path.GetFileNameWithoutExtension(files[0]);
-                        machinesDirectoryHelper?.CreateDirectory(parentPath, machDirectory);
-                    }
-                    machinesDirectoryHelper?.CopyFileToPLMDirectory(files[0], machDirectory, replace);
+                    dirHelper = machinesDirectoryHelper;
                     break;
                 case TPLMItemType.itPostprocessor:
-                    var ppDirectory = itemId;
-                    if (itemId.Contains(emptyElementId))
-                    {
-                        string parentPath = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
-                        ppDirectory = Path.GetFileNameWithoutExtension(files[0]);
-                        postprocessorsDirectoryHelper?.CreateDirectory(parentPath, ppDirectory);
-                    }
-                    postprocessorsDirectoryHelper?.CopyFileToPLMDirectory(files[0], ppDirectory, replace);
+                    dirHelper = postprocessorsDirectoryHelper;
+                    break;
+                case TPLMItemType.itModel:
+                case TPLMItemType.itWorkpiece:
+                    dirHelper = modelsDirectoryHelper;
                     break;
                 case TPLMItemType.itTool:
-                    var toolDirectory = itemId;
-                    if (itemId.Contains(emptyElementId))
-                    {
-                        string parentPath = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
-                        toolDirectory = Path.GetFileNameWithoutExtension(files[0]);
-                        toolsDirectoryHelper?.CreateDirectory(parentPath, toolDirectory);
-                    }
-                    toolsDirectoryHelper?.CopyFileToPLMDirectory(files[0], toolDirectory, replace);
+                    dirHelper = toolsDirectoryHelper;
                     break;
                 default:
                     break;
             }
+
+            if (dirHelper is null)
+            {
+                uplItems = new PLMDataItems();
+                return new PLMResult {
+                    Code = 1,
+                    ErrorMessage = $"The item type {itemType} is not supported"
+                };                
+            }
+
+            string itemDir = itemId.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+            if (itemId.Contains(emptyElementId) || dirHelper.IsElementGroup(itemDir))
+            {
+                var itemName = Path.GetFileNameWithoutExtension(files[0]);
+                dirHelper.CreateDirectory(itemDir, itemName);
+                itemDir = itemName;
+            }
+
+            dirHelper.CopyFileToPLMDirectory(files[0], itemDir, replace);
                 
             copiedItems.AddDataItem(itemId, itemId, itemType);
         }
@@ -700,8 +711,8 @@ class PLMExtensionNet : IExtensionPLM, IExtension
         foreach (var directory in directories)
         {
             var directoryName = Path.GetFileName(directory);
-            var dirType = GetDirectoryPLMItemType(itemType, directory);
-            plmTree.AddTreeItem(directoryName, directoryName, string.Empty, dirType);
+            // var dirType = GetDirectoryPLMItemType(itemType, directory);
+            plmTree.AddTreeItem(directoryName, directoryName, string.Empty, itemType);
         }
 
         if (addNewElement)

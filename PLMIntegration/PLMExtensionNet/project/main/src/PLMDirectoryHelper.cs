@@ -8,6 +8,15 @@ public class PLMDirectoryHelper
     private string _basePath = string.Empty;
 
     /// <summary>
+    /// Gets the base directory path.
+    /// </summary>
+    public string BaseDirectory 
+    { 
+        get => _basePath;
+        private set => _basePath = value;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="PLMDirectoryHelper"/> class with the specified base path.
     /// </summary>
     /// <param name="basePath">The base directory path to work with.</param>
@@ -40,7 +49,7 @@ public class PLMDirectoryHelper
     {
         string targetPath = _basePath;
 
-        if (!string.IsNullOrEmpty(directoryName))
+        if (!string.IsNullOrEmpty(directoryName) && !IsBaseDirectory(directoryName))
         {
             string foundDir = FindSubdirectoryByExactName(directoryName);
             if (foundDir == string.Empty)
@@ -61,7 +70,7 @@ public class PLMDirectoryHelper
     public void CreateDirectory(string parentDirectory, string directoryName)
     {
         string targetDir;
-        if (string.IsNullOrEmpty(parentDirectory))
+        if (string.IsNullOrEmpty(parentDirectory) || IsBaseDirectory(parentDirectory))
             targetDir = _basePath;
         else
         {
@@ -226,6 +235,38 @@ public class PLMDirectoryHelper
         string jsonFilePath = Path.Combine(targetDir, jsonFileName + ".json");
 
         File.WriteAllText(jsonFilePath, jsonContent);
+    }
+
+    /// <summary>
+    /// Determines whether the specified directory represents a group or element.
+    /// </summary>
+    /// <param name="directoryName">The exact name of the directory (case-sensitive).</param>
+    /// <returns>
+    /// <c>true</c> if the directory is a group (contains only subdirectories, no files);
+    /// <c>false</c> if the directory is an element (contains at least one file).
+    /// </returns>
+    public bool IsElementGroup(string directoryName)
+    {
+        var dirPath = FindSubdirectoryByExactName(directoryName);
+        if (string.IsNullOrEmpty(dirPath))
+            return true;
+        if (!Directory.Exists(dirPath))
+            throw new DirectoryNotFoundException($"Directory '{directoryName}' not found.");
+        return !Directory.EnumerateFiles(dirPath).Any();
+    }
+    
+    /// <summary>
+    /// Determines whether the specified folder name matches the base path.
+    /// </summary>
+    /// <param name="directoryName">The name of the directory to check. Case-insensitive comparison is used.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="directoryName"/> matches the base path;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsBaseDirectory(string directoryName)
+    {
+        string lastFolderName = Path.GetFileName(_basePath);
+        return string.Equals(directoryName, lastFolderName, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
