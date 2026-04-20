@@ -38,17 +38,20 @@ namespace ExtensionUtilityExportInformationNet
             }
                 
             using var workpieceSetupCom = PartStageHelper.WorkpieceSetup(partStageCom);
-            var MachineSideConnectorIndex = WorkpieceSetupHelper.MachineSideConnectorIndex(workpieceSetupCom);
-            _jsonBuilder.AddIntPair("WorkpieceConnectorIndex", MachineSideConnectorIndex);
+            var machineSideConnectorIndex = WorkpieceSetupHelper.MachineSideConnectorIndex(workpieceSetupCom);
+            _jsonBuilder.AddIntPair("WorkpieceConnectorIndex", machineSideConnectorIndex);
                     
-            using var workpieceConnectorCom = MachineHelper.WorkpieceConnector(machineCom, MachineSideConnectorIndex);
-            var workpieceConnectorName = WorkpieceConnectorHelper.Name(workpieceConnectorCom);
-            _jsonBuilder.AddStrPair("WorkpieceConnectorName", workpieceConnectorName);
+            if (machineSideConnectorIndex >= 0)
+            {
+                using var workpieceConnectorCom = MachineHelper.WorkpieceConnector(machineCom, machineSideConnectorIndex);
+                var workpieceConnectorName = WorkpieceConnectorHelper.Name(workpieceConnectorCom);
+                _jsonBuilder.AddStrPair("WorkpieceConnectorName", workpieceConnectorName);
 
-            var worldWorkpieceConnectorMatrix =
-                MachineEvaluatorHelper.GetWorldWorkpieceConnectorMatrix(evaluatorCom, MachineSideConnectorIndex);
-            GeometrySaveHelper.ShowMatrixData(worldWorkpieceConnectorMatrix, "WorldWorkpieceConnectorMatrix", _jsonBuilder);    
-            
+                var worldWorkpieceConnectorMatrix =
+                    MachineEvaluatorHelper.GetWorldWorkpieceConnectorMatrix(evaluatorCom, machineSideConnectorIndex);
+                GeometrySaveHelper.ShowMatrixData(worldWorkpieceConnectorMatrix, "WorldWorkpieceConnectorMatrix", _jsonBuilder);
+            }
+
             var workpieceSetupCS = WorkpieceSetupHelper.Offset(workpieceSetupCom);
             GeometrySaveHelper.ShowMatrixData(workpieceSetupCS, "OffsetCS", _jsonBuilder);     
                 

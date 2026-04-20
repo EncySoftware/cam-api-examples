@@ -17,15 +17,6 @@ public class PLMDirectoryHelper
     }
 
     /// <summary>
-    /// Gets the base directory path.
-    /// </summary>
-    public string BaseDirectory 
-    { 
-        get => _basePath;
-        private set => _basePath = value;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="PLMDirectoryHelper"/> class with the specified base path.
     /// </summary>
     /// <param name="basePath">The base directory path to work with.</param>
