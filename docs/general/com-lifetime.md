@@ -83,22 +83,18 @@ using var operationCom = technologistCom.InvokeAndWrap(t =>
 
 ### Accessing the Raw COM Object
 
-Two properties expose the underlying COM interface directly:
+`ComWrapper<T>` exposes two deprecated raw-access properties — `Instance` (nullable) and `It` (throws on empty). **Do not use them in new code.** Both are marked `[Obsolete]` and give warning CS0618; they bypass MTA marshalling and can fail unpredictably when the RCW is accessed off its apartment thread.
 
-- `Instance` — returns `T?` (nullable). Returns `null` if the wrapper is empty.
-- `It` — returns `T`, throws `NullReferenceException` if the wrapper is empty. Use when you are certain the object is non-null.
+Use instead:
 
-Use these **only** in contexts where the `Invoke`/`InvokeAndWrap` helpers are insufficient, for example when passing the raw pointer to an API that does not return a `ComWrapper`:
+| Need | Use |
+|---|---|
+| Read a property / call a method | `wrapperCom.Invoke(x => x.Property)` / `wrapperCom.Invoke(x => x.Method(...))` or the `*Helper.cs` extension method |
+| Call a method that returns another COM object | `wrapperCom.InvokeAndWrap(x => x.Method(...))` |
+| Check whether the wrapper is empty | `wrapperCom.IsNull` |
+| Pass a wrapped COM object as argument to another COM method | Nest the calls so the argument is read inside the outer `Invoke`: `outerCom.Invoke(outer => innerCom.Invoke(inner => outer.DoWith(inner)))` |
 
-```csharp
-var rawPtr = operationIterator.Instance;
-projectCom.Invoke(project =>
-{
-    project.SaveClData(clDataFile, rawPtr, out var ret);
-    if (ret.Code == TResultStatusCode.rsError)
-        throw new Exception("Error saving CLData: " + ret.Description);
-});
-```
+If a scenario seems to require `.It` / `.Instance`, the fix is usually to add a missing extension method to `CAMAPI.DotnetHelper` — not to reach for the raw pointer.
 
 ### The `using` Pattern
 
@@ -140,13 +136,27 @@ if (nodeCom.IsNull)
 
 ### Interface Casting
 
-Use `AsInstanceOf<TTarget>()` to query whether a COM object also implements another interface:
+To query whether a COM object also implements another interface, perform the cast **inside** `Invoke` (or `InvokeAndWrap`) — never against `.It` / `.Instance` outside. The RCW lives in the MTA context, and casting the raw instance from the caller's thread can fail unpredictably.
+
+**When you only need the narrow interface for one block of work** — cast inside `Invoke` and use the variable locally:
 
 ```csharp
-using var mfWithHolesCom = mfCom.AsInstanceOf<ICamApiModelFormerWithHoles>();
-if (mfWithHolesCom != null)
-    mfWithHolesCom.Invoke(mf => mf.AddHolesSelected());
+mfCom.Invoke(mf =>
+{
+    if (mf is not ICamApiModelFormerWithHoles mfWithHoles) return;
+    mfWithHoles.AddHolesSelected();
+});
 ```
+
+**When you need a typed `ComWrapper<T>` to keep around (e.g. to pass to an extension method)** — wrap the cast result and check `IsNull`:
+
+```csharp
+using var mfWithHolesCom = mfCom.InvokeAndWrap(mf => mf as ICamApiModelFormerWithHoles);
+if (!mfWithHolesCom.IsNull)
+    mfWithHolesCom.AddHolesSelected();     // call the DotnetHelper extension method
+```
+
+> `ComWrapper<T>.AsInstanceOf<TTarget>()` is intentionally **not used** in this SDK — it bypasses MTA marshalling and is unstable in practice. The patterns above are mandatory.
 
 ---
 

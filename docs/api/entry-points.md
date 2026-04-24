@@ -208,8 +208,10 @@ using var allLibsCom = managerCom.GetLibrariesInfo();
 Creates and returns a new instance of an extension by its unique type ID. The extension's DLL is loaded if not already in memory.
 
 ```csharp
-using var extCom = managerCom.CreateExtension("My.Extension.Ident");
-var solver = extCom.Instance as ICamApiTechOperationSolver;
+using var extCom    = managerCom.CreateExtension("My.Extension.Ident");
+using var solverCom = extCom.InvokeAndWrap(e => e as ICamApiTechOperationSolver);
+if (solverCom.IsNull)
+    throw new Exception("Extension does not implement ICamApiTechOperationSolver");
 ```
 
 ```
@@ -309,7 +311,8 @@ Returns the `IExtensionLogger` used by the extension system. Prefer accessing it
 
 ```csharp
 using var loggerCom = ExtensionManagerHelper.Logger();
-loggerCom.Instance?.Info("My message");
+if (!loggerCom.IsNull)
+    loggerCom.Invoke(log => log.Info("My message"));
 ```
 
 #### `ApiVersion`
@@ -384,13 +387,16 @@ string version = ExtensionManagerHelper.ApiVersion();
 
 ```csharp
 using var loggerCom = ExtensionManagerHelper.Logger();
-var logger = loggerCom.Instance ?? throw new Exception("Logger unavailable");
+if (loggerCom.IsNull) throw new Exception("Logger unavailable");
 
-if (logger.IsEventTypeActive(TLogEventType.leDebug))
-    logger.Debug($"Processing operation: {operation.Name}");
+loggerCom.Invoke(log =>
+{
+    if (log.IsEventTypeActive(TLogEventType.leDebug))
+        log.Debug($"Processing operation: {operation.Name}");
 
-logger.Info("Toolpath calculation started");
-logger.Warning("No geometry assigned — using defaults");
-logger.Error("CLD receiver is null");
-logger.Notify(TLogEventType.leInfo, "Export complete", "My Extension");
+    log.Info("Toolpath calculation started");
+    log.Warning("No geometry assigned — using defaults");
+    log.Error("CLD receiver is null");
+    log.Notify(TLogEventType.leInfo, "Export complete", "My Extension");
+});
 ```

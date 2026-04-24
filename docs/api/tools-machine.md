@@ -247,6 +247,30 @@ A live machine instance attached to an operation, with access to XML properties,
 | `ToolPieceConnector(this, int index)` | `ComWrapper<ICamApiToolConnector>` | Tool connector at index (0-based) |
 | `LoadFromOperationXml(this, ComWrapper<IST_XMLPropPointer>)` | `void` | Re-initializes machine state from operation XML |
 
+The following members have no dedicated extension method; call them through `Invoke` / `InvokeAndWrap`:
+
+| IDL member | Returns | Description |
+|---|---|---|
+| `TCPMEnabled` (R/W) | `bool` | Tool Center Point Management (RTCP) mode flag |
+| `GetCurrentWorkpieceCSWorldMatrix()` | `TST3DMatrix` | Current workpiece CS (G54) matrix relative to the world CS. Result depends on TCPM mode |
+| `GetCurrentWorkpieceCSMatrix()` | `TST3DMatrix` | Current workpiece CS (G54) matrix relative to the workpiece connector |
+| `GetCurrentWorkpieceCSID()` | `string` | Identifier of the current workpiece CS, e.g. `"G54"` |
+
+**Tool Center Point Management and current workpiece CS:**
+
+```csharp
+// Read TCPM state
+bool tcpm = machineCom.Invoke(m => m.TCPMEnabled);
+
+// Switch it on (equivalent to enabling RTCP)
+machineCom.Invoke(m => m.TCPMEnabled = true);
+
+// Query active work-offset (G54 and siblings)
+string id    = machineCom.Invoke(m => m.GetCurrentWorkpieceCSID());
+var    world = machineCom.Invoke(m => m.GetCurrentWorkpieceCSWorldMatrix()); // world-relative
+var    local = machineCom.Invoke(m => m.GetCurrentWorkpieceCSMatrix());      // relative to workpiece connector
+```
+
 **Reading XML properties:**
 
 ```csharp

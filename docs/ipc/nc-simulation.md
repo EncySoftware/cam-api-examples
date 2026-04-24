@@ -180,6 +180,36 @@ All mirror their `ICamApi*` counterparts. The `GetInstanceId()` method is added 
 | `ICamIpcModelFormerWithCurve5D` | `AddCurves5DSelected()` | `GetInstanceId()` added |
 | `ICamIpcModelFormerWithHoles` | `AddHolesSelected()`, `CreateNewHole(lcs, diameter)` | `GetInstanceId()` added |
 | `ICamIpcModelFormerWithAreas` | `AddAreasSelected(areaMode)` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithDriveFaces` | `AddDriveFacesSelected()` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithProjectCurves` | `AddProjectCurvesSelected()` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithPocket` | `AddPocketSelected()` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithTurnGeometry` | `AddTurnGeometrySelected()` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithTurnMachineModel` | `SetItemMode(...)` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithGeom25D` | `AddGeom25DSelected()` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithSharpEdge` / `WithChamferFaces` | `AddSharpEdgesSelected()` / `AddChamferFacesSelected()` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithBoxPrimitives` / `WithCylinderPrimitives` / `WithCastingPrimitive` | `AddBoxPrimitive(...)` / `AddCylinderPrimitive(...)` / `AddCastingPrimitive(...)` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithReferenceToPrevious` | `SetReferenceToPrevious(flag)` | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithProbingItems` | Full probing-cycle factory surface (see below) | `GetInstanceId()` added |
+
+### ICamIpcModelFormerWithProbingItems — probing cycles (IPC)
+
+Mirrors `ICamApiModelFormerWithProbingItems`. Exposes the same factory methods but each returns the IPC-typed cycle interface and takes `ctx` on mutations.
+
+| Method (IPC) | Returns |
+|---|---|
+| `AddSurfaceCycle(ctx)` | `ICamIpcSurfaceProbingCycle*` |
+| `AddBossCycle(ctx)` / `AddHoleCycle(ctx)` / `AddHoleProtectedCycle(ctx)` | corresponding `ICamIpc…ProbingCycle*` |
+| `AddWebCycle(ctx)` / `AddGrooveCycle(ctx)` / `AddGrooveProtectedCycle(ctx)` | corresponding cycle |
+| `AddThreePointsWebCycle(ctx)` | `ICamIpcThreePointsWebProbingCycle*` |
+| `AddExternalRectangleCycle(ctx)` / `AddInternalRectangleCycle(ctx)` / `AddInternalRectangleProtectedCycle(ctx)` | `ICamIpc…RectangleProbingCycle*` |
+| `AddDoubleWall*CornerCycle(ctx)` / `AddTripleWall*CornerCycle(ctx)` | `ICamIpc…CornerCycle*` |
+| `AddNcActionItem(ctx)` / `AddFrameOutputCycle(ctx)` | `ICamIpcNcActionProbingCycle*` / `ICamIpcFrameOutputProbingCycle*` |
+| `AddMovement(ctx)` / `AddGroup(ctx)` / `AddCycleByTemplate(fileName, ctx)` | `ICamIpcProbingModelItem*` |
+| `GetItems(ctx)` | `ICamIpcProbingModelItemIterator*` (depth-first tree) |
+| `GetSelectedItem(ctx)` / `DeleteItem(item, ctx)` / `Clear(ctx)` | item / void |
+| `GetTemplateLibraryCount()` / `GetTemplateLibrary(index, ctx)` | count / `ICamIpcProbingTemplateLibrary*` |
+
+Cycle actions (`ICamIpcProbingAction` with `ICamIpcSetToolOffsetProbingAction`, `CheckBrokenTool`, `SetWcs`, `CalibrateToolProbe`, `CalibratePartProbe`, `WriteToReport`, `CustomPropGroup` specialisations) are accessed via `GetCycleAction(i, ctx)` and added with `AddSetToolOffsetAction(ctx)`, `AddCheckBrokenToolAction(ctx)`, … on each cycle.
 
 ### ICamIpcFeedPointList
 

@@ -318,16 +318,16 @@ var buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btYes, TUIButtonType.b
 
 ```csharp
 using var helperCom = UIDialogs.CreateHelper();
-var helper = helperCom.Instance
-    ?? throw new Exception("UIDialogs helper unavailable");
+if (helperCom.IsNull)
+    throw new Exception("UIDialogs helper unavailable");
 
 var buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel);
-TUIButtonType result = helper.MessageBox(
+TUIButtonType result = helperCom.Invoke(helper => helper.MessageBox(
     "Do you want to continue?",
     TMessageDialogType.mdtConfirmation,
     buttons,
     TUIButtonType.btOk,
-    "My Extension");
+    "My Extension"));
 
 if (result == TUIButtonType.btOk)
 {
@@ -340,10 +340,10 @@ if (result == TUIButtonType.btOk)
 ### File dialog example
 
 ```csharp
-string file = helper.SelectFileDialog(
+string file = helperCom.Invoke(helper => helper.SelectFileDialog(
     "Select NC program",
     "NC files (*.nc)|*.nc|All files (*.*)|*.*",
-    paths.NCProgramsFolder());
+    paths.NCProgramsFolder()));
 
 if (!string.IsNullOrEmpty(file))
 {
@@ -387,11 +387,9 @@ After building the iterator, assign it to `ICAMAPI_UIDialogWindow.PropIterator` 
 
 ```csharp
 using var helperCom = UIDialogs.CreateHelper();
-var helper = helperCom.Instance!;
 
-// Create the window
-using var windowCom = ComWrapper.Create(helper.CreateWindow("My Settings"));
-var window = windowCom.Instance!;
+// Create the window (wrapped)
+using var windowCom = helperCom.InvokeAndWrap(helper => helper.CreateWindow("My Settings"));
 
 // Build a property iterator
 var iter = new SimplePropIterator();
@@ -400,8 +398,11 @@ iter.AddIntProp("count", "Number of copies", 1);
 iter.AddBoolProp("overwrite", "Overwrite existing files", false);
 
 // Assign and show
-window.PropIterator = iter.Iterator;
-TUIButtonType result = window.ShowModal();
+TUIButtonType result = windowCom.Invoke(window =>
+{
+    window.PropIterator = iter.Iterator;
+    return window.ShowModal();
+});
 
 if (result == TUIButtonType.btOk)
 {
@@ -428,9 +429,12 @@ public class MyCloseHandler : ICAMAPI_UIDialogWindowOnClose
     }
 }
 
-window.OnClose = new MyCloseHandler();
-window.Buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel);
-window.Show(); // non-blocking
+windowCom.Invoke(window =>
+{
+    window.OnClose = new MyCloseHandler();
+    window.Buttons = MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel);
+    window.Show(); // non-blocking
+});
 ```
 
 ---
