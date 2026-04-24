@@ -100,6 +100,14 @@ Handler interfaces for the main form (IPC versions mirror the in-process set):
 GetMainViewPort(ctx) → ICamIpcViewPort*
 ```
 
+### Main window handle
+
+Returns the OS window handle (`HWND`, 64-bit value) of the ENCY main window. Use it as the parent window for modal dialogs opened by out-of-process tooling.
+
+```
+GetMainWindowHandle(ctx) → int64
+```
+
 ### ICamIpcMainFormUiInfo — UI state snapshot
 
 Returned by `GetUiInfo(ctx)`. Equivalent to the in-process `ICamApiMainFormUiInfo` with one addition:

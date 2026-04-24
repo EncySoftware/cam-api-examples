@@ -110,15 +110,13 @@ public class MyUtilityExtension : IExtension, IExtensionUtility
         resultStatus = default;
         try
         {
-            using var projectCom = new ComWrapper<ICamApiProject>(
-                context.CamApplication.GetActiveProject(out resultStatus));
-            if (resultStatus.Code == TResultStatusCode.rsError)
-                throw new Exception("Error getting project: " + resultStatus.Description);
+            using var appCom = ComWrapper.Create(context.CamApplication);
+            using var projectCom = appCom.GetActiveProject();
+            if (projectCom.IsNull)
+                throw new Exception("No active project");
 
-            var project = projectCom.Instance
-                ?? throw new Exception("No active project");
-
-            // Work with the project here.
+            // Work with the project through helper extensions / Invoke.
+            Console.WriteLine(projectCom.FilePath());
         }
         catch (Exception e)
         {
@@ -348,13 +346,13 @@ public class MyOperationSolver : IExtension, ICamApiTechOperationSolver
         try
         {
             using var xmlPropCom = ComWrapper.Create(techOperation.XMLProp);
-            var xmlProp = xmlPropCom.Instance
-                ?? throw new Exception("Cannot read XML properties");
+            double depth = xmlPropCom.Invoke(xp => xp.Flt["MyParams.Depth"]);
 
             // Emit toolpath commands:
             cldFormer.OutStandardFeed((int)TFeedTypeFlag.affRapid);
             cldFormer.CutTo(new TST3DPoint { X = 0, Y = 0, Z = 10 });
             cldFormer.OutStandardFeed((int)TFeedTypeFlag.affWorking);
+            cldFormer.CutTo(new TST3DPoint { X = 0, Y = 0, Z = -depth });
             // ... more moves ...
         }
         catch (Exception e)

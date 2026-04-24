@@ -125,7 +125,9 @@ using var nodeCom = modelCom.InvokeAndWrap(m =>
 ```csharp
 // Shift a node by (100, 200, 0)
 var shiftMatrix = T3DMatrix.MakeShiftMatrix(new T3DPoint { X = 100, Y = 200, Z = 0 });
-var status = modelCom.Invoke(m => m.Transform(geomNode.Instance, shiftMatrix));
+// Nest Invoke so the node reference is acquired inside its own wrapper's MTA context
+geomNodeCom.Invoke(node =>
+    modelCom.Invoke(m => m.Transform(node, shiftMatrix)));
 ```
 
 See full example: `Geometry/ExtensionUtilityGeometryModelNet/project/main/GeometryNodeTransformExample.cs`
@@ -204,24 +206,23 @@ The iterator exposes three navigation methods:
 | `Current()` | `ICAMAPIGeometryTreeNode` | Current node |
 | `Reset()` | — | Reset to tree root |
 
-### Manual low-level traversal (as used in raw examples)
+### Manual low-level traversal (explicit MoveToChild / MoveToSibling)
 
-The existing examples in `GeometryNodesIteratorExample.cs` show the raw iterator pattern. Navigate to the deepest first child, then walk siblings:
+When you need direct control of the iterator (instead of the `AsEnumerable()` wrapper above), use `Invoke` / `InvokeAndWrap` for every access. Navigate to the deepest first child, then walk siblings:
 
 ```csharp
-using var nodeIterator = new ComWrapper<ICAMAPIGeometryTreeNodeIterator>(
-    fullModel.Instance.GetNodes(out var status));
+using var iteratorCom = modelCom.InvokeAndWrap(m => m.GetNodes(out var status));
 
 // descend to the leaf level
-while (nodeIterator.Instance.MoveToChild()) { }
+while (iteratorCom.Invoke(it => it.MoveToChild())) { }
 
 // walk all siblings at that level
 do
 {
-    var node = new ComWrapper<ICAMAPIGeometryTreeNode>(nodeIterator.Instance.Current());
-    if (node.Instance.GeometryEntity.EntityType == TCAMAPIGeometryEntityType.etFace)
-        Console.WriteLine(node.Instance.Name);
-} while (nodeIterator.Instance.MoveToSibling());
+    using var nodeCom = iteratorCom.InvokeAndWrap(it => it.Current());
+    if (nodeCom.EntityType() == TCAMAPIGeometryEntityType.etFace)
+        Console.WriteLine(nodeCom.Name());
+} while (iteratorCom.Invoke(it => it.MoveToSibling()));
 ```
 
 See full example: `Geometry/ExtensionUtilityGeometryModelNet/project/main/GeometryNodesIteratorExample.cs`
@@ -308,6 +309,30 @@ nodeCom.Invoke(node =>
     }
 });
 ```
+
+Helper: `CurveGeometryEntityHelper.Curve(entityCom)` wraps the `Curve` property access so the returned `ICamApiCurve` is owned by a `ComWrapper`.
+
+#### ICamApiImportedGeometryEntity (imported folder metadata)
+
+A node that represents the root of an imported CAD model can be queried for the source file path and PLM metadata. This interface is implemented by the tree-node object itself (not reached through `GeometryEntity`), so the cast is performed on `ICAMAPIGeometryTreeNode`.
+
+| Helper method | Returns | Description |
+|---|---|---|
+| `importedCom.CADModelLocalFileName()` | `string` | Absolute path of the source CAD file |
+| `importedCom.ImportedFromPLM()` | `bool` | `true` if the model was imported from a PLM system |
+| `importedCom.PLMObjectID()` | `string` | Identifier of the imported file in PLMManager (empty when `ImportedFromPLM` is false) |
+
+```csharp
+using var importedCom = nodeCom.InvokeAndWrap(node => node as ICamApiImportedGeometryEntity);
+if (!importedCom.IsNull)
+{
+    string src = importedCom.CADModelLocalFileName();
+    bool   plm = importedCom.ImportedFromPLM();
+    string pId = importedCom.PLMObjectID();
+}
+```
+
+Helper class: `ImportedGeometryEntityHelper` in `CAMAPI.DotnetHelper`.
 
 See full entity-reading example: `Geometry/UtilityGeometryEntityReader/project/main/ExtensionGeometryEntityReader.cs`
 
@@ -700,15 +725,18 @@ class MyOnClose : ICamApiGeomPickerOnClose
 ### Full picker usage
 
 ```csharp
-var picker = geomPickerCom.Instance
-    ?? throw new Exception("Could not create picker");
+if (geomPickerCom.IsNull)
+    throw new Exception("Could not create picker");
 
-// Allow faces and edges
-picker.AvailableEntityTypes = (ushort)(
-    TGeometryEntityTypeFlag.etfFace | TGeometryEntityTypeFlag.etfEdge);
+geomPickerCom.Invoke(picker =>
+{
+    // Allow faces and edges
+    picker.AvailableEntityTypes = (ushort)(
+        TGeometryEntityTypeFlag.etfFace | TGeometryEntityTypeFlag.etfEdge);
 
-picker.OnClose = new MyOnClose();
-picker.Show();
+    picker.OnClose = new MyOnClose();
+    picker.Show();
+});
 
 // The extension must implement IExtensionLazyUnloadable and not unload
 // until OnConfirm or OnCancel has been called.
@@ -808,8 +836,9 @@ extractorCom.Invoke(e =>
     e.Tolerance = 0.01;
     e.TurnAxis = myAxis;
     e.Receiver = myReceiver;
-    e.MakeGeneratrixForNode(geomNode.Instance, out var status);
 });
+geomNodeCom.Invoke(node =>
+    extractorCom.Invoke(e => e.MakeGeneratrixForNode(node, out var status)));
 ```
 
 ---
@@ -831,11 +860,9 @@ Converts a `ICAMAPIFaceList` to STL or OSD without requiring node selection. Obt
 using var converterCom = geomLibCom.InvokeAndWrap(lib =>
     lib.CreateFacesToTriangulatedFilesConverter());
 
-converterCom.Invoke(c =>
-{
-    c.Tolerance = 0.05;
-    c.SaveFacesToSTL(faceList.Instance, @"C:\out\part.stl", out var status);
-});
+converterCom.Invoke(c => c.Tolerance = 0.05);
+faceListCom.Invoke(list =>
+    converterCom.Invoke(c => c.SaveFacesToSTL(list, @"C:\out\part.stl", out var status)));
 ```
 
 ---

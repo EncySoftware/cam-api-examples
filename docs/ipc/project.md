@@ -117,6 +117,7 @@ Two save event handler interfaces exist in CAMIPC, mirroring CAMAPI:
    | `DeletePartStage(partIdx, stageIdx, incl, out status)` | `DeletePartStage(partIdx, stageIdx, incl, ctx)` |
    | `DeleteSetupStage(stageIdx, out status)` | `DeleteSetupStage(stageIdx, ctx)` |
    | `CreateOperationFromUserTemplate(userOpId, afterId, out status)` | `CreateOperationFromUserTemplate(userOpId, afterId, ctx)` |
+   | `GetOperationById(opId, out status)` | `GetOperationById(opId, ctx)` |
 
 2. **`CurrentOperation` is read-only** in CAMIPC (`propertyR`).  To change the
    current operation use the separate procedure:
@@ -170,6 +171,7 @@ The CAMAPI equivalent is `ICamApiHandlerTechnologistOperationAdded`.
    | `IsTurnDirectionError` | `GetIsTurnDirectionError(ctx)` |
    | `IsMachiningResultCalculated` | `GetIsMachiningResultCalculated(ctx)` |
    | `IsError` | `GetIsError(ctx)` |
+   | `NeedDeleteChips` | `GetNeedDeleteChips(ctx)` |
 
 2. **`XMLProp`** returns `ICamIpcXmlPropPointer*` instead of `IST_XMLPropPointer*`.
    The property-accessor surface (`Bol`, `Int`, `Flt`, `Str`, `Arr`) is the same.

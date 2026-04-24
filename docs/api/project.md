@@ -130,6 +130,7 @@ using var technologistCom = projectCom.Technologist();
 | `technologistCom.CreatePart(externalId)` | `ComWrapper<ICamApiPart>` | Add a new part |
 | `technologistCom.CreateSetupStage()` | `ComWrapper<ICamApiSetupStage>` | Add a new setup stage |
 | `technologistCom.CreateOperationFromUserTemplate(userOpId, afterId)` | `ComWrapper<ICamApiTechOperation>` | Instantiate a user-defined operation template |
+| `technologistCom.Invoke(t => t.GetOperationById(id, out var status))` | `ICamApiTechOperation*` | Find an operation by its GUID-string id |
 | `technologistCom.DeleteOperation(id)` | `void` | Remove an operation |
 | `technologistCom.DeletePart(partIndex)` | `void` | Remove a part from all stages |
 | `technologistCom.DeletePartStage(partIdx, stageIdx, includingNext)` | `void` | Remove a part from one (or more) stages |
@@ -210,6 +211,16 @@ status flags, model formers, approach/retract rules, and more.
 | `operationCom.IsToolOverloadError()` | `bool` | Tool overload |
 | `operationCom.IsTurnDirectionError()` | `bool` | Wrong spindle turn direction |
 | `operationCom.IsMachiningResultCalculated()` | `bool` | Machining result (stock removal) is computed |
+| `operationCom.NeedDeleteChips()` | `bool` | `true` if chips need to be deleted before this operation |
+| `operationCom.OperationTag()` / `SetOperationTag(value)` | `string` | User-defined tag; not used by ENCY |
+| `operationCom.HasToolpath()` | `bool` | `true` if the operation has a calculated toolpath that can be exported (groups return `false`; uncalculated return `false`) |
+| `operationCom.ExportToolpath(receiver)` | `void` | Stream the toolpath to an `ICamApiExportToolpathReceiver` implementation |
+| `operationCom.GetParentOperation(mode)` | `ComWrapper<ICamApiTechOperation>` | Parent node in the tree for the given `TCamApiReorderingMode` |
+| `operationCom.GetFirstChildOperation(mode)` | `ComWrapper<ICamApiTechOperation>` | First child for the given mode (or null) |
+| `operationCom.GetNextSiblingOperation(mode)` | `ComWrapper<ICamApiTechOperation>` | Next sibling for the given mode (or null) |
+| `operationCom.GetTimeStatistics()` | `TCamApiTechOperationTimeStatistics` | Rapid / idle / work / auxiliary time in seconds |
+| `operationCom.GetBlocksStatistics()` | `TCamApiTechOperationBlocksStatistics` | Count of lines, arcs, multi-gotos, feed blocks, total blocks |
+| `operationCom.GetLengthStatistics()` | `TCamApiTechOperationLengthStatistics` | Lengths of work/rapid/return/engage/retract/plunge segments |
 | `operationCom.ToolEntity()` | `ComWrapper<ICamApiMachiningTool>` | Tool assigned to this operation |
 | `operationCom.XMLProp()` | `ComWrapper<IST_XMLPropPointer>` | Live XML property bag (read/write) |
 | `operationCom.SaveToXmlProp()` | `ComWrapper<IST_XMLPropPointer>` | Snapshot of current properties into a new XML structure |
@@ -286,6 +297,93 @@ destOpCom.LoadFromXmlProp(savedXml);
 ```
 
 **Direct access (IDL):** `ICamApiTechOperation.XMLProp` (property), `LoadFromXmlProp(xmlProp, out status)`, `SaveToXmlProp(out xmlProp, out status)`.
+
+### Feeds
+
+Per-operation feed values for each `TFeedTypeFlag` (working, rapid, plunge, engage, retract, return, approach, …) can be read and written with a measurement-aware API.
+
+```csharp
+// Read the working feed value
+var info = opCom.Invoke(op => op.GetFeedValue(TFeedTypeFlag.fftWorking, out var status));
+Console.WriteLine($"{info.Measurement}: perMin={info.ValuePerMinute}, perRev={info.ValuePerRevolution}");
+
+// Set working feed to 250 mm/min, letting ENCY recalculate other measurements
+opCom.Invoke(op => op.SetFeedValue(
+    TFeedTypeFlag.fftWorking,
+    TCamApiFeedMeasurement.cfmPerMinute,
+    250.0,
+    out var status));
+
+// Change the units the feed is output in CLData (no recalculation)
+opCom.Invoke(op => op.SetFeedOutputMeasurement(
+    TFeedTypeFlag.fftWorking,
+    TCamApiFeedMeasurement.cfmPerRevolution,
+    out var status));
+```
+
+**`TCamApiFeedMeasurement`:** `cfmPerMinute` (mm/min or in/min, G94) · `cfmPerRevolution` (G95) · `cfmPerTooth` · `cfmPercentage` · `cfmRapid`.
+
+**`TCamApiFeedInfo` fields:** `Measurement`, `ValuePerMinute`, `ValuePerRevolution`, `ValuePerTooth`, `ValuePercent`.
+
+### Coolant tubes
+
+Coolant configuration is per-machine (the machine declares up to 20 coolant tubes); the operation stores on/off state per tube.
+
+```csharp
+int tubeCount = opCom.Invoke(op => op.GetCoolantTubesCount());
+for (int i = 0; i < tubeCount; i++)
+{
+    var info = opCom.Invoke(op => op.GetCoolantTubeInfo(i, out var st)); // Name, Available
+    bool on  = opCom.Invoke(op => op.GetCoolantTubeState(i, out var st));
+    Console.WriteLine($"[{i}] {info.Name} available={info.Available} on={on}");
+}
+
+// Turn on tube 0 for the operation
+opCom.Invoke(op => op.SetCoolantTubeState(0, true, out var status));
+```
+
+### Spindle state
+
+```csharp
+var state = opCom.Invoke(op => op.GetSpindleState());
+// state.RotationMode: ssrmOff | ssrmRPM | ssrmCSS
+// state.RPMValue, SurfaceSpeedValue, MaxRPMValue
+// state.RotationDirection: srdForward | srdReverse
+// state.Range (0 = automatic gearbox)
+
+opCom.Invoke(op =>
+{
+    op.SetSpindleRotationsToRPM(12000);          // constant RPM (G97)
+    // or op.SetSpindleRotationsToCSS(300);      // constant surface speed (G96)
+    // or op.SetSpindleRotationsToOff();
+    op.SetSpindleRotationDirection(TCamApiSpindleRotationDirection.srdForward);
+    op.SetSpindleMaxRPMValue(15000);             // upper clamp for CSS mode
+    op.SetSpindleGearBoxRange(0);                // 0 = auto
+    // op.SetSpindleRotationByDefault();         // reset to tool/machine default
+});
+```
+
+### Toolpath export and navigation
+
+```csharp
+if (opCom.HasToolpath())
+    opCom.ExportToolpath(new MyCLDReceiver());   // implements ICamApiExportToolpathReceiver
+
+// Tree navigation without going through the technologist iterator
+using var parentCom  = opCom.GetParentOperation(TCamApiReorderingMode.rmDesigned);
+using var childCom   = opCom.GetFirstChildOperation(TCamApiReorderingMode.rmDesigned);
+using var siblingCom = opCom.GetNextSiblingOperation(TCamApiReorderingMode.rmDesigned);
+```
+
+### Toolpath statistics
+
+`GetTimeStatistics`, `GetBlocksStatistics`, `GetLengthStatistics` return zero values if the operation is not calculated.
+
+```csharp
+var t = opCom.GetTimeStatistics();   // RapidTime, IdleWorkTime, EffectiveWorkTime, AuxiliaryTime (seconds)
+var b = opCom.GetBlocksStatistics(); // Lines, Arcs, MultiGoTo, Feeds, TotalBlocks
+var l = opCom.GetLengthStatistics(); // WorkLength, RapidLength, EngageLength, RetractLength, PlungeLength, …
+```
 
 ### Code example — create, configure, and check an operation
 
@@ -456,8 +554,8 @@ using var partCom = listCom.Part(index: 0);
 | `partCom.PartIndex()` | R | Internal auto-generated index; use for other API calls |
 | `partCom.ExternalID()` | R | User-editable external system identifier |
 | `partCom.SetExternalID(value)` | W | Set the external ID |
-
-Additional read-only IDL properties (no dedicated helper): `PrototypePartIndex` (index of the original part if this is a copy; `-1` otherwise), `IsPartCopy` (whether this part is a copy).
+| `partCom.PrototypePartIndex()` | R | Index of the original part if this is a copy; `-1` otherwise |
+| `partCom.IsPartCopy()` | R | Whether this part is a copy of another part |
 
 ### Code example
 
@@ -585,7 +683,7 @@ for (int s = 0; s < stageCount; s++)
 for (int p = 0; p < partCount; p++)
 {
     using var psCom = listCom.GetPartStage(p, s);
-    if (psCom.Instance == null) continue;
+    if (psCom.IsNull) continue;
     Console.WriteLine($"Part {p} in Stage {s}");
 }
 ```

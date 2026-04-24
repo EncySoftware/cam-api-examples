@@ -17,9 +17,10 @@ These interfaces are used by the ENCY cloud service to push cloud-state changes 
 Obtained by casting `ICamIpcApplication` to `ICloudsIpcApplication` (if the running instance supports cloud features).
 
 ```csharp
-// Cast the connected application to ICloudsIpcApplication
-using var cloudAppCom = applicationCom.AsInstanceOf<ICloudsIpcApplication>();
-if (cloudAppCom == null)
+// Cast the connected application to ICloudsIpcApplication (perform the cast inside Invoke
+// — never against the raw .Instance, which is not safe across the MTA boundary).
+using var cloudAppCom = applicationCom.InvokeAndWrap(app => app as ICloudsIpcApplication);
+if (cloudAppCom.IsNull)
     throw new Exception("This ENCY instance does not support cloud integration.");
 
 var ctx = new TExecuteContext();
@@ -69,8 +70,8 @@ Defined in: `CAMIPC.FunctionalTest.idl`
 
 ```csharp
 // Cast the application to IIpcCamAppTests first
-using var testAppCom = applicationCom.AsInstanceOf<IIpcCamAppTests>();
-if (testAppCom == null)
+using var testAppCom = applicationCom.InvokeAndWrap(app => app as IIpcCamAppTests);
+if (testAppCom.IsNull)
     throw new Exception("This ENCY instance does not expose the test interface.");
 
 var ctx = new TExecuteContext();
@@ -124,8 +125,9 @@ Additional methods:
 ```csharp
 public static void RunTest(ComWrapper<ICamIpcApplication> applicationCom, string stjobPath, string etalonPath)
 {
-    using var testAppCom = applicationCom.AsInstanceOf<IIpcCamAppTests>()
-        ?? throw new Exception("Test interface not available.");
+    using var testAppCom = applicationCom.InvokeAndWrap(app => app as IIpcCamAppTests);
+    if (testAppCom.IsNull)
+        throw new Exception("Test interface not available.");
 
     var ctx = new TExecuteContext();
     using var testCom = testAppCom.InvokeAndWrap(a => a.CreateFunctionalTest(ref ctx));
@@ -162,8 +164,8 @@ Defined in: `CAMIPC.Extension.PLM.idl`
 ### Obtaining IIpcPLMManager
 
 ```csharp
-using var plmManagerCom = applicationCom.AsInstanceOf<IIpcPLMManager>();
-if (plmManagerCom == null)
+using var plmManagerCom = applicationCom.InvokeAndWrap(app => app as IIpcPLMManager);
+if (plmManagerCom.IsNull)
     throw new Exception("PLM manager interface not available in this ENCY instance.");
 ```
 

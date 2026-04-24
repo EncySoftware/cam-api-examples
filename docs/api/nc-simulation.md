@@ -356,6 +356,59 @@ public void MakeWorkPath(ICamApiCLDReceiver cldFormer,
 
 ---
 
+## ICamApiExportToolpathReceiver — consuming an exported toolpath
+
+`ICamApiTechOperation.ExportToolpath(receiver)` (see [project.md](project.md#icamapitechoperation)) streams the calculated toolpath into a callback receiver that your plugin implements. Unlike `ICamApiCLDReceiver`, which carries in-progress solver commands, `ICamApiExportToolpathReceiver` exposes a commands-and-children tree that describes the already-calculated toolpath in a neutral form suitable for custom post-processors or reports.
+
+### Receiver lifecycle
+
+| Method | Description |
+|---|---|
+| `OpenCommand(commandCode, commandHandle, parentCommandHandle)` | Start a new command in the tree. Commands are identified by opaque integer codes and linked to a parent command by handle. |
+| `OpenCommandData()` / `CloseCommandData()` | Delimit the payload section of a command (points, normals, typed sub-commands). |
+| `BeginPoints()` / `AddPoint(point)` / `EndPoints()` | Command-local polyline; optional `SetNormal(vZ)` / `SetOrientation(vZ, vX)` before a point sets orientation for 5D/6D moves. |
+| `BeginChildren()` / `EndChildren()` | Nested sub-commands (enclosed structural items). |
+| `CloseCommand()` | Close the currently open command. |
+| `GetCommandReceiver(commandCode)` | Returns a typed `ICamApiExportToolpathCommand*` for the payload of the currently open command — cast to one of the sub-interfaces below to write typed data. |
+| `GetCaptionReceiver()` | Returns `ICamApiExportToolpathCommand_Caption*` to set a command caption. |
+
+### Typed command sub-receivers
+
+| Interface | Purpose | Typed methods |
+|---|---|---|
+| `ICamApiExportToolpathCommand_Caption` | Attach a display caption to the current command | `SetCaption(caption)` |
+| `ICamApiExportToolpathCommand_Comment` | Attach a comment string | `SetComment(comment)` |
+| `ICamApiExportToolpathCommand_Feedrate` | Record a feed change | `SetFeed(feedType, feedUnits, value)` — `feedUnits` is `TCamApiFeedUnits` (`fuMPM`, `fuMPR`, `fuConditionCode`) |
+| `ICamApiExportToolpathCommand_MultiGoto` | Multi-axis position with optional machine-axis values | `SetEndPoint`, `SetEndOrientation(A, B, C, D)`, `SetMachineStateFlags`, `SetTime`, `BeginMachineAxes(axesCount)` / `SetMachineAxisValue(id, value)` / `EndMachineAxes()` |
+
+### Implementation skeleton
+
+```csharp
+public class MyExportReceiver : ICamApiExportToolpathReceiver
+{
+    public void OpenCommand(int commandCode, ulong h, ulong parent) { /* record the node */ }
+    public void OpenCommandData() { }
+    public void CloseCommandData() { }
+    public void BeginChildren() { }
+    public void EndChildren() { }
+    public void CloseCommand() { }
+
+    public void BeginPoints() { }
+    public void SetNormal(TST3DPoint vZ) { }
+    public void SetOrientation(TST3DPoint vZ, TST3DPoint vX) { }
+    public void AddPoint(TST3DPoint p) { /* record */ }
+    public void EndPoints() { }
+
+    public ICamApiExportToolpathCommand? GetCommandReceiver(int commandCode) => /* return typed sub-receiver based on commandCode */ null;
+    public ICamApiExportToolpathCommand_Caption? GetCaptionReceiver()       => null;
+}
+
+// And from the extension:
+opCom.ExportToolpath(new MyExportReceiver());
+```
+
+---
+
 ## ICamApiModelFormer family — geometry model assignment
 
 An `ICamApiTechOperation` exposes five `ICamApiModelFormer` properties:
@@ -547,6 +600,113 @@ holeCom.Invoke(h =>
 });
 ```
 
+### ICamApiModelFormerWithProbingItems — probing cycles and actions
+
+Exposed on operations of the "Point Probing" family. Items form a tree (group / movement / cycle), and each cycle owns an ordered list of typed probing actions.
+
+Obtain via `opCom.ModelFormerJobAssignment()` and cast:
+
+```csharp
+using var mfCom = opCom.ModelFormerJobAssignment();
+using var probingCom = mfCom.InvokeAndWrap(mf => mf as ICamApiModelFormerWithProbingItems);
+if (!probingCom.IsNull)
+{
+    using var surf  = probingCom.AddSurfaceCycle();
+    using var boss  = probingCom.AddBossCycle();
+    using var hole  = probingCom.AddHoleCycle();
+    using var grp   = probingCom.AddGroup();
+    using var mov   = probingCom.AddMovement();
+}
+```
+
+Factory helpers on `ModelFormerWithProbingItemsHelper` (each returns the typed cycle `ComWrapper`, no cast needed):
+
+| Method | Produced cycle interface |
+|---|---|
+| `AddSurfaceCycle()` | `ICamApiSurfaceProbingCycle` |
+| `AddBossCycle()` | `ICamApiBossProbingCycle` |
+| `AddHoleCycle()` / `AddHoleProtectedCycle()` | `ICamApiHoleProbingCycle` / `ICamApiHoleProbingProtectedCycle` |
+| `AddWebCycle()` | `ICamApiWebProbingCycle` |
+| `AddGrooveCycle()` / `AddGrooveProtectedCycle()` | `ICamApiGrooveProbingCycle` / `ICamApiGrooveProbingProtectedCycle` |
+| `AddThreePointsWebCycle()` | `ICamApiThreePointsWebProbingCycle` |
+| `AddExternalRectangleCycle()` / `AddInternalRectangleCycle()` / `AddInternalRectangleProtectedCycle()` | `ICamApiExternalRectangleProbingCycle` / `ICamApi…InternalRectangleProbingCycle` |
+| `AddDoubleWallInternalCornerCycle()` / `AddDoubleWallExternalCornerCycle()` | `ICamApiDoubleWall…CornerCycle` |
+| `AddTripleWallInternalCornerCycle()` / `AddTripleWallExternalCornerCycle()` | `ICamApiTripleWall…CornerCycle` |
+| `AddNcActionItem()` | `ICamApiNcActionProbingCycle` |
+| `AddFrameOutputCycle()` | `ICamApiFrameOutputProbingCycle` |
+| `AddMovement()` / `AddGroup()` | `ICamApiProbingModelItem` (movement or group) |
+| `AddCycleByTemplate(fileName)` | Cycle instantiated from a library template |
+| `EnumerateProbingItems()` | `IEnumerable<ComWrapper<ICamApiProbingModelItem>>` (depth-first walk) |
+| `GetSelectedItem()` | Currently selected item in the UI |
+| `DeleteItem(itemCom)` / `Clear()` | Remove one item / all items |
+| `GetTemplateLibraryCount()` / `GetTemplateLibrary(index)` | Loaded `ICamApiProbingTemplateLibrary` instances |
+
+#### Cycle actions
+
+Every probing cycle carries an ordered list of typed `ICamApiProbingAction` entries — executed right after the cycle probes its primary feature (tool offset update, WCS set, report write, etc.). Typical access pattern:
+
+```csharp
+int count = cycleCom.Invoke(c => c.CycleActionsCount);
+for (int i = 0; i < count; i++)
+{
+    using var actionCom = cycleCom.InvokeAndWrap(c => c.GetCycleAction(i));
+    // cycle exposes AddSetToolOffsetAction / AddCheckBrokenToolAction / AddSetWcsAction /
+    // AddCalibrateToolProbeAction / AddCalibratePartProbeAction / AddWriteToReportAction /
+    // AddCustomPropGroupAction — each returns the typed action interface directly.
+}
+```
+
+Helper classes: `ProbingModelItemHelper`, `ProbingModelItemIteratorHelper`, `ProbingCycleHelper`, `ProbingActionHelper`, `ProbingTemplateHelper`, plus specialised `SurfaceProbingCycleHelper`, `BossHoleProbingCycleHelper`, `WebGrooveProbingCycleHelper`, `RectangleProbingCycleHelper`, `DoubleTripleWallProbingCycleHelper`, `NcActionFrameOutputProbingCycleHelper`, `CustomPropGroupProbingActionHelper`.
+
+---
+
+### Other ICamApiModelFormer variants
+
+These are additional specialized model formers — each implemented by a subset of operation types. Query with `mf is not ICamApi… x` inside `mfCom.Invoke(mf => { … })`, then call the factory. Each `Add…()` helper returns the typed model item `ComWrapper`.
+
+| Interface | Helper | Typical call | Model item interface |
+|---|---|---|---|
+| `ICamApiModelFormerWithDriveFaces` | `ModelFormerWithDriveFacesHelper` | `AddDriveFacesSelected()` | `ICamApiDriveFaceModelItem` |
+| `ICamApiModelFormerWithProjectCurves` | `ModelFormerWithProjectCurvesHelper` | `AddProjectCurvesSelected()` | `ICamApiProjectCurveModelItem` |
+| `ICamApiModelFormerWithPocket` | `ModelFormerWithPocketHelper` | `AddPocketSelected()` | `ICamApiPocketModelItem` |
+| `ICamApiModelFormerWithTurnGeometry` | `ModelFormerWithTurnGeometryHelper` | `AddTurnGeometrySelected()` | `ICamApiTurnGeometryModelItem` |
+| `ICamApiModelFormerWithTurnMachineModel` | `ModelFormerWithTurnMachineModelHelper` | `SetItemMode(...)` | `ICamApiTurnMachineModelItem` |
+| `ICamApiModelFormerWithGeom25D` | `ModelFormerWithGeom25DHelper` | `AddGeom25DSelected()` | `ICamApiGeom25DModelItem` |
+| `ICamApiModelFormerWithSharpEdge` | `ModelFormerWithSharpEdgeHelper` | `AddSharpEdgesSelected()` | (face / edge items) |
+| `ICamApiModelFormerWithChamferFaces` | `ModelFormerWithChamferFacesHelper` | `AddChamferFacesSelected()` | (face items) |
+| `ICamApiModelFormerWithAreas` | `ModelFormerWithAreasHelper` | `AddArea(...)` | `ICamApiAreaModelItem` |
+| `ICamApiModelFormerWithReferenceToPrevious` | `ModelFormerWithReferenceToPrevious` | `SetReferenceToPrevious(bool)` | — |
+
+### Primitive model formers (boxes, cylinders, casting)
+
+These model formers create pure parametric primitives — no geometry selection needed. All three primitive families share the same pattern: a factory method on the model former returns a typed item whose parameters are tweaked directly.
+
+| Model former | Helper | Factory | Item |
+|---|---|---|---|
+| `ICamApiModelFormerWithBoxPrimitives` | `ModelFormerWithBoxPrimitives` | `AddBoxPrimitive(lcs, w, h, d)` · `AddBoxLinkPrimitive(...)` · `AddGeomModelBoxPrimitive(...)` · `AddSimpleBoxPrimitive(...)` | `ICamApiBoxPrimitiveModelItem` family |
+| `ICamApiModelFormerWithCylinderPrimitives` | `ModelFormerWithCylinderPrimitives` | `AddCylinderPrimitive(lcs, r, h)` · `AddHoleCylinderPrimitive(...)` · `AddSimpleCylinderPrimitive(...)` | `ICamApiCylinderPrimitiveModelItem` family |
+| `ICamApiModelFormerWithCastingPrimitive` | `ModelFormerWithCastingPrimitive` | `AddCastingPrimitive(lcs, …)` | `ICamApiCastingPrimitiveModelItem` |
+
+Each primitive carries a local coordinate system plus shape parameters; set them directly on the `ComWrapper` through `Invoke` (there are no per-field helpers unless listed in the primitive's `*Helper.cs`).
+
+### Generic model items
+
+These typed `ComWrapper` specialisations are produced by the factories above. Each has a dedicated helper that exposes parameters as extension methods (call them on the `ComWrapper` directly):
+
+| Model item interface | Helper | Purpose |
+|---|---|---|
+| `ICamApiFaceModelItem` / `ICamApiFacesArrayModelItem` | `FaceModelItemHelper` / `FacesArrayModelItemHelper` | Single face / face array |
+| `ICamApiMeshesArrayModelItem` | `MeshesArrayModelItemHelper` | Mesh array |
+| `ICamApiCurveModelItem` / `ICamApiCurvesArrayModelItem` | `CurveModelItemHelper` / `CurvesArrayModelItemHelper` | Generic 3D curve / curve array |
+| `ICamApiPointModelItem` / `ICamApiLineModelItem` / `ICamApiCoordinateItem` | `PointModelItemHelper` / `LineModelItemHelper` / `CoordinateItemHelper` | Points, lines, coordinate frames |
+| `ICamApiGeometryNodeBasedModelItem` | `GeometryNodeBasedModelItemHelper` | Base for items that reference a geometry tree node |
+| `ICamApiLinkModelItem` | `LinkModelItemHelper` | Link item between two items |
+| `ICamApiDriveFaceModelItem` · `ICamApiProjectCurveModelItem` · `ICamApiPocketModelItem` · `ICamApiTurnGeometryModelItem` · `ICamApiGeom25DModelItem` · `ICamApiTurnMachineModelItem` | `…Helper` | Parameters for each specialized model item |
+| `ICamApiAreaModelItem` | `AreaModelItemHelper` | Area item (perimeter + floor level) |
+| `ICamApiModelItemReference` | — | Reference to another item (e.g. reuse a job zone) |
+
+---
+
 ### ICamApiModelFormer — base operations
 
 | Method / Property | Description |
@@ -685,13 +845,15 @@ public bool GetPropIterator(string pageId,
         doublePropCom.Invoke(prop =>
         {
             prop.PropID      = "CustomOperationPropertiesArray(MyParams.Depth)";
-            prop.ValueGetter = new DoubleValueGetter(() => _operationCom!.Instance!.XMLProp.Flt[prop.PropID]);
-            prop.ValueSetter = new DoubleValueSetter(v => _operationCom!.Instance!.XMLProp.Flt[prop.PropID] = v);
+            prop.ValueGetter = new DoubleValueGetter(() =>
+                _operationCom!.Invoke(op => op.XMLProp.Flt[prop.PropID]));
+            prop.ValueSetter = new DoubleValueSetter(v =>
+                _operationCom!.Invoke(op => op.XMLProp.Flt[prop.PropID] = v));
             _propIteratorCom!.Invoke(it => it.AddNewProp(prop, -1));
         });
 
         _propIteratorCom.Invoke(it => it.MoveToRoot());
-        iterator = (IST_CustomPropIterator)_propIteratorCom.Instance!;
+        iterator = _propIteratorCom.Invoke(it => (IST_CustomPropIterator)it);
         return true;
     }
     catch (Exception e)

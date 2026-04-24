@@ -202,6 +202,8 @@ thread.Join();
 
 Use a non-modal window when you want to display a persistent panel (viewport controller, live data viewer, etc.) that stays open while the user continues working in ENCY.
 
+> **Dedicated guide:** [non-modal-window.md](non-modal-window.md) — step-by-step with the canonical `ExtensionManageViewNet` example. Start there; the summary below is the short reference.
+
 Reference example: `UI/ExtensionManageViewNet/project/main/ExtensionManageView.cs`
 
 This pattern requires implementing `IExtensionLazyUnloadable` so ENCY knows not to unload the plugin DLL while the window is open.
