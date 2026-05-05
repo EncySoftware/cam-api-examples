@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <OutDir>bin</OutDir>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="5.*"/>
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="2.0.18-dev.9"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="PartCalibrationWorkflowNet.settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

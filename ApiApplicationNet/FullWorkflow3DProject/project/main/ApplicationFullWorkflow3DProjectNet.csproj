@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EncySoftware.CAMIPC.Sdk.Net" Version="2.0.15-dev.1" />
+        <PackageReference Include="EncySoftware.CAMIPC.Sdk.Net" Version="2.0.18-dev.9" />
         <Reference Include="$(CAMPath)\PathAliasesInterface.dll" />
         <Reference Include="$(CAMPath)\AssemblyLoaderTypes.dll" />
         <Reference Include="$(CAMPath)\AppStarterInterface.dll" />

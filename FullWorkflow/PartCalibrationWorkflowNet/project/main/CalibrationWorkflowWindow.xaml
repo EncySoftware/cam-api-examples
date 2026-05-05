@@ -1,0 +1,110 @@
+<Window x:Class="PartCalibrationWorkflowNet.CalibrationWorkflowWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Part Calibration Workflow"
+        Width="400" Height="520"
+        MinWidth="320" ResizeMode="CanResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="0" Margin="8,8,8,0">
+
+            <!-- ── Tab 1: Project ─────────────────────────────────────── -->
+            <TabItem Header="1. Project">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Creates a project, imports the model, sets up probing operations."
+                               TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"/>
+
+                    <Button Content="Create Project" x:Name="BtnCreateProject"
+                            Click="BtnCreateProject_Click" Padding="10,5" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TxtProjectStatus" Margin="0,6,0,0" TextWrapping="Wrap"
+                             IsReadOnly="True" BorderThickness="0" Background="Transparent" IsTabStop="False"/>
+
+                    <Separator Margin="0,14"/>
+
+                    <TextBlock Text="Calculates toolpaths and generates NC for the machine."
+                               TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"/>
+                    <Button Content="Generate NC" x:Name="BtnGenerateNc"
+                            Click="BtnGenerateNc_Click" Padding="10,5" HorizontalAlignment="Left"/>
+                    <TextBlock Text="NC file path:" Margin="0,8,0,2" Foreground="Gray"/>
+                    <TextBox x:Name="TxtNcPath" IsReadOnly="True" Background="#F5F5F5"
+                             Padding="4,3" TextWrapping="Wrap"/>
+                    <TextBox x:Name="TxtNcStatus" Margin="0,4,0,0" TextWrapping="Wrap"
+                             IsReadOnly="True" BorderThickness="0" Background="Transparent" IsTabStop="False"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- ── Tab 2: Simulation ──────────────────────────────────── -->
+            <TabItem Header="2. Simulation">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Simulates the real part position on the machine: applies an offset to the nominal points and writes measured.json."
+                               TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Translation (mm):" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="TX:" VerticalAlignment="Center"/>
+                        <TextBox   Grid.Row="0" Grid.Column="1" x:Name="TxBox" Text="2"   Margin="0,2"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="TY:" VerticalAlignment="Center"/>
+                        <TextBox   Grid.Row="1" Grid.Column="1" x:Name="TyBox" Text="1"   Margin="0,2"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="TZ:" VerticalAlignment="Center"/>
+                        <TextBox   Grid.Row="2" Grid.Column="1" x:Name="TzBox" Text="0.5" Margin="0,2"/>
+                    </Grid>
+
+                    <TextBlock Text="Rotation (degrees, Euler ZYX):" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="36"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/><RowDefinition/><RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="RX:" VerticalAlignment="Center"/>
+                        <TextBox   Grid.Row="0" Grid.Column="1" x:Name="RxBox" Text="0.3"  Margin="0,2"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="RY:" VerticalAlignment="Center"/>
+                        <TextBox   Grid.Row="1" Grid.Column="1" x:Name="RyBox" Text="-0.2" Margin="0,2"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="RZ:" VerticalAlignment="Center"/>
+                        <TextBox   Grid.Row="2" Grid.Column="1" x:Name="RzBox" Text="1.0"  Margin="0,2"/>
+                    </Grid>
+
+                    <Button Content="Simulate" x:Name="BtnSimulate"
+                            Click="BtnSimulate_Click" Padding="10,5" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TxtSimStatus" Margin="0,6,0,0" TextWrapping="Wrap"
+                             IsReadOnly="True" BorderThickness="0" Background="Transparent" IsTabStop="False"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- ── Tab 3: Calibration ─────────────────────────────────── -->
+            <TabItem Header="3. Calibration">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Projects measured points onto the model surface (ICamApiPointSnapper), computes the correction (Kabsch SVD) and applies it to the WCS of Setup 2."
+                               TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Measurement file:" Margin="0,0,0,2" Foreground="Gray"/>
+                    <TextBox x:Name="TxtMeasuredPath" IsReadOnly="True" Background="#F5F5F5"
+                             Padding="4,3" TextWrapping="Wrap" Margin="0,0,0,14"/>
+
+                    <Button Content="Calibrate" x:Name="BtnCalibrate"
+                            Click="BtnCalibrate_Click" Padding="10,5" HorizontalAlignment="Left"/>
+                    <TextBox x:Name="TxtCalibStatus" Margin="0,6,0,0" TextWrapping="Wrap"
+                             IsReadOnly="True" BorderThickness="0" Background="Transparent" IsTabStop="False"/>
+                </StackPanel>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- ── Progress bar at the bottom ─────────────────────────────── -->
+        <ProgressBar x:Name="BusyIndicator" Grid.Row="1" Height="4" Margin="8,2,8,8"
+                     IsIndeterminate="False" Visibility="Collapsed"/>
+    </Grid>
+</Window>

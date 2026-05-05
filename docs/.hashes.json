@@ -275,6 +275,19 @@
     "CAMAPI/DotnetHelper/main/XMLPropAttributesEnumerator.cs": "3c5a6c3be630df0e684e6cd8a332dbf1b19609eb",
     "CAMAPI/DotnetHelper/main/XMLPropAttributesList.cs": "0aee34e588c291282ead2a6dda066b99a78cc207",
     "CAMAPI/DotnetHelper/main/XMLPropPointerHelper.cs": "fe4fa220f898c6b4f87bc863e3c5a808fe44a744"
+    "CAMAPI/DotnetHelper/main/ModelFormerWithProbingItemsHelper.cs": "663f597d6b59693c0ad13b9adafa9ab55ce68885",
+    "CAMAPI/DotnetHelper/main/ProbingModelItemHelper.cs": "2c8e9df7789e7fee9825c0e0d5bd485e21f4401f",
+    "CAMAPI/DotnetHelper/main/ProbingModelItemIteratorHelper.cs": "b6df660e0c00e5124d493b63c242f4017ce452c5",
+    "CAMAPI/DotnetHelper/main/ProbingCycleHelper.cs": "dd8bee7fe98b300f34df3c2ab28e497231135cd0",
+    "CAMAPI/DotnetHelper/main/ProbingActionHelper.cs": "c595d332784e74796a49ad0dadf48ebdb138f9fe",
+    "CAMAPI/DotnetHelper/main/CustomPropGroupProbingActionHelper.cs": "3d3d38cdf8f5d25b21df2ebe993e1224d5753828",
+    "CAMAPI/DotnetHelper/main/ProbingTemplateHelper.cs": "441528c6b73c8eee0d60c2d94b83c219f8e02b15",
+    "CAMAPI/DotnetHelper/main/SurfaceProbingCycleHelper.cs": "d6b9f64a2698dfe062bd562f9f7731ce160a3566",
+    "CAMAPI/DotnetHelper/main/BossHoleProbingCycleHelper.cs": "0732828d4671b1d09f7fa904d792fd14537b11b4",
+    "CAMAPI/DotnetHelper/main/WebGrooveProbingCycleHelper.cs": "055058213b9de610c56d8f415d6346a04b5c7734",
+    "CAMAPI/DotnetHelper/main/RectangleProbingCycleHelper.cs": "34f451bb6f177405fd3ccefedd5868732d5c1db0",
+    "CAMAPI/DotnetHelper/main/DoubleTripleWallProbingCycleHelper.cs": "3ba8e267d7a97350f6265bad2f1d4bc7bb89260c",
+    "CAMAPI/DotnetHelper/main/NcActionFrameOutputProbingCycleHelper.cs": "58223626f2ae24ed9f408ff7b2fe15429125bc8c"
   },
   "examples": [
     "ApiApplicationCpp/FullWorkflow3DProject",
@@ -327,7 +340,11 @@
     "UI/ExtensionManageViewNet",
     "UI/ExtensionUtilityDialogWindowNet",
     "UI/ExtensionUtilityMessageBoxNet",
-    "UI/ExtensionUtilityNotifyNet"
+    "UI/ExtensionUtilityNotifyNet",
+    "Probing/ProbingAddMovementNet",
+    "Probing/ProbingCyclePaletteNet",
+    "ApiApplicationCpp/FullWorkflow3DProject",
+    "ApiApplicationCpp/SimpleDemo"
   ],
   "lastUpdated": "2026-04-24"
 }

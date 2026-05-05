@@ -25,7 +25,7 @@ public class ExtensionGeometryImporter: IExtension, IExtensionUtility
         {
             using var pathsHelperCom = SystemExtensionFactory.GetSingletonExtension<ICamApiPaths>("Extension.Global.Singletons.Paths");
             using var applicationCom = new ComWrapper<ICamApiApplication>(context.CamApplication);
-            var modelFileName = pathsHelperCom.Invoke(pathsHelper => Path.Combine(pathsHelper.ModelsFolder, "Milling_25D", "Part1.igs"));
+            var modelFileName = pathsHelperCom.Invoke(pathsHelper => Path.Combine(pathsHelper.ModelsFolder, "Milling_3D", "Part.igs"));
 
             using var activeProjectCom = applicationCom.InvokeAndWrap(application =>
                 (application.GetActiveProject(out var status), status));
