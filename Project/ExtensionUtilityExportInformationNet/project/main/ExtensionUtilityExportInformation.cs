@@ -106,8 +106,10 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
                     using var partCom = PartAndStageListHelper.Part(pslCom, partIdx);
 
                     var prototypePartIndex = PartHelper.PrototypePartIndex(partCom);
+                    var PartExternalID = PartHelper.ExternalID(partCom); 
                     jsonBuilder.AddBoolPair("IsCopy", PartHelper.IsPartCopy(partCom));
                     jsonBuilder.AddIntPair("PrototypePartIndex", prototypePartIndex); 
+                    jsonBuilder.AddIntPair("PartExternalID", PartExternalID); 
                     
                     var key = new PartKey(setupStageIdx, partIdx);
                     if (PartHelper.IsPartCopy(partCom)){
