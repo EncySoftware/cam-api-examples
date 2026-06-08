@@ -2,6 +2,7 @@ using CAMAPI.Application;
 using CAMAPI.DotnetHelper;
 using CAMAPI.Extensions;
 using CAMAPI.ResultStatus;
+using PartCalibrationWorkflowNet.Service;
 
 namespace PartCalibrationWorkflowNet;
 
@@ -31,19 +32,27 @@ public class CalibrationWorkflowExtension : IExtension, IExtensionUtility, IExte
     public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus)
     {
         resultStatus = default;
+        DbgLog.Write("Run entered");
         try
         {
             using var applicationCom = ComWrapper.Create(context.CamApplication);
             _windowManager.SetOwnerHandle(applicationCom);
+            DbgLog.Write("Owner handle set");
 
             // Second wrapper — no 'using' — ownership transferred to the window,
             // which disposes it in CalibrationWorkflowWindow.Dispose().
             var appForWindow = ComWrapper.Create(context.CamApplication);
-            _windowManager.ShowWindow(() => new CalibrationWorkflowWindow(appForWindow));
+            _windowManager.ShowWindow(() =>
+            {
+                DbgLog.Write("ShowWindow factory invoked on STA thread");
+                return new CalibrationWorkflowWindow(appForWindow);
+            });
+            DbgLog.Write("ShowWindow returned");
             // Run returns immediately; the window lives on its own STA thread.
         }
         catch (Exception e)
         {
+            DbgLog.Write("Run failed", e);
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
         }
