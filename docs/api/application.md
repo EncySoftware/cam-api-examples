@@ -459,11 +459,155 @@ loggerCom.Log(new LogItem {
 
 ## ICamApiMacroManager
 
-`ICamApiMacroManager` is the entry point for the macro recording and execution system. The interface is currently minimal (no public methods beyond the interface marker). Access it through:
+`ICamApiMacroManager` is the entry point for the macro system: list and run existing macros, and create new ones. Access it through the application helper:
 
 ```csharp
 using var macroMgrCom = appCom.MacroManager();
 ```
+
+> **Writing the body of a macro** (the generated `.cs` that runs inside ENCY — `ICamApiMacro.Run`, `MacroParams`, `NotifyMacroStep`) is a separate topic: see [docs/macros](../macros/README.md). This section covers managing and building macros from a host plugin.
+
+### Listing and running macros
+
+Helper (`MacroManagerHelper`):
+
+```csharp
+macroMgrCom.Execute(id, paramsJson);   // run a macro by id; paramsJson "" = recorded defaults
+```
+
+`paramsJson` is a JSON dictionary of per-step value overrides: `{"stepIndex": {"key": "value"}}`. Pass `""` to run with the values recorded into the macro.
+
+**Methods (full list):**
+
+| Method | Description |
+|---|---|
+| `Count` (R) | Number of macros registered in the system |
+| `Macro[index]` (R) → `ICamApiMacroInfo*` | Macro metadata by index (0-based) |
+| `GetMacroById(id)` → `ICamApiMacroInfo*` | Macro metadata by unique id |
+| `Execute(id, params, out ret)` | Run a macro; `params` = overrides JSON (may be empty) |
+| `CreateMacroInstance()` → `ICamApiMacroInfo*` | New empty macro metadata (fill its fields, then `AddMacro`) |
+| `AddMacro(macro, out ret)` | Register a prebuilt macro in the system |
+| `RemoveMacro(id, deleteSources, out ret)` | Remove a macro (optionally delete its source files) |
+| `MacroBuilder` (R) → `ICamApiMacroBuilder*` | The builder — create macros programmatically (see below) |
+| `NotifyMacroStep(stepIndex, out ret)` | Report that playback reached a step; called from **inside** a running macro for UI step highlighting (see [docs/macros](../macros/notify-step.md)) |
+| `OpenInEditor(macro, out ret)` | Open the macro source in the editor for its language |
+
+> **Direct call (no helper):** only `Execute` and `NotifyMacroStep` have helper wrappers; for the rest use `macroMgrCom.Invoke(m => m.GetMacroById(id))` / `InvokeAndWrap(...)`.
+
+### ICamApiMacroInfo — macro metadata
+
+`propertyRW`: `Id`, `Caption`, `Description`, `MacroPath` (source), `ExecutablePath` (built), `LanguageId`, `ExecuteExtensionId`.
+`propertyR`: `StepCount`, `Step[index]` → `ICamApiMacroStepInfo*`.
+
+### ICamApiMacroStepInfo / ICamApiMacroStepParam — discover overridable parameters
+
+To learn which keys a macro's step accepts in `Execute`'s `params` JSON, walk the steps:
+
+- `ICamApiMacroStepInfo`: `DisplayText`, `ParamCount`, `Param[index]` → `ICamApiMacroStepParam*`, `GroupCaption`.
+- `ICamApiMacroStepParam` (read-only): `Key` (the JSON key), `LabelText`, `ParamType` (`TMacroCommandParamType`), `Required`, `DefaultValue`, `ValuesString` (semicolon-separated allowed values, empty = free-form).
+
+**`TMacroCommandParamType`:** `mptStr` (0), `mptBol` (1), `mptInt` (2), `mptFlt` (3).
+
+### Creating a macro programmatically — ICamApiMacroBuilder + ICamApiMacroCommandsManager
+
+A macro is built from a sequence of recorded commands, then compiled. This mirrors exactly what the UI recorder does. The commands manager is obtained by QI from the builder.
+
+```csharp
+using var macroMgrCom = appCom.MacroManager();
+using var builderCom  = macroMgrCom.InvokeAndWrap(m => m.MacroBuilder);
+
+// 1. Record commands.
+builderCom.Invoke(b =>
+{
+    var cmds = (ICamApiMacroCommandsManager)b;     // same object, QI
+    cmds.Start(out _);
+
+    // Imitate a "create operation" hook: build a command payload and register it.
+    var cd = cmds.CreateCommandData(TMacroCommandType.mctCreateOperation);
+    cd.SetStr("OperationType", "HoleMachiningOp");
+    cd.SetStr("TypeCaption",   "Hole machining");
+    cd.SetStr("Name",          "Op1");
+    cmds.RegisterCommand(cd);
+
+    cmds.Stop(out _);
+});
+
+// 2. Configure build settings and build.
+string sourcePath = builderCom.Invoke(b =>
+{
+    var main = b.CreateMainSettings(out _);
+    main.Id = "MyMacro";
+    main.Caption = "My macro";
+    main.CreateOperations = true;
+    main.OutputFolder = outputFolder;
+    main.ExecuteExtensionId = "Extension.MacroRunner.Dotnet";
+
+    var lang = b.CreateLanguageSettings("dotnet", out _);
+    if (lang is ICamApiMacroBuilderDotNetSettings dn)
+    {
+        dn.TargetFramework = "net8.0-windows";
+        // CRITICAL: without SDKVersion + References the generated .csproj cannot resolve
+        // CAMAPI types (CS0246 at macro build). Source both from the extension manager.
+        using var emCom = appCom.ExtensionManager();
+        dn.SDKVersion  = emCom.Invoke(x => x.ApiVersion);
+        dn.References   = emCom.Invoke(x => x.ApiDependencies);
+    }
+    return b.CreateMacro(main, lang, out _);        // generates the source project
+});
+
+builderCom.Invoke(b => b.Save(out _));              // compiles the runnable macro
+```
+
+**Alternative content source — capture the current project** instead of authoring commands by hand:
+
+```csharp
+cmds.CaptureProjectState(captureMachine: false, captureWorkpiece: false, captureStrategy: true, out _);
+```
+
+#### Command field-key schema (authoritative, at runtime)
+
+The keys (and their types/required flags) a command of a given `TMacroCommandType` expects are discoverable at runtime — do not hard-code them. Get the schema provider (`ICamApiMacroCommandSchema`) from the commands manager, then `GetFlatCommand` returns an `ICamApiMacroCommandFieldList` (indexed list of field descriptors):
+
+```csharp
+var schema = cmds.GetCommandSchema();
+var fields = schema.GetFlatCommand(TMacroCommandType.mctCreateOperation);
+for (int i = 0; i < fields.GetCount(); i++)
+{
+    string key      = fields.GetKey(i);
+    var    type     = fields.GetFieldType(i);   // TMacroCommandParamType: mptStr/mptBol/mptInt/mptFlt
+    bool   required = fields.GetRequired(i);
+}
+```
+
+**Variant (model-item) commands** — some commands accept different key sets depending on a *discriminator* field (e.g. `mctSetWorkpiecePrimitive`, whose keys depend on the item class). `GetFlatCommand` returns the common keys (including the discriminator key itself); pass a discriminator value to `GetClassItemCommand` for the variant-specific keys:
+
+```csharp
+var boxFields = schema.GetClassItemCommand(
+    TMacroCommandType.mctSetWorkpiecePrimitive, "TBoxLinkItem");
+// discriminators: "TBoxLinkItem", "TCylLinkItem", "TStockLinkItem", "TAutoLinkItem"
+```
+
+The documented set is filled incrementally; command types / discriminators without a documented schema return an empty list (`GetCount() == 0`).
+
+#### ICamApiMacroCommandData / ICamApiMacroCommandDataBuilder
+
+- `ICamApiMacroCommandData` (read-only view): `CommandType` + `GetStr/GetInt/GetFloat/GetBool(key)`.
+- `ICamApiMacroCommandDataBuilder` (returned by `CreateCommandData`, inherits the read interface): adds `SetStr/SetInt/SetFloat/SetBool(key, value)`. Fill it, then pass to `RegisterCommand`.
+
+#### Builder settings interfaces
+
+- `ICamApiMacroBuilderSettings` (from `CreateMainSettings`): `Id`, `Caption`, `Description`, `OutputFolder`, `ExecuteExtensionId`, `CreateOperations`.
+- `ICamApiMacroBuilderLanguageSettings` (from `CreateLanguageSettings(languageId)`): base; QI to the concrete type:
+  - `"dotnet"` → `ICamApiMacroBuilderDotNetSettings` — `TargetFramework`, `SDKVersion`, `References` (builds a .NET macro DLL).
+  - `"script"` → script-language settings (builds a script macro).
+
+#### Commands that carry lists
+
+A few commands carry a string list, which the scalar command bag cannot hold. They have dedicated typed methods on `ICamApiMacroCommandsManager`: `RegisterSetDriveFaceItemProperties`, `RegisterAddFixture`, `RegisterSetFixtureItemStock`, `RegisterSetFixtureItemColor`, `RegisterSetFixtureItemCaption`.
+
+#### Environment
+
+Before building a .NET macro the builder may need its toolchain checked/prepared: `CheckEnvironment(languageSettings, out ret)` and `SetupEnvironment(languageSettings, out ret)`.
 
 ---
 

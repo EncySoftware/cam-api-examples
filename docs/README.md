@@ -30,6 +30,9 @@ This documentation is written for Claude instances helping developers write plug
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
 - [UI patterns](general/ui-patterns.md) — Inspector dialog, modal WPF (STA thread), non-modal WPF + IExtensionLazyUnloadable
 
+### Writing macros
+- [Macros](macros/README.md) — authoring a macro body (`ICamApiMacro.Run`, run context, `MacroParams`, `NotifyMacroStep`). Managing/building/running macros from a host is in [api/application.md](api/application.md#icamapimacomanager) (in-process) and [ipc/application.md](ipc/application.md#icamipcmacromanager) (IPC).
+
 ### CAMAPI domain reference
 - [Application & singletons](api/application.md) — ICamApiApplication, utilities, macros, events, collections
 - [Entry points](api/entry-points.md) — IExtensionManager, IExtensionStorage, IExtensionLogger

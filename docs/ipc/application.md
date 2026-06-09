@@ -208,6 +208,127 @@ The IPC proxy for the ENCY extension manager. All methods take a `TExecuteContex
 
 Values: `stSystem`, `stUser` (and potentially project-level). Defines which configuration layer a library or enable/disable flag belongs to.
 
+### Macro build support
+
+| Method | Description |
+|---|---|
+| `GetApiVersion(ctx) → string` | Current CAM Open API version — use as the macro .NET SDK version |
+| `GetApiDependencies(ctx) → IListString*` | Reference assemblies a built macro must compile against — use as the macro .NET References |
+
+Helper (`ExtensionManagerHelper`): `emCom.GetApiVersion()`, `emCom.GetApiDependencies()`. These feed the macro builder's `.NET` language settings (see `ICamIpcMacroManager` below) — without them the generated macro project cannot resolve CAMAPI types.
+
+---
+
+## ICamIpcMacroManager
+
+IPC mirror of `ICamApiMacroManager` — list and run existing macros, and create new ones. See [docs/api/application.md](../api/application.md#icamapimacomanager) for the full conceptual model; this section gives the IPC helper surface. (Writing the body of a macro itself is covered in [docs/macros](../macros/README.md).)
+
+```csharp
+using var macroMgrCom = appCom.MacroManager();   // ComWrapper<ICamIpcMacroManager>
+```
+
+### Listing and running
+
+```csharp
+int count = macroMgrCom.Count();
+using var info = macroMgrCom.GetMacroById("MyMacro");   // or macroMgrCom.GetMacro(index)
+macroMgrCom.Execute("MyMacro", paramsJson);             // paramsJson "" = recorded defaults
+```
+
+`paramsJson` is a per-step override dictionary: `{"stepIndex": {"key": "value"}}`.
+
+**Helpers (`MacroManagerHelper`):**
+
+| Helper | Description |
+|---|---|
+| `Count()` | Number of macros |
+| `GetMacro(i)` / `GetMacroById(id)` → `ComWrapper<ICamIpcMacroInfo>` | Macro metadata |
+| `Execute(id, paramsJson = "")` | Run a macro |
+| `CreateMacroInstance()` / `AddMacro(info)` / `RemoveMacro(id, deleteSources)` | Manage macros |
+| `GetMacroBuilder()` → `ComWrapper<ICamIpcMacroBuilder>` | Build macros (below) |
+| `NotifyMacroStep(i)` / `OpenInEditor(info)` | Step notify / open source |
+
+### ICamIpcMacroInfo
+
+`MacroInfoHelper`: getters `Id()`, `Caption()`, `Description()`, `MacroPath()`, `ExecutablePath()`, `LanguageId()`, `ExecuteExtensionId()`, `StepCount()`, `GetStep(i)`; setters `SetId(v)` … `SetExecuteExtensionId(v)` (for the `CreateMacroInstance` → fill → `AddMacro` flow).
+
+### Discovering overridable step parameters
+
+`MacroStepInfoHelper`: `DisplayText()`, `ParamCount()`, `GetParam(i)`, `GroupCaption()`.
+`MacroStepParamHelper`: `Key()`, `LabelText()`, `ParamType()` (`TMacroCommandParamType`), `Required()`, `DefaultValue()`, `ValuesString()`.
+
+### Creating a macro programmatically
+
+```csharp
+using var builderCom = macroMgrCom.GetMacroBuilder();
+using var cmdsCom    = builderCom.GetCommandsManager();
+
+cmdsCom.Start();
+using (var cd = cmdsCom.CreateCommandData(TMacroCommandType.mctCreateOperation))
+{
+    cd.SetStr("OperationType", "HoleMachiningOp");
+    cd.SetStr("TypeCaption",   "Hole machining");
+    cd.SetStr("Name",          "Op1");
+    cmdsCom.RegisterCommand(cd);
+}
+cmdsCom.Stop();
+
+using var main = builderCom.CreateMainSettings();
+main.SetId("MyMacro");
+main.SetCaption("My macro");
+main.SetCreateOperations(true);
+main.SetOutputFolder(outputFolder);
+main.SetExecuteExtensionId("Extension.MacroRunner.Dotnet");
+
+using var lang = builderCom.CreateLanguageSettings("dotnet");
+lang.SetTargetFramework("net8.0-windows");
+// CRITICAL: SDKVersion + References — without them the generated .csproj cannot resolve
+// CAMAPI types (CS0246). Source both from the extension manager.
+using var emCom = appCom.ExtensionManager();
+lang.SetSDKVersion(emCom.GetApiVersion());
+lang.SetReferences(emCom.GetApiDependencies());
+
+string sourcePath = builderCom.CreateMacro(main, lang);
+string builtPath  = builderCom.Save();
+```
+
+**Alternative — capture the current project** instead of authoring commands:
+
+```csharp
+cmdsCom.CaptureProjectState(machine: false, workpiece: false, strategy: true);
+```
+
+### Command field-key schema (authoritative, at runtime)
+
+Get the schema provider (`ICamIpcMacroCommandSchema`) from the commands manager; `GetFlatCommand` returns an `ICamIpcMacroCommandFieldList` (indexed list of field descriptors). The `Fields()` helper reads it in one pass:
+
+```csharp
+using var schemaCom = cmdsCom.GetCommandSchema();
+using var fieldsCom = schemaCom.GetFlatCommand(TMacroCommandType.mctCreateOperation);
+foreach (var f in fieldsCom.Fields())
+{
+    // f.Key (string), f.FieldType (TMacroCommandParamType), f.Required (bool)
+}
+```
+
+**Variant (model-item) commands** — some commands accept different key sets depending on a *discriminator* field (e.g. `mctSetWorkpiecePrimitive`, whose keys depend on the item class). `GetFlatCommand` returns the common keys including the discriminator; pass a discriminator value to `GetClassItemCommand` for the variant keys:
+
+```csharp
+using var boxCom = schemaCom.GetClassItemCommand(
+    TMacroCommandType.mctSetWorkpiecePrimitive, "TBoxLinkItem");
+// discriminators: "TBoxLinkItem", "TCylLinkItem", "TStockLinkItem", "TAutoLinkItem"
+```
+
+An empty list (`GetCount() == 0`) means the command type / discriminator has no documented schema yet.
+
+### Command bag and helpers
+
+- `MacroCommandSchemaHelper`: `GetFlatCommand(type)`, `GetClassItemCommand(type, discriminator)` → `ComWrapper<ICamIpcMacroCommandFieldList>` (on the provider from `GetCommandSchema`).
+- `MacroCommandFieldListHelper`: `GetCount()`, `GetKey(i)`, `GetFieldType(i)`, `GetRequired(i)`, and `Fields()` to read the whole list at once.
+- `MacroCommandDataHelper`: `CommandType()`, `GetStr/GetInt/GetFloat/GetBool(key)`, `SetStr/SetInt/SetFloat/SetBool(key, value)` (setters work only on a bag from `CreateCommandData`).
+- Language `"dotnet"` → .NET macro (`TargetFramework`/`SDKVersion`/`References` via `MacroBuilderLanguageSettingsHelper`); `"script"` → script macro.
+- List-bearing commands (which the scalar bag cannot hold) have dedicated typed methods on the commands manager: `RegisterSetDriveFaceItemProperties`, `RegisterAddFixture`, `RegisterSetFixtureItemStock`/`Color`/`Caption`.
+
 ---
 
 ## ICamIpcUtilityManager / ICamIpcUtilityInfo

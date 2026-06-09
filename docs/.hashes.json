@@ -23,7 +23,7 @@
     "CAMAPI/Interfaces/Machine/main/src/CAMAPI.Machine.idl": "da68b83fbd8232911dba3511b31ef7d23aaf9d8e",
     "CAMAPI/Interfaces/MachineConfiguration/main/src/CAMAPI.MachineConfiguration.idl": "fac31a9354cbbf8dcb0262b4c3b37a108cbc877c",
     "CAMAPI/Interfaces/MachinesLibrary/main/src/CAMAPI.MachinesLibrary.idl": "0dfed7d5e9ad6046372fdecd52bb685aed8a5fbb",
-    "CAMAPI/Interfaces/Macros/main/src/CAMAPI.Macros.idl": "6c767d5a5d4ff7d50f5faeb2ebe0f201d9f82807",
+    "CAMAPI/Interfaces/Macros/main/src/CAMAPI.Macros.idl": "6b1ab221cb9403e47056cdea0c2a82d9ec7e0ab7",
     "CAMAPI/Interfaces/MeshTypes/main/src/CAMAPI.MeshTypes.idl": "010a6a8590ebe7ed1152fbc35e51b37189a12020",
     "CAMAPI/Interfaces/ModelFormerTypes/main/src/CAMAPI.ModelFormerTypes.idl": "49af15e078ab9dd4756b546cd72a15313105a762",
     "CAMAPI/Interfaces/NCMaker/main/src/CAMAPI.NCMaker.idl": "ec6a4fa2b91274a0babb5a0489cf16e7b617263f",
@@ -55,7 +55,7 @@
     "CAMIPC/Interfaces/EventHandler/main/src/CAMIPC.EventHandler.idl": "557b9fea08aa67e36757eb58874c3c0b20689043",
     "CAMIPC/Interfaces/ExecuteContext/main/src/CAMIPC.ExecuteContext.idl": "2794bef86b5735c2b41cc326ef4c8ab26bba4991",
     "CAMIPC/Interfaces/Extension.PLM/main/src/CAMIPC.Extension.PLM.idl": "708c75c334faa4ea761f83bd94b5f80bee33a10d",
-    "CAMIPC/Interfaces/ExtensionManager/main/src/CAMIPC.ExtensionManager.idl": "2a9f323179ac048882b9551b4c5c1283331debf7",
+    "CAMIPC/Interfaces/ExtensionManager/main/src/CAMIPC.ExtensionManager.idl": "c0973366c47083b86b4a455a7f9ba320b88f7e2b",
     "CAMIPC/Interfaces/FunctionalTest/main/src/CAMIPC.FunctionalTest.idl": "4f744550d3649c22371e003adebbd5a6efe6030f",
     "CAMIPC/Interfaces/GeomImporter/main/src/CAMIPC.GeomImporter.idl": "4eededf038060ccf285747ca9cef3d0f5635d3a8",
     "CAMIPC/Interfaces/GeomLibrary/main/src/CAMIPC.GeomLibrary.idl": "a3f7e1b4fdacc2d10da6eaca97e4181b6e7ccf0f",
@@ -68,7 +68,7 @@
     "CAMIPC/Interfaces/Machine/main/src/CAMIPC.Machine.idl": "5b35a42e5bf0862140b58936b672e2f0fd8e931b",
     "CAMIPC/Interfaces/MachineConfiguration/main/src/CAMIPC.MachineConfiguration.idl": "08d7354de0edb4a2927b922e4edc13165e036d03",
     "CAMIPC/Interfaces/MachinesLibrary/main/src/CAMIPC.MachinesLibrary.idl": "2c015fed9d44c4be42027dfe4fb79b7b0a910678",
-    "CAMIPC/Interfaces/Macros/main/src/CAMIPC.Macros.idl": "10f2489f71cc662cf5cb037c633de6b223879576",
+    "CAMIPC/Interfaces/Macros/main/src/CAMIPC.Macros.idl": "582a2505d065f93686d734696164165e50ecb212",
     "CAMIPC/Interfaces/MeshTypes/main/src/CAMIPC.MeshTypes.idl": "f85541674e87103aad4c076cc7b09e6bdf565516",
     "CAMIPC/Interfaces/ModelFormerTypes/main/src/CAMIPC.ModelFormerTypes.idl": "1aa8e362e89b9c63bb866b3bb4d9ea38510b2a28",
     "CAMIPC/Interfaces/NCMaker/main/src/CAMIPC.NCMaker.idl": "c307173a7605039d68db76d91ebed5f000648658",
@@ -329,5 +329,5 @@
     "UI/ExtensionUtilityMessageBoxNet",
     "UI/ExtensionUtilityNotifyNet"
   ],
-  "lastUpdated": "2026-04-24"
+  "lastUpdated": "2026-06-09"
 }
