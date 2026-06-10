@@ -148,15 +148,70 @@ mfCom.Invoke(mf =>
 });
 ```
 
-**When you need a typed `ComWrapper<T>` to keep around (e.g. to pass to an extension method)** — wrap the cast result and check `IsNull`:
+> **Warning — `AsInstanceOf` and `InvokeAndWrap(f => f as T)` load transitive assemblies:** the C# cast `f as ITarget` inside a generic lambda causes the .NET runtime to resolve every assembly that `ITarget` transitively depends on. If those assemblies are not in your csproj, the build fails with "assembly not found" errors. The same applies to extension helpers like `featureCom.AsHoleFeature()` that call `InvokeAndWrap(f => f as ICamApiHoleFeature)` internally.
+>
+> **Preferred alternative — inline `is` check inside `Invoke`:** keep the cast inside the lambda. This is resolved at the Delphi/COM level only, with no .NET type resolution beyond the immediate interface:
+>
+> ```csharp
+> // CORRECT — cast stays inside Invoke; no transitive assembly loading
+> var result = "";
+> featureCom.Invoke(f =>
+> {
+>     if (f is ICamApiHoleFeature hole)
+>     {
+>         result = $"Ø{hole.Diameter:F2}";
+>         return;
+>     }
+>     if (f is ICamApiFilletFeature fillet)
+>     {
+>         result = $"R{fillet.Size:F2}";
+>         return;
+>     }
+> });
+>
+> // WRONG — InvokeAndWrap(f => f as T) triggers transitive assembly resolution
+> using var holeCom = featureCom.AsHoleFeature(); // may fail to build
+> ```
+>
+> Use the inline `is` pattern whenever you need to branch on a sub-interface of a COM object and do not want to pull in extra assembly references.
 
-```csharp
-using var mfWithHolesCom = mfCom.InvokeAndWrap(mf => mf as ICamApiModelFormerWithHoles);
-if (!mfWithHolesCom.IsNull)
-    mfWithHolesCom.AddHolesSelected();     // call the DotnetHelper extension method
-```
+> **Pitfall — `AsInstanceOf` inside `foreach`:** each call to `AsInstanceOf` creates a **new** `ComWrapper`. The iterator that produced the original item does not know about this new wrapper and will never dispose it. You must use `using var` explicitly:
+>
+> ```csharp
+> // CORRECT — AsInstanceOf result wrapped with using
+> foreach (var itemCom in mf.EnumerateProbingItems())
+> {
+>     using var asCycle = itemCom.AsInstanceOf<ICamApiProbingCycle>();
+>     using var asSurf  = itemCom.AsInstanceOf<ICamApiSurfaceProbingCycle>();
+>     if (asCycle != null) { /* ... */ }
+> }
+>
+> // WRONG — leaks two COM objects per iteration, produces LostObjects_*.txt
+> foreach (var itemCom in mf.EnumerateProbingItems())
+> {
+>     var asCycle = itemCom.AsInstanceOf<ICamApiProbingCycle>(); // no using!
+>     var asSurf  = itemCom.AsInstanceOf<ICamApiSurfaceProbingCycle>(); // no using!
+> }
+> ```
 
-> `ComWrapper<T>.AsInstanceOf<TTarget>()` is intentionally **not used** in this SDK — it bypasses MTA marshalling and is unstable in practice. The patterns above are mandatory.
+> **Pitfall — `break` inside `foreach` with a side-allocated wrapper:** if you call a method on the iteration variable before `break` and that method returns a new `ComWrapper` you intend to keep, make sure to `Dispose()` the iteration variable itself — the iterator will not reach the `yield` cleanup after `break`:
+>
+> ```csharp
+> // WRONG — both mf and opCom leak when we break
+> foreach (var opCom in techCom.EnumerateOperations(rmDesigned))
+> {
+>     var mf = opCom.ModelFormerJobAssignment(); // no using — already wrong
+>     if (mf != null) { foundMf = mf; break; }  // opCom also leaks
+>     mf?.Dispose();
+> }
+>
+> // CORRECT — every COM-returning call gets using var; dispose opCom before break
+> foreach (var opCom in techCom.EnumerateOperations(rmDesigned))
+> {
+>     using var mf = opCom.ModelFormerJobAssignment(); // always using var for COM
+>     if (mf != null) { foundMf = mf.Transfer(); opCom.Dispose(); break; }
+> }
+> ```
 
 ---
 

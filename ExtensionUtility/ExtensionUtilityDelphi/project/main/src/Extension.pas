@@ -69,20 +69,24 @@ begin
   try
     var ret := default(TResultStatus);
 
-    // get global context
-    var extension := TSystemExtensionFactory.GetSingletonExtension<ICamApiPaths>('Extension.Global.Singletons.Paths');
+    raise Exception.Create('12');
+//    TDirectory.CreateDirectory('%TEMP%/bond11');
+//    TFile.AppendAllText('%TEMP%/test123.txt', 'testsss');
 
-    // get context
-    var currentFolder := extension.Get_MainProgramFolder;
-    if currentFolder = '' then
-      raise Exception.Create('Cannot get MainProgramFolder');
-
-    // export
-    var application := Context.CamApplication;
-    var exportedFile := TPath.Combine(currentFolder, 'exported.stcp');
-    application.ExportCurrentProject(exportedFile, true, ret);
-    if (ret.Code = TResultStatusCode.rsError) then
-      raise Exception.Create(ret.Description);
+//    // get global context
+//    var extension := TSystemExtensionFactory.GetSingletonExtension<ICamApiPaths>('Extension.Global.Singletons.Paths');
+//
+//    // get context
+//    var currentFolder := extension.Get_MainProgramFolder;
+//    if currentFolder = '' then
+//      raise Exception.Create('Cannot get MainProgramFolder');
+//
+//    // export
+//    var application := Context.CamApplication;
+//    var exportedFile := TPath.Combine(currentFolder, 'exported.stcp');
+//    application.ExportCurrentProject(exportedFile, true, ret);
+//    if (ret.Code = TResultStatusCode.rsError) then
+//      raise Exception.Create(ret.Description);
   except
     on e: exception do begin
       ResultStatus.Code := TResultStatusCode.rsError;

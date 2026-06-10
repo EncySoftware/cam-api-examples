@@ -41,8 +41,10 @@ public class ExtensionFactory : IExtensionFactory
             ret = default;
             if (extensionIdent == "Extension.Utility.ExportInformation.Net")
                 return new ExtensionUtilityExportInformation();
-            else if (extensionIdent == "Extension.Utility.ImportExportedInformation.Net")
-                return new ExtensionUtilityImportExportedInformation();
+            else if (extensionIdent == "ImportExportedInformation.Net")
+                return new ImportExportedInformation();
+            else if (extensionIdent == "ImportExportedToolpathInformation.Net")
+                return new ImportToolpathPoints();
         }
         catch (Exception e)
         {

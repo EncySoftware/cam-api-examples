@@ -375,18 +375,14 @@ public static class TechnologyHelper
         });
         
         // make settings for CNC generating
-        using var settingsCom = ncMakerCom.InvokeAndWrap(ncMaker =>
-            (ncMaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, out var status), status));
-        using var settingsSppxCom = settingsCom.InvokeAndWrap(settings =>
-            settings as ICamApiMakeCncSppxSettings
-            ?? throw new Exception("Error creating settings: settings is not ICamApiMakeCncSppxSettings"));
-        var resultNcCodeFile = settingsSppxCom.Invoke(settings =>
+        using var settingsCom = ncMakerCom.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx);
+        var resultNcCodeFile = settingsCom.Invoke(s =>
         {
-            settings.OutputFolder = Path.GetTempPath();
-            settings.NcFileName = OutputFile;
-            return Path.Combine(settings.OutputFolder, settings.NcFileName);
+            var sppx = (ICamApiMakeCncSppxSettings)s;
+            sppx.OutputFolder = Path.GetTempPath();
+            sppx.NcFileName   = OutputFile;
+            return Path.Combine(sppx.OutputFolder, sppx.NcFileName);
         });
-        var settingsSppx = settingsSppxCom.Instance;
         
         // get postprocessor from all users documents folder
         var postProcessorFilePath = pathsHelperCom.Invoke(pathsHelper =>
@@ -395,13 +391,7 @@ public static class TechnologyHelper
             throw new Exception("Postprocessor not found: " + postProcessorFilePath);
         
         // // generate CNC
-        ncMakerCom.Invoke(ncMaker =>
-        {
-            using var listCom = ComWrapper.Create(ncMaker.Generate(clDataFile, postProcessorFilePath, settingsSppx, out var ret));
-            if (ret.Code == TResultStatusCode.rsError)
-                throw new Exception("Error generating CNC: " + ret.Description);
-            
-            Process.Start("notepad.exe", resultNcCodeFile);
-        });
+        using var generatedFiles = ncMakerCom.Generate(clDataFile, postProcessorFilePath, settingsCom);
+        Process.Start("notepad.exe", resultNcCodeFile);
     }
 }

@@ -2,6 +2,8 @@
 
 This document covers the interfaces that take a machining operation from geometry assignment through toolpath calculation, CLData output, NC program generation, and simulation.
 
+> **Probing operations** (measuring cycles) have a separate job-assignment API — see [api/probing.md](probing.md).
+
 ---
 
 ## High-level flow

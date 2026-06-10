@@ -65,7 +65,7 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             
 
             using var applicationCom = ComWrapper.Create(context.CamApplication);
-            using var projectCom = applicationCom.GetActiveProject();
+            using var projectCom = ApplicationHelper.GetActiveProject(applicationCom);
 
             jsonBuilder.BeginObject();
             jsonBuilder.BeginObject("CAMProject");
@@ -74,19 +74,19 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             jsonBuilder.BeginObject("MachineSetup");
 
             
-            using var technologistCom = projectCom.Technologist();
-            using var pslCom = technologistCom.PartAndStageList();
-            using var listCoordinateSystemCom = projectCom.CoordinateSystems();
+            using var technologistCom = ProjectHelper.Technologist(projectCom);
+            using var pslCom = TechnologistHelper.PartAndStageList(technologistCom);
+            using var listCoordinateSystemCom = ProjectHelper.CoordinateSystems(projectCom);
 
 
-            using var machineCom = projectCom.Machine();
-            using var evaluatorCom = machineCom.CreateEvaluator();
+            using var machineCom = ProjectHelper.Machine(projectCom);
+            using var evaluatorCom = MachineHelper.CreateEvaluator(machineCom);
 
             MachineSaveHelper.SaveMachineInfoDetails(projectCom);
             MachineSaveHelper.SaveMachineDetails(machineCom);
 
-            int SetupStagesCount = pslCom.SetupStagesCount();
-            int PartsCount = pslCom.PartsCount();
+            int SetupStagesCount = PartAndStageListHelper.SetupStagesCount(pslCom);
+            int PartsCount = PartAndStageListHelper.PartsCount(pslCom);
 
 
             jsonBuilder.BeginArray("SetupStagesList");
@@ -102,15 +102,17 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
                     jsonBuilder.AddIntPair("PartIndex", partIdx); 
                     
                 
-                    using var partStageCom = pslCom.GetPartStage(partIdx, setupStageIdx);
-                    using var partCom = pslCom.Part(partIdx);
+                    using var partStageCom = PartAndStageListHelper.GetPartStage(pslCom, partIdx, setupStageIdx);
+                    using var partCom = PartAndStageListHelper.Part(pslCom, partIdx);
 
-                    var prototypePartIndex = partCom.PrototypePartIndex();
-                    jsonBuilder.AddBoolPair("IsCopy", partCom.IsPartCopy());
+                    var prototypePartIndex = PartHelper.PrototypePartIndex(partCom);
+                    var PartExternalID = PartHelper.ExternalID(partCom); 
+                    jsonBuilder.AddBoolPair("IsCopy", PartHelper.IsPartCopy(partCom));
                     jsonBuilder.AddIntPair("PrototypePartIndex", prototypePartIndex); 
+                    jsonBuilder.AddIntPair("PartExternalID", PartExternalID); 
                     
                     var key = new PartKey(setupStageIdx, partIdx);
-                    if (partCom.IsPartCopy()){
+                    if (PartHelper.IsPartCopy(partCom)){
                         bool isOriginalFoundInPGStore = false;
 
                         for (int i = setupStageIdx; i >= 0; i--){

@@ -12,6 +12,19 @@ namespace ExtensionUtilityExportInformationNet
         private static JsonBuilder? _jsonBuilder;
 
         /// <summary>
+        /// Index for operation ordering
+        /// </summary> 
+        private static int _operationIndex;
+
+        /// <summary>
+        /// Reseting index for operation ordering (for example, for different modes).
+        /// </summary>
+        public static void ResetOperationIndex()
+        {
+            _operationIndex = 0;
+        }
+
+        /// <summary>
         /// Initializes the JSON builder for saving part data.
         /// </summary>
         public static void Initialize(JsonBuilder builder)
@@ -38,7 +51,7 @@ namespace ExtensionUtilityExportInformationNet
             jsonToolPathbuilder.BeginArray("Commands");
 
             var exportToolpathReceiver = new ExportToolpathReceiver(jsonToolPathbuilder, treeOutput: false);
-            operationCom.ExportToolpath(exportToolpathReceiver);
+            TechOperationHelper.ExportToolpath(operationCom, exportToolpathReceiver);
 
             jsonToolPathbuilder.EndArray();
             jsonToolPathbuilder.EndObject(); // CAMToolpath closing
@@ -49,17 +62,24 @@ namespace ExtensionUtilityExportInformationNet
             string subFolder = (mode == TCamApiReorderingMode.rmDesigned) ? "Designed" : "Reordered";
             string folderPath = Path.Combine("project","main","OperationToolpathsJSON", subFolder);
             
-            var opSetupStageIndex = operationCom.SetupStageIndex();
-            var opPartIndex = operationCom.PartIndex();
-            var opType = operationCom.OperationType();
+            var opSetupStageIndex = TechOperationHelper.SetupStageIndex(operationCom);
+            var opPartIndex = TechOperationHelper.PartIndex(operationCom);
+            var opFullName = SanitizeFileName(TechOperationHelper.FullName(operationCom));
+            var opType = TechOperationHelper.OperationType(operationCom);
             string fileName = 
-                $"I_{opSetupStageIndex}_{opPartIndex}_{opType}.json";
+                $"I_{opSetupStageIndex}_{opPartIndex}_{_operationIndex++}_{opType}_{opFullName}.json";
             string fullPath = Path.Combine(folderPath, fileName);
             
             Directory.CreateDirectory(folderPath);
             File.WriteAllText(fullPath, json);
 
             _jsonBuilder?.AddStrPair("ToolpathFileName", fullPath); 
+        }
+
+        private static string SanitizeFileName(string name)
+        {
+            char[] invalid = Path.GetInvalidFileNameChars();
+            return string.Concat(name.Select(c => invalid.Contains(c) || c == ' ' ? '_' : c));
         }
     }
 }

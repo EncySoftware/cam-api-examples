@@ -1,0 +1,184 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Single place for the plugin's control styles. Colours are NOT hard-coded
+        per theme: the brushes below are defaults (dark), and ThemeService
+        overrides them at runtime from the host's ICamApiTheme palette — so the
+        same styles cover the dark, light and any other host theme. Only the
+        Warning/Ok status colours are fixed (they must read on any background).
+
+        The styles are implicit (keyed only by TargetType) so they apply to every
+        matching control in the window automatically, and reference the brushes
+        via DynamicResource so a runtime brush swap repaints everything.
+    -->
+
+    <!-- ── Palette brushes (defaults; overridden from the host theme) ───────── -->
+    <SolidColorBrush x:Key="ThemeWindowBrush"  Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="ThemePanelBrush"   Color="#252526"/>
+    <SolidColorBrush x:Key="ThemeInputBrush"   Color="#2D2D30"/>
+    <SolidColorBrush x:Key="ThemeTextBrush"    Color="#F1F1F1"/>
+    <SolidColorBrush x:Key="ThemeBorderBrush"  Color="#3F3F46"/>
+    <SolidColorBrush x:Key="ThemeButtonBrush"  Color="#333337"/>
+    <SolidColorBrush x:Key="ThemeAccentBrush"  Color="#0E639C"/>
+    <!-- Fixed status colours (dark orange warning reads better than red on dark). -->
+    <SolidColorBrush x:Key="ThemeWarningBrush" Color="#D2691E"/>
+    <SolidColorBrush x:Key="ThemeErrorBrush"   Color="#E36049"/>
+    <SolidColorBrush x:Key="ThemeOkBrush"      Color="#6BBF59"/>
+    <SolidColorBrush x:Key="ThemeMutedBrush"   Color="#9A9A9A"/>
+
+    <!-- ── TextBlock / Label ───────────────────────────────────────────────── -->
+    <Style TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}"/>
+    </Style>
+    <Style TargetType="Label">
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}"/>
+    </Style>
+
+    <!-- ── TextBox ─────────────────────────────────────────────────────────── -->
+    <Style TargetType="TextBox">
+        <Setter Property="Background"      Value="{DynamicResource ThemeInputBrush}"/>
+        <Setter Property="Foreground"      Value="{DynamicResource ThemeTextBrush}"/>
+        <Setter Property="BorderBrush"     Value="{DynamicResource ThemeBorderBrush}"/>
+        <Setter Property="CaretBrush"      Value="{DynamicResource ThemeTextBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding"         Value="3,2"/>
+    </Style>
+
+    <!-- ── Button (templated so Background/Foreground actually apply) ───────── -->
+    <Style TargetType="Button">
+        <Setter Property="Background"  Value="{DynamicResource ThemeButtonBrush}"/>
+        <Setter Property="Foreground"  Value="{DynamicResource ThemeTextBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="2">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background"
+                                    Value="{DynamicResource ThemeAccentBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="bd" Property="Opacity" Value="0.45"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── ComboBox + items ────────────────────────────────────────────────── -->
+    <Style TargetType="ComboBoxItem">
+        <Setter Property="Background" Value="{DynamicResource ThemePanelBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}"/>
+        <Setter Property="Padding" Value="6,3"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="bd" Property="Background"
+                                    Value="{DynamicResource ThemeAccentBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="Background"  Value="{DynamicResource ThemeInputBrush}"/>
+        <Setter Property="Foreground"  Value="{DynamicResource ThemeTextBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4,3"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton x:Name="tb" Focusable="False" ClickMode="Press"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border Background="{DynamicResource ThemeInputBrush}"
+                                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            BorderThickness="1" CornerRadius="2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="18"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Path Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                  Data="M 0 0 L 4 4 L 8 0 Z"
+                                                  Fill="{DynamicResource ThemeTextBrush}"/>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <ContentPresenter x:Name="cp" Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="Left" VerticalAlignment="Center"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          IsHitTestVisible="False"/>
+                        <Popup x:Name="PART_Popup" Placement="Bottom"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                            <Border Background="{DynamicResource ThemePanelBrush}"
+                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                    BorderThickness="1" MinWidth="{TemplateBinding ActualWidth}">
+                                <ScrollViewer MaxHeight="240">
+                                    <ItemsPresenter/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background"  Value="{DynamicResource ThemePanelBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}"/>
+    </Style>
+
+    <Style TargetType="TabItem">
+        <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="bd" Background="{DynamicResource ThemePanelBrush}"
+                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                            BorderThickness="1,1,1,0" Margin="0,0,2,0" CornerRadius="2,2,0,0">
+                        <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="bd" Property="Background"
+                                    Value="{DynamicResource ThemeAccentBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

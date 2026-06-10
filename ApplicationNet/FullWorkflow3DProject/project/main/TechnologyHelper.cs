@@ -12,7 +12,6 @@ using CAMIPC.Application;
 using CAMIPC.ExecuteContext;
 using CAMIPC.GeomModel;
 using CAMIPC.ModelFormerTypes;
-using CAMIPC.DotnetHelper;
 using CAMIPC.NCMaker;
 using CAMIPC.Project;
 using CAMIPC.Singletons;
@@ -461,7 +460,6 @@ public static class TechnologyHelper
         });
         
         // generate CNC
-        
         using var settingsCom = ncMakerCom.InvokeAndWrap(ncmaker =>{
             var settings = ncmaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, ref executeContext);
             if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)

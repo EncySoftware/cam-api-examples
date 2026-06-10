@@ -1,0 +1,14 @@
+{
+    "name": "Part Calibration Workflow",
+    "description": "Probing + machine simulation + calibration workflow example",
+    "module_path": "${extensionJsonFolder}/PartCalibrationWorkflowNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Calibration Workflow",
+                "caption": "Calibration Workflow",
+                "id": "Extension.Utility.PartCalibration.Workflow"
+            }
+        }
+    ]
+}

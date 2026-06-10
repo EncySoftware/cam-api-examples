@@ -1,0 +1,13 @@
+{
+    "name": "G code generator popup (C#)",
+    "description": "Generates G code via popup; supports Sinumerik 840D, Heidenhain iTNC530, Fanuc 30i",
+    "module_path": "${extensionJsonFolder}\\ExtensionPostprocessorPopupNet.dll",
+    "extensions": [
+        {
+            "postprocessor_popup": {
+                "name": "G code generator popup",
+                "id": "Extension.PostprocessorPopup.Example.Net"
+            }
+        }
+    ]
+}
