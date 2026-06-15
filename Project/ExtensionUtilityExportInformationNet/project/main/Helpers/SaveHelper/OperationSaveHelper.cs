@@ -105,6 +105,10 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.BeginObject("Spindle");
             ShowOperationSpindle(operationCom);
             _jsonBuilder.EndObject(); // Spindle closing
+            
+            _jsonBuilder.BeginObject("Stocks");
+            ShowOperationStocks(operationCom);
+            _jsonBuilder.EndObject(); // Stocks closing
 
             _jsonBuilder.BeginArray("CustomAttributes");
             ShowOperationCustomAttributes(operationCom);
@@ -200,6 +204,13 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.AddFltPair("ReturnToSafeLength", lengthStats.ReturnToSafeLength);
             _jsonBuilder.AddFltPair("TransitionOnSafeLength", lengthStats.TransitionOnSafeLength);
             _jsonBuilder.AddFltPair("LongNextLength", lengthStats.LongNextLength);
+            _jsonBuilder.EndObject();
+
+            var volumeStats = TechOperationHelper.GetVolumeStatistics(operationCom);
+            _jsonBuilder.BeginObject("Volumes");
+            _jsonBuilder.AddFltPair("MachResultVolume", volumeStats.MachResultVolume);
+            _jsonBuilder.AddFltPair("WorkpieceVolume", volumeStats.WorkpieceVolume);
+            _jsonBuilder.AddFltPair("VolumeRemovalRate", volumeStats.VolumeRemovalRate);
             _jsonBuilder.EndObject();
         }
 
@@ -314,6 +325,20 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.AddIntPair("Range", spindleState.Range);
         }
 
+        /// <summary>
+        /// Shows the operation stocks (profile / axial / radial machining allowances) in the JSON builder.
+        /// </summary>
+        public static void ShowOperationStocks(ComWrapper<ICamApiTechOperation> operationCom)
+        {
+            if (_jsonBuilder == null)
+                throw new Exception("Create JSON builder!");
+
+            var stocks = TechOperationHelper.GetStocks(operationCom);
+            _jsonBuilder.AddFltPair("Profile", stocks.Profile);
+            _jsonBuilder.AddFltPair("Axial", stocks.Axial);
+            _jsonBuilder.AddFltPair("Radial", stocks.Radial);
+        }
+        
         /// <summary>
         /// Shows the operation custom attributes in the JSON builder.
         /// </summary>
