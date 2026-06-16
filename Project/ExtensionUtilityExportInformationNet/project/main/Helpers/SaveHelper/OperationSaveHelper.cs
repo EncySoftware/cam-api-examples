@@ -114,6 +114,8 @@ namespace ExtensionUtilityExportInformationNet
             ShowOperationCustomAttributes(operationCom);
             _jsonBuilder.EndArray(); // CustomAttributes closing
 
+            _jsonBuilder.AddStrPair("Notes", TechOperationHelper.Notes(operationCom));
+
             _jsonBuilder.EndObject(); // Operation closing
         }
         
