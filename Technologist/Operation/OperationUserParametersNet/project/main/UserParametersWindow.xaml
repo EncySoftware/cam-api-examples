@@ -1,0 +1,25 @@
+<Window x:Class="OperationUserParametersNet.UserParametersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Operation User Parameters" Height="360" Width="480"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="User parameters of the current operation"
+                   FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,10">
+            <Button Content="Get" Click="Get_Click" Margin="5" Padding="0,6"/>
+            <Button Content="Add" Click="Add_Click" Margin="5" Padding="0,6"/>
+            <Button Content="Delete" Click="Delete_Click" Margin="5" Padding="0,6"/>
+        </UniformGrid>
+
+        <TextBox Grid.Row="2" x:Name="OutputBox" IsReadOnly="True" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto" FontFamily="Consolas"/>
+    </Grid>
+</Window>
