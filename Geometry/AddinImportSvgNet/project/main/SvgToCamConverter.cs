@@ -81,7 +81,6 @@ public class SvgToCamConverter
                 callbacks.OnLineTo?.Invoke(end);
                 callbacks.OnClosePath?.Invoke(true);
             }
-                // не замыкаем
                 break;
             
             case SvgRectangle rect:
