@@ -25,6 +25,7 @@
     <Reference Include="$(CAMPath)\CAMAPI.Extension.Util.Common.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.ExtensionManager.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Extensions.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.FeatureFinder.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Generic.Dictionary.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Generic.List.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.GeomImporter.dll" />
@@ -48,6 +49,7 @@
     <Reference Include="$(CAMPath)\CAMAPI.TechSolvers.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Tools.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.ToolsList.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.Utilities.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.DotnetHelper.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Workpiece.dll" />

@@ -61,6 +61,7 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             OperationSaveHelper.Initialize(jsonBuilder);
             ToolpathSaveHelper.Initialize(jsonBuilder);
             MachineSaveHelper.Initialize(jsonBuilder);
+            ToolSaveHelper.Initialize(jsonBuilder);
             
             
 
@@ -144,6 +145,8 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             jsonBuilder.EndObject(); // MachineSetup closing
 
             OperationSaveHelper.SaveOperationsData(technologistCom, evaluatorCom);
+
+            ToolSaveHelper.SaveToolDetails(projectCom);
 
             jsonBuilder.EndObject(); // CAMProject closing
             jsonBuilder.EndObject(); // json closing
