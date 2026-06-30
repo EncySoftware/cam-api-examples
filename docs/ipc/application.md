@@ -295,7 +295,7 @@ string builtPath  = builderCom.Save();
 **Alternative — capture the current project** instead of authoring commands:
 
 ```csharp
-cmdsCom.CaptureProjectState(machine: false, workpiece: false, strategy: true);
+cmdsCom.AddStrategyState();   // or AddMachineState() / AddWorkpieceState() / AddRecognizeFeature()
 ```
 
 ### Command field-key schema (authoritative, at runtime)

@@ -51,6 +51,7 @@ This documentation is written for Claude instances helping developers write plug
 - [NC & simulation](ipc/nc-simulation.md) — differences from CAMAPI NC domain
 - [UI](ipc/ui.md) — main form, viewport, view cube, PrimeView, PrimeViewModel
 - [Extra](ipc/extra.md) — CloudsApp, FunctionalTest, Extension.PLM
+- [Macros — record & save over IPC](ipc/macros.md) — MacroManager → builder → commands, recording lifecycle, command schema, guard cases
 
 ## Key patterns (quick reference)
 

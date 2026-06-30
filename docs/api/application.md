@@ -561,7 +561,7 @@ builderCom.Invoke(b => b.Save(out _));              // compiles the runnable mac
 **Alternative content source — capture the current project** instead of authoring commands by hand:
 
 ```csharp
-cmds.CaptureProjectState(captureMachine: false, captureWorkpiece: false, captureStrategy: true, out _);
+cmds.AddStrategyState(out _);   // or AddMachineState(out _) / AddWorkpieceState(out _) / AddRecognizeFeature(out _)
 ```
 
 #### Command field-key schema (authoritative, at runtime)

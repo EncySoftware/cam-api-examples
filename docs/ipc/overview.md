@@ -28,5 +28,6 @@ CAMIPC is the inter-process API for standalone .NET/C++ applications that commun
 | Application, Logger, XmlProp | [ipc/application.md](application.md) |
 | UI (viewport, Prime) | [ipc/ui.md](ui.md) |
 | Clouds, Tests, PLM | [ipc/extra.md](extra.md) |
+| Macros — record & save over IPC | [ipc/macros.md](macros.md) |
 | COM lifetime (.NET) | [general/com-lifetime.md](../general/com-lifetime.md) |
 | Error handling | [general/error-handling.md](../general/error-handling.md) |
