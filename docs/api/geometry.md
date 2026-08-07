@@ -116,6 +116,8 @@ using var modelCom = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGe
 | `AddGroup(parentNode)` | Add an empty group node under `parentNode` |
 | `AddCadGroup(name, lcs?)` | Add a CAD-typed group (a fresh GeCAD model) at the given LCS; helper defaults `lcs` to identity. The returned node hosts an editable `ICadApiModel` — reach it with `AsCadModel()` from CADAPI.DotnetHelper |
 | `ExportSelectedToStep(fileName)` | Export selected nodes to a STEP file (experimental) |
+| `RegisterHandler(ident, handler, events)` | Subscribe an event handler (e.g. for `SelectionChanged`); `ident` is your key for unregistering, `events` is an optional `IListString` filter (empty = all) |
+| `UnregisterHandler(ident)` | Remove a previously registered handler by its `ident` |
 
 Helper: `modelCom.ExportSelectedToStep(path)`, `modelCom.AddCadGroup("Fixtures")`. `AddCadGroup`
 is the entry point to the CAD axis (GeCAD) that sits on top of the geometry model.
@@ -149,6 +151,26 @@ modelCom.Invoke(m => m.ExportSelectedToOSD(exportedFilePath, out var status));
 See full example: `Geometry/ExtensionUtilityGeometryModelNet/project/main/GeometryModelExportExample.cs`
 
 > **Direct access (IDL):** `ExportSelectedToOSD` takes an `[out] TResultStatus*` parameter. The .NET helper wraps this and throws on error.
+
+### Observing selection changes
+
+Register a handler to be notified when the set of selected geometry nodes changes — both from interactive viewport picking and from programmatic `Selected` / `DeselectAll` calls. The handler object implements `ICamApiEventHandler` (the generic event-handler marker) together with `ICamApiHandlerSelectionChanged`. `AddedNodes` / `RemovedNodes` carry the `FullName` of the nodes that became / stopped being selected — resolve them via `FindByFullName`.
+
+```csharp
+class SelectionWatcher : ICamApiEventHandler, ICamApiHandlerSelectionChanged
+{
+    public void SelectionChanged(string handlerIdent, IListString addedNodes, IListString removedNodes)
+    {
+        for (int i = 0; i < addedNodes.Count(); i++)
+            Console.WriteLine("selected: " + addedNodes.Get(i));
+    }
+}
+
+var watcher = new SelectionWatcher();
+modelCom.Invoke(m => m.RegisterHandler("my-watcher", watcher, null, out var st));
+// ... later
+modelCom.Invoke(m => m.UnregisterHandler("my-watcher", out var st));
+```
 
 ---
 
@@ -404,6 +426,11 @@ Obtained from `ICamApiFaceGeometryEntity.Face` or from `ICamApiFaceList`.
 | `GetMesh(tol)` | Triangulate to `ICamApiMesh` at given tolerance |
 | `GetNurbsForm()` | Return face converted to NURBS representation |
 | `IsCylindricalHole(tol, ...)` | Convenience test; returns center, axis, radius, ZMin, ZMax |
+| `SurfaceKind` | Classified analytic kind of the surface — `TCamApiSurfaceKind` |
+| `GetMinCurvatureRadius(tol)` | Minimum radius of curvature over the face; `MaxFloat` for a planar face |
+| `GetPlane(out origin, out normal)` | If planar, returns plane origin and unit normal; `true` when planar |
+| `GetCylinder(out center, out axis, out radius)` | If cylindrical, returns axis and radius; `true` when cylindrical |
+| `GetCone(out center, out axis, out radius, out halfAngle)` | If conical, returns apex, axis, base radius and half-angle (rad); `true` when conical |
 
 #### Enumerate all loops
 
@@ -426,6 +453,33 @@ if (faceCom.IsCylindricalHole(0.01,
 }
 ```
 
+#### Analytic surface recognition
+
+`SurfaceKind` classifies the face's underlying surface. The `Get*` methods then extract the analytic parameters for the matching kind (they return `false` when the face is not of that kind).
+
+`TCamApiSurfaceKind` values: `skOther`, `skPlanar`, `skCylindrical`, `skConical`, `skSpherical`, `skToroidal`.
+
+```csharp
+switch (faceCom.SurfaceKind())
+{
+    case TCamApiSurfaceKind.skPlanar:
+        faceCom.GetPlane(out var origin, out var normal);
+        break;
+
+    case TCamApiSurfaceKind.skCylindrical:
+        faceCom.GetCylinder(out var center, out var axis, out var radius);
+        break;
+
+    case TCamApiSurfaceKind.skConical:
+        faceCom.GetCone(out var apex, out var coneAxis, out var baseRadius, out var halfAngle);
+        break;
+}
+
+double rMin = faceCom.GetMinCurvatureRadius(0.01);   // MaxFloat for a plane
+```
+
+`FaceHelper` exposes `SurfaceKind`, `GetMinCurvatureRadius`, `GetPlane`, `GetCylinder`, `GetCone`.
+
 ### ICamApiLoop
 
 | Member | Description |
@@ -441,6 +495,7 @@ if (faceCom.IsCylindricalHole(0.01,
 |---|---|
 | `Geometry` | `ICamApiSurfaceCurve` — the trimming curve on the surface |
 | `Orientation` | Whether the curve direction agrees with the loop traversal direction |
+| `Edge` | The underlying `ICamApiEdge` (3D curve) this co-edge runs along |
 
 #### Iterate co-edges
 
@@ -456,6 +511,17 @@ foreach (var coEdgeCom in iterCom.AsEnumerable())
 ```
 
 Helper classes: `FaceHelper`, `CoEdgeHelper`, `CoEdgeIteratorHelper` in `CAMAPI.DotnetHelper`.
+
+### ICamApiEdge
+
+The 3D curve running between two vertices — the geometry a co-edge sits on (`coEdge.Edge()`). Geometry only; adjacency and convexity come from `ICamApiEdgeAnalyzer` (below).
+
+| Property | Description |
+|---|---|
+| `StartPoint`, `EndPoint` | Edge endpoints in model space (`TST3DPoint`) |
+| `Length` | Straight-line distance between the endpoints |
+
+Helper: `EdgeHelper` (`StartPoint`, `EndPoint`, `Length`).
 
 ### ICamApiSurfaceCurve
 
@@ -486,6 +552,45 @@ for (int i = 0; i < count; i++)
 ```
 
 `GetMesh(index, tol, holeCappingSize, fromThread)` on `ICamApiFaceList` triangulates the i-th face with optional hole capping.
+
+### Edge adjacency and convexity — ICamApiEdgeAnalyzer
+
+Imported CAM geometry has **no shared edges** between faces — each face carries its own trim curves, so there is no built-in "which two faces meet at this edge" relation. `ICamApiEdgeAnalyzer` reconstructs that: it matches coincident per-face edges within a tolerance and classifies each edge as convex / concave / smooth / boundary. Pass **all** faces of a solid so boundary (free) edges are detected correctly.
+
+It is a singleton extension — resolve it via `EdgeAnalyzerHelper.GetSingleton()`.
+
+| Interface | Member | Description |
+|---|---|---|
+| `ICamApiEdgeAnalyzer` | `CreateFaceList()` | Create an empty `ICamApiFaceListBuilder` |
+| | `Build(faces, tolerance, out status)` | Analyze the face set → `ICamApiEdgeFaceInfoList` |
+| `ICamApiFaceListBuilder` | `AddFace(face)` / `AddRange(faces)` | Accumulate faces (`AddFace` surfaces failures via `TResultStatus`) |
+| | `Build()` | Immutable `ICamApiFaceList` snapshot |
+| `ICamApiEdgeFaceInfoList` | `Count`, `Item[i]` | Per-edge results |
+| | `GetByEdge(edge)` | Info for a given `ICamApiEdge` (endpoint match); null if none |
+| `ICamApiEdgeFaceInfo` | `FaceA`, `FaceB` | The two adjacent faces; `FaceB` is null for a boundary edge |
+| | `IsConvex`, `IsConcave`, `IsSmooth`, `IsBoundary` | Edge classification |
+
+```csharp
+using var analyzerCom = EdgeAnalyzerHelper.GetSingleton();
+
+using var builderCom = analyzerCom.CreateFaceList();
+builderCom.AddRange(faceListCom);              // ICamApiFaceList of the whole solid
+using var facesCom = builderCom.Build();
+
+using var edgeInfoListCom = analyzerCom.Build(facesCom, 0.001);
+for (int i = 0; i < edgeInfoListCom.Count(); i++)
+{
+    using var infoCom = edgeInfoListCom.Item(i);
+    if (infoCom.IsConcave())
+    {
+        using var faceACom = infoCom.FaceA();
+        using var faceBCom = infoCom.FaceB();   // IsNull for a boundary edge
+        // ... concave edge between faceA and faceB (fillet/pocket candidate)
+    }
+}
+```
+
+Helpers: `EdgeAnalyzerHelper`, `FaceListBuilderHelper`, `EdgeFaceInfoListHelper`, `EdgeFaceInfoHelper`.
 
 ---
 
@@ -743,6 +848,23 @@ using var geomPickerCom = SystemExtensionFactory.CreateExtension<ICamApiGeomPick
 | `AvailableEntityTypes` | Bitmask of `TGeometryEntityTypeFlag` values indicating which entity types the user may select |
 | `OnClose` | An `ICamApiGeomPickerOnClose` callback implementation |
 | `Show()` | Display the picker dialog (non-blocking; result arrives via callback) |
+| `Title` | R/W — window title of the dialog; empty string keeps the default |
+| `ButtonCount` | Number of customizable buttons |
+| `ButtonType[i]` | Role of the button at index i — `TCamApiGeomPickerButton` (`gpbOk`, `gpbCancel`, `gpbClear`, `gpbDelete`) |
+| `ButtonCaption[i]`, `ButtonVisible[i]`, `ButtonEnabled[i]`, `ButtonHint[i]` | R/W per-button caption / visibility / enabled state / tooltip |
+
+#### Customizing the dialog
+
+Set `Title` and tweak buttons before `Show()`. `GeomPickerHelper` finds a button by its role, so you don't index by position:
+
+```csharp
+geomPickerCom.SetTitle("Pick faces to protect");
+geomPickerCom.SetButtonCaption(TCamApiGeomPickerButton.gpbOk, "Protect");
+geomPickerCom.SetButtonVisible(TCamApiGeomPickerButton.gpbClear, false);
+geomPickerCom.SetButtonHint(TCamApiGeomPickerButton.gpbDelete, "Remove from list");
+```
+
+Helper: `GeomPickerHelper` — `Title`/`SetTitle`, `ButtonCount`, `ButtonType`, `FindButton`, and `Set{Caption,Visible,Enabled,Hint}` overloads keyed by index or by `TCamApiGeomPickerButton`.
 
 ### ICamApiGeomPickerOnClose
 

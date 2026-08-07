@@ -30,6 +30,7 @@ Represents the main ENCY application window. Obtained from `ICamApiApplication.M
 | `ActiveClientRect` | `TCamApiRect` | R | Screen rectangle of the active client area (place child windows relative to it) |
 | `VisibilityManager` | `ICamApiVisibilityManager*` | R | Per-work-mode visibility of 3D scene objects (see below) |
 | `FiltersManager` | `ICamApiFiltersManager*` | R | Per-work-mode geometry display filters |
+| `HotkeyManager` | `ICamApiHotkeyManager*` | R | Manager for plugin-registered global keyboard shortcuts — same instance as `application.HotkeyManager`; see [application.md → Plugin hotkeys](application.md#plugin-hotkeys). Helper: `mainFormCom.GetHotkeyManager()` |
 
 ### Methods — visibility and state
 
@@ -74,6 +75,7 @@ These methods trigger the same actions as the corresponding toolbar buttons, inc
 | `CrashReport()` | Starts the crash report dialog |
 | `OpenDotnetInterpreterInVSCode(fileName)` | Opens a .NET interpreter script in VS Code |
 | `SetCurrentInPrime(value)` | Notifies the form that it is the active instance in the Prime shell |
+| `ProcessMessages()` | Pumps pending UI messages of the main thread (equivalent to Pascal `Application.ProcessMessages`); call between blocks of work that must let the UI repaint. Helper: `mainFormCom.ProcessMessages()` |
 
 ### Methods — PLM and cloud
 

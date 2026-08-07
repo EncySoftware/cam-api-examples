@@ -98,11 +98,13 @@ Subscribe to `FeatureFinderUpdated` (see §9) instead of polling — recommended
 | Member (helper) | Description |
 |---|---|
 | `finderCom.RunRecognition(waitForCompletion)` | Start recognition; block when `waitForCompletion` is `true` |
+| `finderCom.CancelRecognition()` | Abort an in-progress background recognition; no-op if nothing is running. `IsUpdating` clears once the worker stops |
 | `finderCom.IsUpdating()` | `true` while background recognition is running |
 | `finderCom.RecognitionProgress()` | Current progress `0..100`, read while updating |
 | `finderCom.UpdateStamp()` | Integer bumped every time the feature list changes |
 
-> **Direct access (IDL):** `RunRecognition(in boolean WaitForCompletion, out TResultStatus)`;
+> **Direct access (IDL):** `RunRecognition(in boolean WaitForCompletion, out TResultStatus)`,
+> `CancelRecognition(out TResultStatus)`;
 > `IsUpdating`, `RecognitionProgress`, `UpdateStamp` are read-only properties.
 
 ---
@@ -176,6 +178,7 @@ Every feature exposes the same base measurements. Helper class: `FeatureHelper`.
 | `ZMin()`, `ZMax()` | `double` | Z-extent in the feature's own LCS |
 | `Lcs()` | `TST3DMatrix` | Local coordinate system (axis + position) |
 | `Selected()` / `SetSelected(bool)` | `bool` | Selection state; setting it highlights the feature and its base entities in the viewport |
+| `Highlighted()` / `SetHighlighted(bool)` | `bool` | Transient viewport highlight of the base entities. Unlike `Selected`, it does **not** change the actual selection — use it for hover-preview; it is not captured as a macro selection step |
 | `SubFeatureCount()` | `int` | Number of sub-features |
 | `GetSubFeature(i)` | `ComWrapper<ICamApiFeature>` | Sub-feature at index `0..SubFeatureCount-1` |
 | `BaseEntityCount()` | `int` | Number of base geometry entities |

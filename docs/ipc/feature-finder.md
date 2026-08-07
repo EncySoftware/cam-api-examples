@@ -77,10 +77,15 @@ context). All retrieval and recognition methods take `ref TExecuteContext`:
 | `GetFeaturesForNode(name, useRef, refMatrix, out status)` | `GetFeaturesForNode(name, useRef, refMatrix, ref ctx)` |
 | `GetFeaturesForSelected(out status)` | `GetFeaturesForSelected(ref ctx)` |
 | `SelectFeatureByBaseEntities(names, type, out status)` | `SelectFeatureByBaseEntities(names, type, ref ctx)` |
+| `CancelRecognition(out status)` | `CancelRecognition(ref ctx)` |
+
+`CancelRecognition` aborts an in-progress background recognition (no-op if nothing is running), mirroring the CAMAPI addition.
 
 `ICamIpcFeatureList` (`Count`, `Feature[i]`) and `ICamIpcFeature` (all base properties,
 `SubFeature[i]`, `BaseEntityName[i]`) carry the same members as their CAMAPI counterparts with
-no context parameter — they are pure property reads — plus `GetInstanceId()`.
+no context parameter — they are pure property reads — plus `GetInstanceId()`. `ICamIpcFeature`
+also adds the `Highlighted` (RW) property — a transient viewport highlight that does not change
+the actual selection (see [`../api/feature-finder.md`](../api/feature-finder.md#8-icamapifeature--members)).
 
 The specialised feature interfaces (`ICamIpcHoleFeature`, `ICamIpcComplexHoleFeature`,
 `ICamIpcHoleGrooveFeature`, `ICamIpcPocketFeature`, `ICamIpcFilletFeature`,

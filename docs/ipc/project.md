@@ -138,6 +138,20 @@ Two save event handler interfaces exist in CAMIPC, mirroring CAMAPI:
 4. **`OperationTypes`** remains a read-only property on `ICamIpcTechnologist` (no ctx),
    returning `ICamIpcTechOperationTypeIterator*`.
 
+5. **`OperationCatalogList`** — read-only property returning `ICamIpcOperationCatalogList*`,
+   the IPC mirror of the "New operation" window catalogs (see below).
+
+### Operation catalogs — ICamIpcOperationCatalogList
+
+IPC mirror of the CAMAPI operation catalog tree ([`../api/project.md`](../api/project.md#icamapioperationcatalog--new-operation-window-catalogs)). The tree-walking and mutation methods take `ctx`; scalar properties do not:
+
+- `ICamIpcOperationCatalogList` — `Count`, `Catalog[i]`; `BeginUpdate(ctx)`/`EndUpdate(ctx)` batch, `CreateCatalog(name, ctx)`, `DeleteCatalog(catalog, ctx)`, `Import(zip, ctx)`, `Export(catalog, zip, ctx)`.
+- `ICamIpcOperationCatalog` — `Id`, `Name` (RW), `IsActive` (RW, set true to activate); `GetItems(ctx)`, `FindOperation(typeId, ctx)`, `AddGroup(parent, index, caption, ctx)`, `MoveItem(item, newParent, index, ctx)`, `DeleteItem(item, ctx)`.
+- `ICamIpcOperationCatalogItem` — `Id`, `Kind` (`TCamApiOperationCatalogItemKind`), `Caption` (RW), `Visible` (RW), `Parent`, `Order`; cast to `ICamIpcOperationCatalogGroup` (`IconFile`) or `ICamIpcOperationCatalogOperation` (`TypeId`, `IsUserOperation`) by `Kind` via `AsInstanceOf`.
+- `ICamIpcOperationCatalogItemIterator` — `Next`, `Current`, `Reset`.
+
+All add `GetInstanceId()`.
+
 ### IPC event handler
 
 `ICamIpcHandlerTechnologistOperationAdded` — fires after a new operation is added:
@@ -284,7 +298,7 @@ local look-up).
 ### Differences from CAMAPI counterparts
 
 `ICamIpcUserTechOperationInfo.XMLProp` returns `ICamIpcXmlPropPointer*` instead of
-`IST_XMLPropPointer*`.
+`IST_XMLPropPointer*`. It also adds the read-only `BaseOperationTypeId` property (same value as `ICamIpcTechOperationType.Id`), mirroring the CAMAPI addition.
 
 Mutating list operations take `ctx`:
 

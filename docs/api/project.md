@@ -11,15 +11,16 @@ relevant.
 
 1. [ICamApiProject](#icamapiproject)
 2. [ICamApiTechnologist](#icamapitechnologist)
-3. [ICamApiTechOperation](#icamapitechoperation)
-4. [ICamApiTechOperationIterator](#icamapitechoperationiterator)
-5. [ICamApiTechOperationType / ICamApiTechOperationTypeIterator](#icamapitechoperationtype--icamapitechoperationtypeiterator)
-6. [ICamApiPart](#icamapipart)
-7. [ICamApiSetupStage](#icamapisetupstage)
-8. [ICamApiPartStage](#icamapipartstage)
-9. [ICamApiPartAndStageList](#icamapipartandstagelist)
-10. [ICamApiSnapshot / IListCamApiSnapshot](#icamapiartsnapshot--ilistcamapiartsnapshot)
-11. [ICamApiUserTechOperationInfo / ICamApiUserTechOperationList](#icamapiusertechoperationinfo--icamapiusertechoperationlist)
+3. [ICamApiOperationCatalog — "New operation" window catalogs](#icamapioperationcatalog--new-operation-window-catalogs)
+4. [ICamApiTechOperation](#icamapitechoperation)
+5. [ICamApiTechOperationIterator](#icamapitechoperationiterator)
+6. [ICamApiTechOperationType / ICamApiTechOperationTypeIterator](#icamapitechoperationtype--icamapitechoperationtypeiterator)
+7. [ICamApiPart](#icamapipart)
+8. [ICamApiSetupStage](#icamapisetupstage)
+9. [ICamApiPartStage](#icamapipartstage)
+10. [ICamApiPartAndStageList](#icamapipartandstagelist)
+11. [ICamApiSnapshot / IListCamApiSnapshot](#icamapiartsnapshot--ilistcamapiartsnapshot)
+12. [ICamApiUserTechOperationInfo / ICamApiUserTechOperationList](#icamapiusertechoperationinfo--icamapiusertechoperationlist)
 
 ---
 
@@ -60,9 +61,15 @@ var project = application.GetActiveProject(out var status);
 | `projectCom.Snapshots()` | `ComWrapper<IListCamApiSnapshot>` | Snapshot list |
 | `projectCom.CoordinateSystems()` | `ComWrapper<ICamApiListCoordinateSystem>` | Coordinate systems |
 | `projectCom.Machine()` | `ComWrapper<ICamApiMachine>` | Machine instance |
+| `projectCom.SetMachine(guid, filePath, typeName)` | `void` | Assign a machine to the project by GUID, file path, and type name |
 | `projectCom.Simulator()` | `ComWrapper<ICamApiSimulator>` | Simulation manager |
+| `projectCom.SimulationTolerances()` | `ComWrapper<ICamApiSimulationTolerances>` | Simulation tolerance settings of the project |
+| `projectCom.FeatureFinder()` | `ComWrapper<ICamApiFeatureFinder>` | Feature-recognition service — see [feature-finder.md](feature-finder.md) |
 | `projectCom.SetOperationTool(opId, toolId)` | `void` | Assign a tool to an operation by their string IDs |
 | `projectCom.SaveClData(path, iterator?)` | `void` | Write CLData file for the given iterator (or all operations if `null`) |
+| `projectCom.SaveCLDataInfo(path, iterator?)` | `ComWrapper<ICamApiNCMakerCLDataInfo>` | Like `SaveClData`, but also returns the list of operations that produced the file — pass the result to `NCMaker.GenerateNC` (see [nc-simulation.md](nc-simulation.md)) |
+| `projectCom.PLMItemId()` | `string` | Item id inside the PLM system, if the project was loaded from PLM (empty otherwise) |
+| `projectCom.PLMConnectionId()` | `Guid` | PLM connection id, if the project was loaded from PLM |
 
 ### Event handlers
 
@@ -142,6 +149,7 @@ using var technologistCom = projectCom.Technologist();
 | `technologistCom.SwitchOperationEnability()` | `void` | Toggle the `Enabled` state of the current operation |
 | `technologistCom.GetActiveReorderingModeOfTechnology()` | `TCamApiReorderingMode` | Active mode for technology design |
 | `technologistCom.GetActiveReorderingModeOfSimulation()` | `TCamApiReorderingMode` | Active mode for simulation |
+| `technologistCom.OperationCatalogList()` | `ComWrapper<ICamApiOperationCatalogList>` | Operation catalogs of the "New operation" window (see below) |
 
 `TCamApiReorderingMode` values: `rmDesigned` (0) — original design order; `rmReordered` (1) — optimised order.
 
@@ -172,6 +180,96 @@ technologistCom.CalculateAllOperationsToolpath(calcLinksBetweenOperations: true)
 
 ---
 
+## ICamApiOperationCatalog — "New operation" window catalogs
+
+The **operation catalog** is the tree shown in the "New operation" window: named *operation configurations*, each a tree of **groups** and **operation** entries. The API lets a plugin read and edit that tree — reorder, rename, hide/show operations, add groups, and manage/import/export whole configurations.
+
+**Access:** `technologistCom.OperationCatalogList()` → `ICamApiOperationCatalogList`.
+
+### Object model
+
+| Interface | Role |
+|---|---|
+| `ICamApiOperationCatalogList` | The set of named catalogs; the edit-batch entry point |
+| `ICamApiOperationCatalog` | One named configuration; its item tree; activation |
+| `ICamApiOperationCatalogItem` | A tree node — a group **or** an operation (see `Kind`) |
+| `ICamApiOperationCatalogGroup` | Group facet (`Kind = ckGroup`) — has `IconFile` |
+| `ICamApiOperationCatalogOperation` | Operation facet (`Kind = ckOperation`) — `TypeId`, `IsUserOperation` |
+| `ICamApiOperationCatalogItemIterator` | Depth-first iterator over items |
+
+`TCamApiOperationCatalogItemKind` values: `ckGroup` (0), `ckOperation` (1).
+
+### ICamApiOperationCatalogList members
+
+| Helper method | Description |
+|---|---|
+| `listCom.Count()` | Number of catalogs |
+| `listCom.Catalog(i)` | Catalog by index |
+| `listCom.EnumerateCatalogs()` | LINQ-compatible enumeration |
+| `listCom.BeginUpdate()` / `listCom.EndUpdate()` | Batch edits — persist once at the outermost `EndUpdate` (nestable). Outside a pair each edit persists immediately |
+| `listCom.CreateCatalog(name)` | New catalog as a copy of the active one |
+| `listCom.DeleteCatalog(catalogCom)` | Delete a catalog |
+| `listCom.Import(zipPath)` / `listCom.Export(catalogCom, zipPath)` | Import/export configurations as `.zip` |
+
+### ICamApiOperationCatalog members
+
+| Helper method | Description |
+|---|---|
+| `catalogCom.Id()` / `catalogCom.Name()` / `catalogCom.SetName(v)` | Identity and display name |
+| `catalogCom.IsActive()` / `catalogCom.Activate()` | Query / make it the current configuration |
+| `catalogCom.GetItems()` / `catalogCom.EnumerateItems()` | Iterate items (groups and operations, depth-first) |
+| `catalogCom.FindOperation(typeId)` | Operation entry for a type id anywhere in the tree (null wrapper if none) |
+| `catalogCom.AddGroup(parentCom?, index, caption)` | Add a group under a parent (`null` = top level; out-of-range index = append) |
+| `catalogCom.MoveItem(itemCom, newParentCom?, index)` | Reparent / reorder an item |
+| `catalogCom.DeleteItem(itemCom)` | Delete a group or a user-operation entry (standard operation entries cannot be deleted) |
+
+### ICamApiOperationCatalogItem members
+
+| Helper method | Description |
+|---|---|
+| `itemCom.Id()`, `itemCom.Kind()`, `itemCom.Order()` | Identity, group/operation kind, sort key |
+| `itemCom.Caption()` / `itemCom.SetCaption(v)` | Localized caption (settable for groups) |
+| `itemCom.Visible()` / `itemCom.SetVisible(v)` | Visibility in the "New operation" window |
+| `itemCom.Parent()` | Parent item (null wrapper for a top-level item) |
+| `itemCom.AsGroup()` / `itemCom.AsOperation()` | QI-cast to the facet matching `Kind` (null wrapper otherwise) |
+| `groupCom.IconFile()` / `groupCom.SetIconFile(v)` | Group icon (aliased path) |
+| `operationCom.TypeId()`, `operationCom.IsUserOperation()` | The referenced type id; whether it is a user operation |
+
+### Code example — add a group and hide an operation
+
+```csharp
+using var technologistCom = projectCom.Technologist();
+using var catalogListCom  = technologistCom.OperationCatalogList();
+using var catalogCom      = catalogListCom.Catalog(0);   // or find the active one
+
+catalogListCom.BeginUpdate();
+try
+{
+    // Add a new top-level group
+    using var groupCom = catalogCom.AddGroup(null, int.MaxValue, "My plugin operations");
+
+    // Hide every operation entry of a given type
+    foreach (var itemCom in catalogCom.EnumerateItems())
+    {
+        if (itemCom.Kind() == TCamApiOperationCatalogItemKind.ckOperation)
+        {
+            using var opCom = itemCom.AsOperation();
+            if (opCom.TypeId() == "TSTRoughingWaterlineOp")
+                itemCom.SetVisible(false);
+        }
+        itemCom.Dispose();
+    }
+}
+finally
+{
+    catalogListCom.EndUpdate();   // persists the whole batch at once
+}
+```
+
+Helpers: `OperationCatalogListHelper`, `OperationCatalogHelper`, `OperationCatalogItemHelper`, `OperationCatalogItemIteratorHelper`.
+
+---
+
 ## ICamApiTechOperation
 
 **Purpose.** Represents one node in the technology tree — either a leaf machining
@@ -192,6 +290,8 @@ status flags, model formers, approach/retract rules, and more.
 | `operationCom.IsGroup()` | `bool` | `true` if this node is a group/container |
 | `operationCom.Name()` | `string` | Display name |
 | `operationCom.SetName(value)` | `void` | Rename the operation |
+| `operationCom.Notes()` / `SetNotes(value)` | `string` | Free-form multi-line user notes |
+| `operationCom.ChannelIndex()` | `int` | Zero-based simulator channel the operation is assigned to (0 on single-channel machines) |
 | `operationCom.FullName()` | `string` | Slash-separated full path including parent groups |
 | `operationCom.Units()` | `TSTSystemUnits` | Measurement units |
 | `operationCom.LCS()` | `TST3DMatrix` | Local coordinate system |
@@ -383,6 +483,80 @@ using var siblingCom = opCom.GetNextSiblingOperation(TCamApiReorderingMode.rmDes
 var t = opCom.GetTimeStatistics();   // RapidTime, IdleWorkTime, EffectiveWorkTime, AuxiliaryTime (seconds)
 var b = opCom.GetBlocksStatistics(); // Lines, Arcs, MultiGoTo, Feeds, TotalBlocks
 var l = opCom.GetLengthStatistics(); // WorkLength, RapidLength, EngageLength, RetractLength, PlungeLength, …
+```
+
+### Volume and stock statistics
+
+```csharp
+var v = opCom.GetVolumeStatistics(); // TCamApiTechOperationVolumeStatistics
+// v.WorkpieceVolume    — workpiece solid volume
+// v.MachResultVolume   — machining-result solid volume
+// v.VolumeRemovalRate  — removed material volume per unit of effective work time (VRR)
+// all zero if the corresponding ModelFormer has no solids
+
+var s = opCom.GetStocks();           // TCamApiTechOperationStocks
+// s.Profile — along-profile / general scalar machining allowance
+// s.Axial   — axial stock  (0 if the operation type has no per-axis stocks)
+// s.Radial  — radial stock (0 if the operation type has no per-axis stocks)
+```
+
+### MCD tree (machine-side CLData)
+
+After an operation is calculated, its toolpath projected onto the machine kinematics is
+available as an **MCD tree** — the same tree the user sees in the simulation panel.
+`operationCom.McdTree()` is the primary toolpath; `operationCom.RecoveryMcdTree()` is the
+toolpath restored from post-processed NC text (used when simulating by G-code). Both return a
+wrapper around `nil` for groups and uncalculated operations — check `.IsNull`.
+
+Each `ICamApiMcdNode` exposes `Caption()` (as shown in the tree), `Info()` (per-type detail —
+GOTO coordinates, CIRCLE/CYCLE/PPRINT parameters, empty when none), and `IsError()` (any
+simulation error on the node). The tree is walked with a depth-first iterator whose shape
+matches the geometry-tree iterator (`MoveToChild` / `MoveToSibling` / `MoveToParent` /
+`Current` / `Reset`), plus `AsEnumerable()` for a flat walk.
+
+```csharp
+using var mcdTreeCom = opCom.McdTree();
+if (!mcdTreeCom.IsNull)
+{
+    using var iterCom = mcdTreeCom.GetNodes();      // positioned at root
+    foreach (var nodeCom in iterCom.AsEnumerable()) // node auto-disposed each iteration
+    {
+        if (nodeCom.IsError())
+            Console.WriteLine($"[ERR] {nodeCom.Caption()}  {nodeCom.Info()}");
+    }
+}
+```
+
+### User parameters
+
+`operationCom.GetUserParameters()` returns a live, editable `ICamApiUserParametersList` of
+name/value/comment string triples used in the operation's header/tail templates. It returns a
+wrapper around `nil` (no error) for operations that have no MCD template — groups, the root
+operation, and toolpath-less types — so check `.IsNull`.
+
+| List helper | Description |
+|---|---|
+| `listCom.Count()` | Number of parameters |
+| `listCom.GetItem(i)` | Parameter at index `0..Count-1` |
+| `listCom.FindByName(name)` | Parameter by name, or a wrapper around `nil` (check `.IsNull`) |
+| `listCom.IndexOf(name)` | Index of a parameter, or `-1` |
+| `listCom.Add(name, value, comment="")` | Add, or update value/comment if the name exists; returns the parameter |
+| `listCom.Delete(name)` | Remove by name; `false` if absent |
+
+A parameter exposes `Name()` (read-only identity), `Value()`/`SetValue()`, and
+`Comment()`/`SetComment()`.
+
+```csharp
+using var paramsCom = opCom.GetUserParameters();
+if (!paramsCom.IsNull)
+{
+    using var addedCom = paramsCom.Add("BATCH", "42", "parts per run");
+    for (int i = 0; i < paramsCom.Count(); i++)
+    {
+        using var pCom = paramsCom.GetItem(i);
+        Console.WriteLine($"{pCom.Name()} = {pCom.Value()}  // {pCom.Comment()}");
+    }
+}
 ```
 
 ### Code example — create, configure, and check an operation
@@ -771,6 +945,7 @@ using var userOperationsCom  = applicationCom.UserTechOperationList();
 | `infoCom.SetCaption(value)` | W | Change display name |
 | `infoCom.XMLProp()` | R | XML property bag; `Arr['RefOperations'][0]` references the base operation |
 | `infoCom.SetXMLProp(xmlPropCom)` | W | Replace the XML property bag |
+| `infoCom.BaseOperationTypeId()` | R | Id of the base operation type this template is bound to (same value as `ICamApiTechOperationType.Id`) |
 
 ### Code example — save current operation as a template, then instantiate it
 
