@@ -39,6 +39,11 @@ Abstract interface representing any machining tool. Cast to a more specific inte
 ```csharp
 using var toolEntityCom = toolInfoCom.ToolEntity(); // ComWrapper<ICamApiMachiningTool>
 string name = toolEntityCom.ToolName();
+
+// Inspect the tool assembly (cutting item, holder, adaptive parts) as JSON
+string assemblyJson = toolEntityCom.Invoke(t => t.GetAssemblyItemsJSON());
+// { "AssemblyName": "...", "AssemblyItems": [ { "ItemType": "...", "ItemName": "..." } ] }
+// ItemType is one of: CuttingItem | ToolItem | AdaptiveItem | AssemblyItem
 ```
 
 > **Direct access (IDL):** `propertyR (ToolName, string)` on `ICamApiMachiningTool` (uuid `33B1098F-FA44-4D57-B08F-506E6CA2C5C5`).
@@ -255,6 +260,42 @@ The following members have no dedicated extension method; call them through `Inv
 | `GetCurrentWorkpieceCSWorldMatrix()` | `TST3DMatrix` | Current workpiece CS (G54) matrix relative to the world CS. Result depends on TCPM mode |
 | `GetCurrentWorkpieceCSMatrix()` | `TST3DMatrix` | Current workpiece CS (G54) matrix relative to the workpiece connector |
 | `GetCurrentWorkpieceCSID()` | `string` | Identifier of the current workpiece CS, e.g. `"G54"` |
+| `AxisCount` (R) | `int` | Number of axes in the machine schema (shared across channels) |
+| `GetAxisInfo(index)` | `TCamApiMachineAxisInfo` | Static info about axis `0..AxisCount-1` (name, address, motion, min/max) |
+| `GetAxisValue(index)` | `double` | Live value of axis `0..AxisCount-1` for the last simulated frame |
+| `ChannelCount` (R) | `int` | Number of simulation channels |
+| `GetChannelFeed(channelIndex)` | `TCamApiChannelFeedState` | Current feedrate state of channel `0..ChannelCount-1` |
+| `ActiveSpindleIndex` (R) | `int` | Index of the active spindle, or `-1` if none |
+| `SpindleCount` (R) | `int` | Number of spindles in the machine schema |
+| `GetSpindleSpeed(spindleIndex)` | `TCamApiSpindleSpeedState` | Current speed state of spindle `0..SpindleCount-1` |
+
+**Live machine state (axes, channels, spindles).** After simulation, the machine object exposes
+the current frame's kinematic state. Enums and record fields:
+
+- `TCamApiAxisMotion`: `camLinear` (0) · `camRotary` (1).
+- `TCamApiMachineAxisInfo`: `Name`, `Address`, `Motion` (`TCamApiAxisMotion`), `MinValue`, `MaxValue`.
+- `TCamApiFeedMode`: `acfmUndefined` (0) · `acfmRapid` (1) · `acfmMMPM` (2, per minute) · `acfmMMPR` (3, per revolution).
+- `TCamApiChannelFeedState`: `FeedMode` (`TCamApiFeedMode`), `FeedValue`.
+- `TCamApiSpindleSpeedMode`: `cssmUndefined` (0) · `cssmOff` (1) · `cssmRPM` (2, read `SpeedRPM`) · `cssmCSS` (3, read `SpeedCSS`).
+- `TCamApiSpindleSpeedState`: `SpeedMode` (`TCamApiSpindleSpeedMode`), `SpeedRPM`, `SpeedCSS`.
+
+```csharp
+int axisCount = machineCom.Invoke(m => m.AxisCount);
+for (int i = 0; i < axisCount; i++)
+{
+    var info  = machineCom.Invoke(m => m.GetAxisInfo(i)); // Name, Address, Motion, MinValue, MaxValue
+    double v  = machineCom.Invoke(m => m.GetAxisValue(i)); // last simulated-frame value
+    Console.WriteLine($"{info.Name} ({info.Motion}) = {v:0.###}");
+}
+
+int spindle = machineCom.Invoke(m => m.ActiveSpindleIndex);
+if (spindle >= 0)
+{
+    var s = machineCom.Invoke(m => m.GetSpindleSpeed(spindle));
+    Console.WriteLine(s.SpeedMode == TCamApiSpindleSpeedMode.cssmCSS
+        ? $"CSS {s.SpeedCSS}" : $"RPM {s.SpeedRPM}");
+}
+```
 
 **Tool Center Point Management and current workpiece CS:**
 
@@ -411,6 +452,55 @@ machineConfigCom.SetAxesValues(evaluatorCom, rotaryAxesOnly: true);
 ```
 
 > **Direct access (IDL):** `ICamApiMachineConfiguration` (uuid `feef5150-e500-4c54-9399-732ff1caf3ed`) in `CAMAPI.MachineConfiguration`. `SetAxesValues` has an `out TResultStatus` that must be checked without the helper.
+
+### Robot external axes and orientation control
+
+For robotic machines the configuration also exposes external rail/table axes and two
+orientation-control sub-objects. `Robot6thAxisControl()` and `RobotRotaryTable()` return a
+wrapper around `nil` (check `.IsNull`) when the machine is not a robot or the feature does not
+apply.
+
+| Helper method | Returns | Writable | Description |
+|---|---|---|---|
+| `RobotRailsCount(...)` | `int` | No | Number of robot rail axes (linear external, max 3) |
+| `RobotTableAxesCount(...)` | `int` | No | Number of robot table axes (rotary external, max 2) |
+| `RobotRailMoveEnabled(index)` | `bool` | Yes (`SetRobotRailMoveEnabled`) | "Move up" enabled for rail axis `0..RobotRailsCount-1` |
+| `RobotTableMoveEnabled(index)` | `bool` | Yes (`SetRobotTableMoveEnabled`) | "Move up" enabled for table axis `0..RobotTableAxesCount-1` |
+| `Robot6thAxisControl(...)` | `ComWrapper<ICamApiMachineConfigurationRobot6thAxisControl>` | — | 6th-axis orientation control (see below) |
+| `RobotRotaryTable(...)` | `ComWrapper<ICamApiMachineConfigurationRobotRotaryTable>` | — | Rotary-table vector settings (see below) |
+
+**6th-axis control** (`MachineConfigurationRobot6thAxisControlHelper`) — the tool's rotation
+about its own axis. `Mode()` returns `TRobot6thAxisMode`: `r6amPoint` · `r6amVector` ·
+`r6amToolPath`. The mode is a tagged union: set it with one of `SetModeVector(vecType)` /
+`SetModeVectorCustom(vec)` / `SetModePoint(pointType)` / `SetModePointCustom(point)` /
+`SetModeToolPath(angle, tangentApproxType, tangentApproxValue)`, and read it back with the
+matching `IsVector` / `IsVectorCustom` / `IsPoint` / `IsPointCustom` / `IsToolPath` (each
+returns `bool` and fills `out` parameters). A fixed lead direction is set with
+`SetLeadDir(enabled, dirType)` / `SetLeadDirCustom(enabled, fromPoint, toPoint)` and queried
+with `IsLeadDir` / `IsLeadDirCustom`.
+
+Enums: `TRobot6thAxisVecType` (`r6vtTop`=+Z, `r6vtBottom`=−Z, `r6vtLeft`=+Y, `r6vtRight`=−Y,
+`r6vtFar`=+X, `r6vtNear`=−X, `r6vtCustom`) · `TRobot6thAxisPointType` (`r6ptBase`, `r6ptElbow`,
+`r6ptCustom`) · `TRobot6thAxisTangentApproxType` (`r6tatPercent`, `r6tatDistance`) ·
+`TRobot6thAxisLeadDirType` (`r6ldX`, `r6ldY`, `r6ldZ`, `r6ldCustom`).
+
+```csharp
+using var sixthCom = machineConfigCom.Robot6thAxisControl();
+if (!sixthCom.IsNull)
+{
+    sixthCom.SetModeVector(TRobot6thAxisVecType.r6vtTop);
+    if (sixthCom.IsVector(out var vecType))
+        Console.WriteLine($"6th axis vector preset: {vecType}");
+}
+```
+
+**Rotary-table vector** (`MachineConfigurationRobotRotaryTableHelper`) — orientation of the
+robot rotary table. `SetVec(vecType, positioningMode)` / `SetVecCustom(vec, positioningMode)`
+set it; `IsVec` / `IsVecCustom` read it back; `PositioningMode()` /
+`SetPositioningMode(mode)` access the mode alone. Enums: `TRobotRotaryTableVecType`
+(`artvAuto`=+Z, `artvTop`, `artvBottom`, `artvLeft`, `artvRight`, `artvFar`, `artvNear`,
+`artvCustom`) · `TRobotRotaryTablePositioningMode` (`arpmToolAxis`, `arpmTooltipPoint`,
+`arpmMixed`).
 
 ---
 

@@ -156,7 +156,10 @@ if (!mfWithHolesCom.IsNull)
     mfWithHolesCom.AddHolesSelected();     // call the DotnetHelper extension method
 ```
 
-> `ComWrapper<T>.AsInstanceOf<TTarget>()` is intentionally **not used** in this SDK — it bypasses MTA marshalling and is unstable in practice. The patterns above are mandatory.
+> `ComWrapper<T>.AsInstanceOf<TTarget>()` performs the QI-cast through `Invoke` (MTA-safe) and
+> returns an **independent** wrapper with its own ref count — disposing the original does not
+> invalidate it. It is a valid alternative, but for consistency this SDK and all examples use the
+> `InvokeAndWrap(x => x as IFoo)` + `IsNull` pattern shown above; prefer it in new code.
 
 ---
 

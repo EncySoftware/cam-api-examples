@@ -125,7 +125,7 @@ public class Build : NukeBuild
                         new()
                         {
                             PackageId = "EncySoftware.CAMAPI.SDK.tlb",
-                            Version = "1.2.1",
+                            Version = "2.0.23",
                             OutDir = Path.Combine(RootDirectory.Parent?.Parent?.Parent, "SDK")
                         }
                     }

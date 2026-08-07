@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CAMAPI.Application;
+using CAMAPI.ApplicationMainForm;
 using CAMAPI.DotnetHelper;
 using CAMAPI.GeomModel;
 using CAMAPI.ModelFormerTypes;

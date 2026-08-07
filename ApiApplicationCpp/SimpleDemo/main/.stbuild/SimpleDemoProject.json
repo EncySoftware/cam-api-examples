@@ -12,7 +12,7 @@
 		{
 			"PackageDependency": {
 				"id": "EncySoftware.CAMAPI.SDK.tlb",
-				"version": "2.0.11-dev.5",
+				"version": "2.0.23",
 				"out_dir": "../../../../SDK"
 			}
 		}

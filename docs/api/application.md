@@ -41,6 +41,8 @@ This document covers the in-process (same-DLL) Application API used by extension
 | `PLMManager` | `IPLMManager*` | R | PLM integration manager |
 | `AttributesManager` | `ICAMAPICustomAttributesManager*` | R | Custom attributes manager |
 | `UserTechOperationList` | `ICamApiUserTechOperationList*` | R | User-defined tech operations |
+| `Started` | `boolean` | R | `true` once the instance is ready to work; `false` while opening a project or shutting down |
+| `Theme` | `ICamApiTheme*` | R | Snapshot of the active UI theme/palette — see [ui.md](ui.md#icamapitheme) |
 
 ### Methods
 
@@ -65,6 +67,10 @@ mwmMachining  = 1   // Calculating toolpaths
 mwmSimulating = 2   // Running simulation
 ```
 
+> The `TMainWorkMode` enum now lives in `CAMAPI.ApplicationMainForm` (it is also used by
+> `ICamApiVisibilityManager` — see [ui.md](ui.md#icamapivisibilitymanager)); the
+> `MainWorkMode` property on the application is unchanged.
+
 ### .NET helper usage
 
 The `ApplicationHelper` static class (namespace `CAMAPI.DotnetHelper`) provides extension methods on `ComWrapper<ICamApiApplication>`:
@@ -87,6 +93,14 @@ appCom.SetMainWorkMode(TMainWorkMode.mwmMachining);
 
 // Access sub-managers
 using var utilMgrCom = appCom.Invoke(app => app.UtilityManager);
+
+// Read the active UI theme (null in headless builds)
+using var themeCom = appCom.Theme();
+if (themeCom != null)
+{
+    bool dark = themeCom.IsDark();
+    themeCom.Dispose();
+}
 ```
 
 ---

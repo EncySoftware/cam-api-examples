@@ -60,9 +60,15 @@ var project = application.GetActiveProject(out var status);
 | `projectCom.Snapshots()` | `ComWrapper<IListCamApiSnapshot>` | Snapshot list |
 | `projectCom.CoordinateSystems()` | `ComWrapper<ICamApiListCoordinateSystem>` | Coordinate systems |
 | `projectCom.Machine()` | `ComWrapper<ICamApiMachine>` | Machine instance |
+| `projectCom.SetMachine(guid, filePath, typeName)` | `void` | Assign a machine to the project by GUID, file path, and type name |
 | `projectCom.Simulator()` | `ComWrapper<ICamApiSimulator>` | Simulation manager |
+| `projectCom.SimulationTolerances()` | `ComWrapper<ICamApiSimulationTolerances>` | Simulation tolerance settings of the project |
+| `projectCom.FeatureFinder()` | `ComWrapper<ICamApiFeatureFinder>` | Feature-recognition service — see [feature-finder.md](feature-finder.md) |
 | `projectCom.SetOperationTool(opId, toolId)` | `void` | Assign a tool to an operation by their string IDs |
 | `projectCom.SaveClData(path, iterator?)` | `void` | Write CLData file for the given iterator (or all operations if `null`) |
+| `projectCom.SaveCLDataInfo(path, iterator?)` | `ComWrapper<ICamApiNCMakerCLDataInfo>` | Like `SaveClData`, but also returns the list of operations that produced the file — pass the result to `NCMaker.GenerateNC` (see [nc-simulation.md](nc-simulation.md)) |
+| `projectCom.PLMItemId()` | `string` | Item id inside the PLM system, if the project was loaded from PLM (empty otherwise) |
+| `projectCom.PLMConnectionId()` | `Guid` | PLM connection id, if the project was loaded from PLM |
 
 ### Event handlers
 
@@ -192,6 +198,8 @@ status flags, model formers, approach/retract rules, and more.
 | `operationCom.IsGroup()` | `bool` | `true` if this node is a group/container |
 | `operationCom.Name()` | `string` | Display name |
 | `operationCom.SetName(value)` | `void` | Rename the operation |
+| `operationCom.Notes()` / `SetNotes(value)` | `string` | Free-form multi-line user notes |
+| `operationCom.ChannelIndex()` | `int` | Zero-based simulator channel the operation is assigned to (0 on single-channel machines) |
 | `operationCom.FullName()` | `string` | Slash-separated full path including parent groups |
 | `operationCom.Units()` | `TSTSystemUnits` | Measurement units |
 | `operationCom.LCS()` | `TST3DMatrix` | Local coordinate system |
@@ -383,6 +391,80 @@ using var siblingCom = opCom.GetNextSiblingOperation(TCamApiReorderingMode.rmDes
 var t = opCom.GetTimeStatistics();   // RapidTime, IdleWorkTime, EffectiveWorkTime, AuxiliaryTime (seconds)
 var b = opCom.GetBlocksStatistics(); // Lines, Arcs, MultiGoTo, Feeds, TotalBlocks
 var l = opCom.GetLengthStatistics(); // WorkLength, RapidLength, EngageLength, RetractLength, PlungeLength, …
+```
+
+### Volume and stock statistics
+
+```csharp
+var v = opCom.GetVolumeStatistics(); // TCamApiTechOperationVolumeStatistics
+// v.WorkpieceVolume    — workpiece solid volume
+// v.MachResultVolume   — machining-result solid volume
+// v.VolumeRemovalRate  — removed material volume per unit of effective work time (VRR)
+// all zero if the corresponding ModelFormer has no solids
+
+var s = opCom.GetStocks();           // TCamApiTechOperationStocks
+// s.Profile — along-profile / general scalar machining allowance
+// s.Axial   — axial stock  (0 if the operation type has no per-axis stocks)
+// s.Radial  — radial stock (0 if the operation type has no per-axis stocks)
+```
+
+### MCD tree (machine-side CLData)
+
+After an operation is calculated, its toolpath projected onto the machine kinematics is
+available as an **MCD tree** — the same tree the user sees in the simulation panel.
+`operationCom.McdTree()` is the primary toolpath; `operationCom.RecoveryMcdTree()` is the
+toolpath restored from post-processed NC text (used when simulating by G-code). Both return a
+wrapper around `nil` for groups and uncalculated operations — check `.IsNull`.
+
+Each `ICamApiMcdNode` exposes `Caption()` (as shown in the tree), `Info()` (per-type detail —
+GOTO coordinates, CIRCLE/CYCLE/PPRINT parameters, empty when none), and `IsError()` (any
+simulation error on the node). The tree is walked with a depth-first iterator whose shape
+matches the geometry-tree iterator (`MoveToChild` / `MoveToSibling` / `MoveToParent` /
+`Current` / `Reset`), plus `AsEnumerable()` for a flat walk.
+
+```csharp
+using var mcdTreeCom = opCom.McdTree();
+if (!mcdTreeCom.IsNull)
+{
+    using var iterCom = mcdTreeCom.GetNodes();      // positioned at root
+    foreach (var nodeCom in iterCom.AsEnumerable()) // node auto-disposed each iteration
+    {
+        if (nodeCom.IsError())
+            Console.WriteLine($"[ERR] {nodeCom.Caption()}  {nodeCom.Info()}");
+    }
+}
+```
+
+### User parameters
+
+`operationCom.GetUserParameters()` returns a live, editable `ICamApiUserParametersList` of
+name/value/comment string triples used in the operation's header/tail templates. It returns a
+wrapper around `nil` (no error) for operations that have no MCD template — groups, the root
+operation, and toolpath-less types — so check `.IsNull`.
+
+| List helper | Description |
+|---|---|
+| `listCom.Count()` | Number of parameters |
+| `listCom.GetItem(i)` | Parameter at index `0..Count-1` |
+| `listCom.FindByName(name)` | Parameter by name, or a wrapper around `nil` (check `.IsNull`) |
+| `listCom.IndexOf(name)` | Index of a parameter, or `-1` |
+| `listCom.Add(name, value, comment="")` | Add, or update value/comment if the name exists; returns the parameter |
+| `listCom.Delete(name)` | Remove by name; `false` if absent |
+
+A parameter exposes `Name()` (read-only identity), `Value()`/`SetValue()`, and
+`Comment()`/`SetComment()`.
+
+```csharp
+using var paramsCom = opCom.GetUserParameters();
+if (!paramsCom.IsNull)
+{
+    using var addedCom = paramsCom.Add("BATCH", "42", "parts per run");
+    for (int i = 0; i < paramsCom.Count(); i++)
+    {
+        using var pCom = paramsCom.GetItem(i);
+        Console.WriteLine($"{pCom.Name()} = {pCom.Value()}  // {pCom.Comment()}");
+    }
+}
 ```
 
 ### Code example — create, configure, and check an operation

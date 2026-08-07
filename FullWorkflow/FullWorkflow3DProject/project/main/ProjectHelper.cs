@@ -1,4 +1,5 @@
 ﻿using CAMAPI.Application;
+using CAMAPI.ApplicationMainForm;
 using CAMAPI.DotnetHelper;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;

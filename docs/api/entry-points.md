@@ -46,6 +46,22 @@ IExtensionManager.RegisterLibrary(
     return IExtensionLibraryInfo*)
 ```
 
+#### `RegisterLibraryFromFolder`
+
+Reads a plugin folder, finds its `settings.json`, copies the folder into the storage's own
+location, then registers it. Convenient for installing a self-contained plugin folder in one
+call. The `needReload` out-flag reports whether a storage reload is required to pick it up.
+
+```csharp
+// IDL
+IExtensionManager.RegisterLibraryFromFolder(
+    in StorageType: TStorageType,
+    in FolderPath: string,
+    out TResultStatus,
+    out needReload: boolean,
+    return IExtensionLibraryInfo*)
+```
+
 #### `UnRegisterLibrary`
 
 Removes a library from all storages by its DLL path or JSON path.
@@ -183,6 +199,19 @@ Returns all known group strings across all registered libraries.
 using var groupsCom = managerCom.GetExtensionTypeGroups();
 ```
 
+#### `GetExtensionTypeGroup`
+
+Returns the structured `IExtensionTypeGroup` for one group id (richer than the plain string
+from `GetExtensionTypeGroups`).
+
+```csharp
+using var groupCom = managerCom.InvokeAndWrap(m =>
+    (m.GetExtensionTypeGroup("Extension.Util.Common", out var status), status));
+// IExtensionTypeGroup: Id (string), Caption (string), IsSystem (bool)
+```
+
+`IListExtensionTypeGroup` is the list form (`Get(index)`, `Count()`, `Add`, `Remove`, `RemoveAt`).
+
 #### `GetLibraryInfo`
 
 Returns `IExtensionLibraryInfo` for the library that contains the specified extension type ID.
@@ -198,6 +227,10 @@ Returns metadata for all currently registered libraries.
 ```csharp
 using var allLibsCom = managerCom.GetLibrariesInfo();
 ```
+
+Each `IExtensionLibraryInfo` carries, besides its path and `UnloadMode`, the descriptive
+fields taken from the library's `settings.json`: `Version`, `Id`, `Author`, `IconPath`, and
+`Tags` (all read-only strings).
 
 ---
 
@@ -364,6 +397,22 @@ string version = ExtensionManagerHelper.ApiVersion();
 | `sfAll` | All fields |
 | `sfLibraryDisabled` | The library-level disabled flag |
 | `sfExtensionDisabled` | The extension-level disabled flag |
+
+---
+
+## Extension type-info kinds
+
+Every extension declares its kind through an `IExtensionTypeInfo…` marker interface (the same
+mechanism behind `IExtensionTypeInfoUtility`, `IExtensionTypeInfoOperationPopup`, etc. — see
+[extension entry points](../general/extension-entry-points.md)). In addition to the popup and
+utility kinds documented there, the API also declares:
+
+| Type-info interface | Injection point |
+|---|---|
+| `IExtensionTypeInfoProjectReportPopup` | Context menu of a project report |
+| `IExtensionTypeInfoPostprocessorPopup` | Context menu of a postprocessor |
+| `IExtensionTypeInfoToolsListPopup` | Context menu of the tools list |
+| `IExtensionTypeInfoNCFilesExporter` | Export generated NC files to an external target (pairs with `IExtensionNCFilesExporter` — see [nc-simulation.md](nc-simulation.md#generatenc-and-result-objects)) |
 
 ---
 

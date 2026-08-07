@@ -70,8 +70,11 @@ so the call sites look identical to CAMAPI.
    | `GeomImporter` (property) | `GetGeomImporter(ctx)` |
 
 2. **`ToolsList`, `CoordinateSystems`, `MachineInformation`, `Machine`, `Simulator`,
-   `GeomModel`** remain as read-only properties (no `ctx`) on `ICamIpcProject` — they
-   return IPC-variant types (`ICamIpcMachiningToolsList`, etc.).
+   `GeomModel`, `FeatureFinder`** remain as read-only properties (no `ctx`) on
+   `ICamIpcProject` — they return IPC-variant types (`ICamIpcMachiningToolsList`,
+   `ICamIpcFeatureFinder`, etc.). `FeatureFinder` is the new feature-recognition axis — see
+   [`feature-finder.md`](feature-finder.md). `SetMachine(guid, filePath, typeName, ctx)`
+   assigns a machine to the project.
 
 3. **`SaveClData`** takes `ICamIpcTechOperationIterator*` (the IPC variant) instead of
    `ICamApiTechOperationIterator*`.

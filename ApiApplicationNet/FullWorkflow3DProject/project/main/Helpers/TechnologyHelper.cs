@@ -3,6 +3,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CAMAPI.Application;
+using CAMAPI.ApplicationMainForm;
 using CAMAPI.DotnetHelper;
 using CAMAPI.GeomModel;
 using CAMAPI.ModelFormerTypes;
@@ -386,8 +387,6 @@ public static class TechnologyHelper
             settings.NcFileName = OutputFile;
             return Path.Combine(settings.OutputFolder, settings.NcFileName);
         });
-        var settingsSppx = settingsSppxCom.Instance;
-        
         // get postprocessor from all users documents folder
         var postProcessorFilePath = pathsHelperCom.Invoke(pathsHelper =>
             Path.Combine(pathsHelper.PostprocessorsFolder, "Mill", "Fanuc (30i)_Mill.sppx"));
@@ -397,7 +396,7 @@ public static class TechnologyHelper
         // // generate CNC
         ncMakerCom.Invoke(ncMaker =>
         {
-            using var listCom = ComWrapper.Create(ncMaker.Generate(clDataFile, postProcessorFilePath, settingsSppx, out var ret));
+            using var listCom = ComWrapper.Create(ncMaker.Generate(clDataFile, postProcessorFilePath, settingsCom.Instance, out var ret));
             if (ret.Code == TResultStatusCode.rsError)
                 throw new Exception("Error generating CNC: " + ret.Description);
             

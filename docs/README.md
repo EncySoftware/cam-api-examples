@@ -34,8 +34,9 @@ This documentation is written for Claude instances helping developers write plug
 - [Application & singletons](api/application.md) — ICamApiApplication, utilities, macros, events, collections
 - [Entry points](api/entry-points.md) — IExtensionManager, IExtensionStorage, IExtensionLogger
 - [Project](api/project.md) — ICamApiProject, technologist, tech operations, parts, stages, snapshots
-- [Geometry](api/geometry.md) — model tree, entities, faces, curves, mesh, coordinate systems, GeomPicker
-- [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup
+- [Geometry](api/geometry.md) — model tree, entities, faces, curves, mesh, coordinate systems, GeomPicker, sketcher, point snapper
+- [Feature finder](api/feature-finder.md) — automatic recognition of holes, pockets, fillets, chamfers, planes, edges
+- [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup, live machine state
 - [NC & simulation](api/nc-simulation.md) — NCMaker, Simulator, CLDReceiver, ModelFormer, TechOperationSolver
 - [UI](api/ui.md) — main form, viewport, view cube, dialogs, SimplePropIterator, CamApiInspectorWindow
 
@@ -44,6 +45,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Application](ipc/application.md) — ICamIpcApplication, paths, extension manager, logger, XmlProp
 - [Project](ipc/project.md) — differences from CAMAPI project domain
 - [Geometry](ipc/geometry.md) — differences from CAMAPI geometry domain
+- [Feature finder](ipc/feature-finder.md) — differences from CAMAPI feature-finder domain
 - [Tools & machine](ipc/tools-machine.md) — differences from CAMAPI tools domain
 - [NC & simulation](ipc/nc-simulation.md) — differences from CAMAPI NC domain
 - [UI](ipc/ui.md) — main form, viewport, view cube, PrimeView, PrimeViewModel
