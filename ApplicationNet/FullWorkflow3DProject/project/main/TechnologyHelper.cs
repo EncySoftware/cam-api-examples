@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CAMAPI.Application;
+using CAMAPI.ApplicationMainForm;
 using CAMAPI.DotnetHelper;
 using CAMAPI.ModelFormerTypes;
 using CAMAPI.NCMaker;

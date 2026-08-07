@@ -32,8 +32,8 @@ namespace ExtensionUtilityExportInformationNet
         /// </summary>
         public static void SaveProjectDetails(ComWrapper<ICamApiProject> projectCom)
         {
-            var projectFilepath = ProjectHelper.FilePath(projectCom);
-            var projectId = ProjectHelper.Id(projectCom);
+            var projectFilepath = projectCom.FilePath();
+            var projectId = projectCom.Id();
             _jsonBuilder?.AddStrPair("FilePath", projectFilepath);
             _jsonBuilder?.AddStrPair("Id", projectId);  
         }

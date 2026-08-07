@@ -7,32 +7,10 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutDir>bin\$(Configuration)\</OutDir>
-    <CAMPath>C:\repo\links\CamExe_2</CAMPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="$(CAMPath)/CAMAPI.Extensions.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.Application.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.ResultStatus.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.UserTechOperation.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.TechOperation.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.Technologist.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.DotnetHelper.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.Project.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.Machine.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.CoordinateSystem.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.Utilities.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.Workpiece.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.GeomModel.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.ModelFormerTypes.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.ApplicationMainForm.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.ViewPort.dll" />
-    <Reference Include="$(CAMPath)/CAMAPI.ViewCube.dll" />
-    <Reference Include="$(CAMPath)/STXMLPropTypes.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-<!--    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.17-dev.4" />-->
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5" />
   </ItemGroup>
 
   <ItemGroup>

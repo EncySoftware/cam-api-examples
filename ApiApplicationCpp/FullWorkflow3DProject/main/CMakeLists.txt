@@ -1,8 +1,8 @@
 ﻿cmake_minimum_required(VERSION 4.0)
 project(FullWorkflow3DProject)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "C:/Program Files/ENCY Software/ENCY NB 2/Bin64")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "C:/Program Files/ENCY Software/ENCY NB 2/Bin64")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG   "C:/Program Files/ENCY Software/ENCY 2/Bin64")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "C:/Program Files/ENCY Software/ENCY 2/Bin64")
 
 set(CMAKE_CXX_STANDARD 20)
 

@@ -106,11 +106,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>../../../SDK/tlb;$(IncludePath)</IncludePath>
-    <OutDir>C:\Program Files\ENCY Software\ENCY NB 2\Bin64\</OutDir>
+    <OutDir>C:\Program Files\ENCY Software\ENCY 2\Bin64\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>../../../SDK/tlb;$(IncludePath)</IncludePath>
-    <OutDir>C:\Program Files\ENCY Software\ENCY NB 2\Bin64\</OutDir>
+    <OutDir>C:\Program Files\ENCY Software\ENCY 2\Bin64\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

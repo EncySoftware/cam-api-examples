@@ -32,12 +32,12 @@ namespace ExtensionUtilityExportInformationNet
         /// </summary>
         public static void SaveMachineInfoDetails(ComWrapper<ICamApiProject> projectCom)
         {
-            using var machineInfoCom = ProjectHelper.MachineInformation(projectCom);
-            var machineInfoGUID = MachineInfoHelper.GUID(machineInfoCom);
-            var machineInfoCaption = MachineInfoHelper.MachineCaption(machineInfoCom);
-            var machineInfoTypeName = MachineInfoHelper.MachineTypeName(machineInfoCom);
-            var machineInfoSchemaFilePath = MachineInfoHelper.SchemaFilePath(machineInfoCom);
-            var machineInfoXMLNodeName = MachineInfoHelper.XMLNodeName(machineInfoCom);
+            using var machineInfoCom = projectCom.MachineInformation();
+            var machineInfoGUID = machineInfoCom.GUID();
+            var machineInfoCaption = machineInfoCom.MachineCaption();
+            var machineInfoTypeName = machineInfoCom.MachineTypeName();
+            var machineInfoSchemaFilePath = machineInfoCom.SchemaFilePath();
+            var machineInfoXMLNodeName = machineInfoCom.XMLNodeName();
             
             _jsonBuilder?.BeginObject("MachineInfo");
             _jsonBuilder?.AddStrPair("GUID", machineInfoGUID);
@@ -53,9 +53,9 @@ namespace ExtensionUtilityExportInformationNet
         /// </summary>
         public static void SaveMachineDetails(ComWrapper<ICamApiMachine> machineCom)
         {
-            var machineGUID = MachineHelper.GUID(machineCom);
-            var machineCaption = MachineHelper.MachineCaption(machineCom);
-            var machineXMLNodeName = MachineHelper.XMLNodeName(machineCom);
+            var machineGUID = machineCom.GUID();
+            var machineCaption = machineCom.MachineCaption();
+            var machineXMLNodeName = machineCom.XMLNodeName();
             
             _jsonBuilder?.BeginObject("Machine");
             _jsonBuilder?.AddStrPair("GUID", machineGUID);

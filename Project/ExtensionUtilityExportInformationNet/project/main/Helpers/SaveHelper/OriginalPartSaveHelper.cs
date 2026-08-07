@@ -46,13 +46,13 @@ namespace ExtensionUtilityExportInformationNet
             if (partStageAsOpCom == null)
                 return;
 
-            var partStageName = TechOperationHelper.Name(partStageAsOpCom);
+            var partStageName = partStageAsOpCom.Name();
             _jsonBuilder.AddStrPair("PartStageName", partStageName);
             
 
-            TechOperationHelper.InitMachineEvaluator(partStageAsOpCom, evaluatorCom);
+            partStageAsOpCom.InitMachineEvaluator(evaluatorCom);
             
-            using var modelFormerPartCom = TechOperationHelper.ModelFormerPart(partStageAsOpCom);
+            using var modelFormerPartCom = partStageAsOpCom.ModelFormerPart();
             if (modelFormerPartCom.IsNull)
                 return;
 
@@ -73,12 +73,12 @@ namespace ExtensionUtilityExportInformationNet
 
             _jsonBuilder.BeginObject("GeometryCS");
 
-            using var workpieceSetupCom = PartStageHelper.WorkpieceSetup(partStageCom);
-            var GeometryCSName = WorkpieceSetupHelper.WorkpieceSideCoordinateSystemName(workpieceSetupCom);
+            using var workpieceSetupCom = partStageCom.WorkpieceSetup();
+            var GeometryCSName = workpieceSetupCom.WorkpieceSideCoordinateSystemName();
             _jsonBuilder.AddStrPair("GeometryCSName", GeometryCSName);
 
-            using var geomCSCom = ListCoordinateSystemHelper.GetByName(listCSCom, GeometryCSName);
-            var geomCSMatrix = CoordinateSystemHelper.Matrix(geomCSCom);
+            using var geomCSCom = listCSCom.GetByName(GeometryCSName);
+            var geomCSMatrix = geomCSCom.Matrix();
             GeometrySaveHelper.ShowMatrixData(geomCSMatrix, "GeometryCSMatrix", _jsonBuilder);
 
             _jsonBuilder.EndObject(); // GeometryCS closing
@@ -130,10 +130,10 @@ namespace ExtensionUtilityExportInformationNet
             string finalCaption = "";
             string finalClassName = "";
 
-            int low = ModelFormerHelper.LowItemIndex(modelFormerCom);
-            int top = ModelFormerHelper.TopItemIndex(modelFormerCom);
+            int low = modelFormerCom.LowItemIndex();
+            int top = modelFormerCom.TopItemIndex();
             for (var i = low; i <= top; i++){
-                using var modelItemCom = ModelFormerHelper.Item(modelFormerCom, i);
+                using var modelItemCom = modelFormerCom.Item(i);
                 if (modelItemCom.IsNull)
                     continue;
 
@@ -143,9 +143,9 @@ namespace ExtensionUtilityExportInformationNet
                 if (linkModelItemCom != null)
                 {
                     // if link is simple, not to some geometry of prev operations and etc.
-                    var isSimpleLink = LinkModelItemHelper.IsSimpleLink(linkModelItemCom);
+                    var isSimpleLink = linkModelItemCom.IsSimpleLink();
                     if (isSimpleLink) {
-                        using var linkModelFormerCom = LinkModelItemHelper.LinkModelFormer(linkModelItemCom);;
+                        using var linkModelFormerCom = linkModelItemCom.LinkModelFormer();;
                         return ShowModelItemData(linkModelFormerCom, applicationCom);
                     }
                 }
@@ -153,10 +153,10 @@ namespace ExtensionUtilityExportInformationNet
                 _jsonBuilder.BeginObject();
                 finalCaption = !string.IsNullOrWhiteSpace(modelData.Caption) 
                     ? modelData.Caption 
-                    : ModelItemHelper.Caption(modelItemCom); // Could be simplified, but protected from mistakes
+                    : modelItemCom.Caption(); // Could be simplified, but protected from mistakes
                 finalClassName = !string.IsNullOrWhiteSpace(modelData.ClassName) 
                     ? modelData.ClassName 
-                    : ModelItemHelper.ClassName(modelItemCom);
+                    : modelItemCom.ClassName();
                 _jsonBuilder.AddStrPair("Caption", finalCaption);
                 _jsonBuilder.AddStrPair("ModelItemClassName", finalClassName);
 
@@ -167,16 +167,16 @@ namespace ExtensionUtilityExportInformationNet
                     continue;
                 }
                     
-                using var geomEntityCom = GeometryNodeBasedModelItemHelper.GeometryEntity(geomNodeBasedCom);
+                using var geomEntityCom = geomNodeBasedCom.GeometryEntity();
                 using var importedGeomCom = geomEntityCom.AsInstanceOf<ICamApiImportedGeometryEntity>();
                 if (importedGeomCom == null){
                     _jsonBuilder.EndObject(); 
                     continue;
                 }
 
-                var geomNodeFullName = ImportedGeometryEntityHelper.CADModelLocalFileName(importedGeomCom);
-                var importedFromPLM  = ImportedGeometryEntityHelper.ImportedFromPLM(importedGeomCom);
-                var plmObjectId      = ImportedGeometryEntityHelper.PLMObjectID(importedGeomCom);
+                var geomNodeFullName = importedGeomCom.CADModelLocalFileName();
+                var importedFromPLM  = importedGeomCom.ImportedFromPLM();
+                var plmObjectId      = importedGeomCom.PLMObjectID();
                 _jsonBuilder.AddStrPair("GeometryNodeFullName", geomNodeFullName);
                 _jsonBuilder.AddBoolPair("ImportedFromPLM", importedFromPLM);
                 _jsonBuilder.AddStrPair("PLMObjectID", plmObjectId); 

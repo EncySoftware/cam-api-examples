@@ -9,6 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.18-dev.9"/>
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5"/>
   </ItemGroup>
 </Project>

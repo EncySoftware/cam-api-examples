@@ -37,10 +37,10 @@ namespace ExtensionUtilityExportInformationNet
                 vT = new TST3DPoint { X = 0, Y = 0, Z = 0 }
             };
 
-            using var faceListCom = ModelFormerHelper.GetFaceList(modelFormerPartCom, Matrix4FaceList); // global or techop.lcs
-            FacesToTriangulatedFilesConverterHelper.SetColor(converterCom, 0xC8C8C8);
-            FacesToTriangulatedFilesConverterHelper.SetTolerance(converterCom, ConverterTolerance);
-            FacesToTriangulatedFilesConverterHelper.SaveFacesToOSD(converterCom, faceListCom, ModelPath);
+            using var faceListCom = modelFormerPartCom.GetFaceList(Matrix4FaceList); // global or techop.lcs
+            converterCom.SetColor(0xC8C8C8);
+            converterCom.SetTolerance(ConverterTolerance);
+            converterCom.SaveFacesToOSD(faceListCom, ModelPath);
         }
 
     }

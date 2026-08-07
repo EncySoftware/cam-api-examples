@@ -78,7 +78,7 @@ public class ExtensionFactory : IExtensionFactory
     public void OnLibraryUnRegistered(IExtensionFactoryContext context, out TResultStatus ret)
     {
         ret = default;
-        var pathToUserOperationsList = Path.Combine(context.Paths.OperationsFolder, "UserOperationsList.xml");
+        var pathToUserOperationsList = Path.Combine(context.Paths.TryUnfoldPath(@"$(PROGRAM_COMMON_APPDATA)\Operations"), "UserOperationsList.xml");
         if (!File.Exists(pathToUserOperationsList))
             return;
         
@@ -113,7 +113,7 @@ public class ExtensionFactory : IExtensionFactory
             var assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
                                  ?? throw new Exception("Assembly location is null");
             var pathToOperationXml = Path.Combine(assemblyFolder, NodeOperationXMlName);
-            var pathToUserOperationsList = Path.Combine(context.Paths.OperationsFolder, "UserOperationsList.xml");
+            var pathToUserOperationsList = Path.Combine(context.Paths.TryUnfoldPath(@"$(PROGRAM_COMMON_APPDATA)\Operations"), "UserOperationsList.xml");
             
             // create new one
             if (File.Exists(pathToUserOperationsList))

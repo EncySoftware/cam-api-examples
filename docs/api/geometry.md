@@ -25,6 +25,8 @@ All .NET examples use the `ComWrapper<T>` pattern and the extension methods from
 15. [ICMAPITurnGeneratrixExtractor — lathe generatrix](#15-icmapiturngenatrixextractor-lathe-generatrix)
 16. [Export helpers](#16-export-helpers)
 17. [Entity type reference](#17-entity-type-reference)
+18. [ICamApiGeometryModelSketcher — creating primitives](#18-icamapigeometrymodelsketcher-creating-primitives)
+19. [ICamApiPointSnapper — snapping points to faces](#19-icamapipointsnapper-snapping-points-to-faces)
 
 ---
 
@@ -112,6 +114,11 @@ using var modelCom = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGe
 | `DeleteNode(node)` | Remove a node from the tree |
 | `GetFaceListOfSelected()` | Returns `ICAMAPIFaceList` of selected face nodes |
 | `AddGroup(parentNode)` | Add an empty group node under `parentNode` |
+| `AddCadGroup(name, lcs?)` | Add a CAD-typed group (a fresh GeCAD model) at the given LCS; helper defaults `lcs` to identity. The returned node hosts an editable `ICadApiModel` — reach it with `AsCadModel()` from CADAPI.DotnetHelper |
+| `ExportSelectedToStep(fileName)` | Export selected nodes to a STEP file (experimental) |
+
+Helper: `modelCom.ExportSelectedToStep(path)`, `modelCom.AddCadGroup("Fixtures")`. `AddCadGroup`
+is the entry point to the CAD axis (GeCAD) that sits on top of the geometry model.
 
 ### Finding a node by name
 
@@ -174,6 +181,42 @@ foreach (var childCom in nodeCom.EnumerateChildren())
     childCom.Dispose();
 }
 ```
+
+### Rendering and tessellation
+
+| Helper method | Type | Description |
+|---|---|---|
+| `DoubleNormal()` / `SetDoubleNormal(v)` | `bool` | Double-sided rendering — mill both sides of surfaces (vs. only the normal side) |
+| `VisTol()` / `SetVisTol(v)` | `double` | Visual tessellation tolerance (lower = finer mesh) |
+| `VisMeshU()` / `SetVisMeshU(v)` | `int` | Isoparametric curves shown in the U direction |
+| `VisMeshV()` / `SetVisMeshV(v)` | `int` | Isoparametric curves shown in the V direction |
+
+### User parameters on a node
+
+Nodes carry free-form name/value parameters typed by `TCAMAPIGeomParamType` (`aptInteger`=0,
+`aptReal`=1, `aptString`=2, `aptBoolean`=3). System parameters added by the engine or at import
+time cannot be overwritten or deleted (attempting to do so throws).
+
+| Helper method | Description |
+|---|---|
+| `ParamsCount()` | Number of parameters on the node |
+| `GetParamName(i)` / `GetParamValue(i)` / `GetParamType(i)` | Read parameter `0..ParamsCount-1` |
+| `AddParam(name, type, value)` | Add or overwrite a user parameter |
+| `DeleteParam(name)` | Remove a user parameter; `false` if it did not exist |
+
+```csharp
+nodeCom.AddParam("BatchNo", TCAMAPIGeomParamType.aptString, "A-17");
+for (int i = 0; i < nodeCom.ParamsCount(); i++)
+    Console.WriteLine($"{nodeCom.GetParamName(i)} = {nodeCom.GetParamValue(i)}");
+```
+
+### CAD content of a node
+
+For a CAD-typed node (its geometry is a GeCAD model), `Invoke(node => node.AsCadModel(out var st))`
+returns an `ICadApiModel` for inspecting or mutating the CAD content; it is `nil` for non-CAD
+nodes (mesh, body, plain folders). This is the same CAD axis reached by
+`ICAMAPIGeometryModel.AddCadGroup`. See `.claude/docs/cadapi-bridge.md` in the CAM repo for the
+CADAPI/CADIPC layer.
 
 ---
 
@@ -900,3 +943,101 @@ Used in `ICamApiGeomPicker.AvailableEntityTypes`:
 | `etfCS` | 128 | |
 | `etfPmi` | 256 | |
 | `etfView` | 512 | |
+
+---
+
+## 18. ICamApiGeometryModelSketcher — creating primitives
+
+The sketcher creates simple geometry (points, lines, polylines, splines) in the **Job**
+geometry sub-tree — the same content a user would draw by hand. It is not a separate object:
+the geometry model itself implements `ICamApiGeometryModelSketcher`, so obtain it by
+QueryInterface from the model wrapper.
+
+```csharp
+using var modelCom = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGeomModel);
+using var sketcherCom = modelCom.InvokeAndWrap(m => m as ICamApiGeometryModelSketcher);
+```
+
+Helper class: `GeometryModelSketcherHelper`. Every method returns the created
+`ICAMAPIGeometryTreeNode` (dispose it) and throws on engine error.
+
+| Helper method | Creates |
+|---|---|
+| `AddPoint(x, y, z)` | A single point |
+| `AddLine(p1, p2)` | A line segment between two `TST3DPoint` |
+| `AddNormalLine(origin, endPoint)` | A "normal line" anchored at `origin`, ending at `endPoint` |
+| `StartPolyline()` | Begins a polyline — returns an `ICamApiSpatialCurveBuilder` |
+| `StartSpline()` | Begins a smooth spline — returns an `ICamApiSpatialCurveBuilder` |
+
+### Multi-knot curves — ICamApiSpatialCurveBuilder
+
+`StartPolyline` / `StartSpline` return a builder; append knots, then `Finish()` to commit the
+curve into the tree and receive its node. Helper class: `SpatialCurveBuilderHelper`.
+
+| Helper method | Description |
+|---|---|
+| `AddKnot(p)` | Append a knot `TST3DPoint` (throws on error) |
+| `Finish()` | Commit accumulated knots; returns the new node. The builder is exhausted afterwards |
+| `TryAddKnot(p, out status)` / `TryFinish(out status)` | Non-throwing variants exposing the raw `TResultStatus` |
+
+```csharp
+using var sketcherCom = modelCom.InvokeAndWrap(m => m as ICamApiGeometryModelSketcher);
+
+// Simple primitives
+using (var ptCom = sketcherCom.AddPoint(0, 0, 0)) { }
+using (var lineCom = sketcherCom.AddLine(
+    new TST3DPoint { X = 0, Y = 0, Z = 0 },
+    new TST3DPoint { X = 50, Y = 0, Z = 0 })) { }
+
+// A polyline built from several knots
+using var builderCom = sketcherCom.StartPolyline();
+builderCom.AddKnot(new TST3DPoint { X = 0,  Y = 0,  Z = 0 });
+builderCom.AddKnot(new TST3DPoint { X = 50, Y = 0,  Z = 0 });
+builderCom.AddKnot(new TST3DPoint { X = 50, Y = 50, Z = 0 });
+using var polylineNodeCom = builderCom.Finish();
+```
+
+---
+
+## 19. ICamApiPointSnapper — snapping points to faces
+
+The point snapper projects measured 3D points onto the nearest position on a set of faces —
+the building block for probing / measurement alignment. It is a **singleton system
+extension**, obtained through its helper (no direct `CAMAPI.TechSolvers` reference needed).
+
+```csharp
+using var snapperCom = PointSnapperHelper.GetSingleton(); // ICamApiPointSnapper
+```
+
+Helper class: `PointSnapperHelper`. The snapper hands out two lightweight mutable collections:
+
+| Helper method | Returns | Description |
+|---|---|---|
+| `CreateFaceList()` | `ComWrapper<ICamApiFaceListBuilder>` | An empty, mutable face list builder to fill with target faces |
+| `CreatePointList()` | `ComWrapper<ICamApiPoint3DList>` | An empty point list |
+| `FindNearestOnFaces(faces, points, tolerance)` | `TST3DPoint[]` | For each input point, the nearest position on any face — result `[i]` corresponds to input `[i]`. `faces` is an `ICamApiFaceList` |
+| `FindNearestOnFacesRaw(...)` | `ComWrapper<ICamApiPoint3DList>` | Same, but returns the COM list (caller owns it) |
+
+`ICamApiPoint3DList` (helper `Point3DListHelper`): `Count()`, `Item(i)`, `Add(point)`.
+`ICamApiFaceListBuilder` (helper `FaceListBuilderHelper`) accumulates faces via
+`AddFace(face)` / `AddRange(faceList)` and produces the immutable `ICamApiFaceList` snapshot
+`FindNearestOnFaces` expects with `Build()`.
+
+```csharp
+using var snapperCom = PointSnapperHelper.GetSingleton();
+
+using var facesBuilderCom = snapperCom.CreateFaceList();
+facesBuilderCom.AddRange(selectedFacesCom);   // e.g. modelCom.GetFaceListOfSelected()
+using var facesCom = facesBuilderCom.Build();  // immutable ICamApiFaceList snapshot
+
+using var pointsCom = snapperCom.CreatePointList();
+pointsCom.Add(new TST3DPoint { X = 10.2, Y = 4.8, Z = 0.1 });
+pointsCom.Add(new TST3DPoint { X = 22.0, Y = 4.9, Z = 0.0 });
+
+TST3DPoint[] snapped = snapperCom.FindNearestOnFaces(facesCom, pointsCom, tolerance: 0.5);
+// snapped[i] is the closest on-surface position to the i-th measured point
+```
+
+> **Direct access (IDL):** `ICamApiPointSnapper`, `ICamApiFaceListBuilder`, and
+> `ICamApiPoint3DList` live in `CAMAPI.TechSolvers`. `FindNearestOnFaces` carries an
+> `out TResultStatus` that the helper checks for you.
