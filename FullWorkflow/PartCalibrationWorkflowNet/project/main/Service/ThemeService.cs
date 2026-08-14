@@ -70,10 +70,10 @@ internal static class ThemeService
 
     private static SolidColorBrush Brush(int tcolor)
     {
-        // TColor is BGR (low byte = blue).
-        byte b = (byte)( tcolor        & 0xFF);
+        // Delphi TColor is 0x00BBGGRR — the low byte is red.
+        byte r = (byte)( tcolor        & 0xFF);
         byte g = (byte)((tcolor >> 8 ) & 0xFF);
-        byte r = (byte)((tcolor >> 16) & 0xFF);
+        byte b = (byte)((tcolor >> 16) & 0xFF);
         var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
         brush.Freeze();
         return brush;

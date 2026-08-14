@@ -196,7 +196,7 @@ builds where no theme factory is registered.
 | `Name()` | `string` | Theme variant name (e.g. `"White"`, `"Outer_Space"`); `"Unknown"` if the host theme index is newer than this SDK |
 | `Kind()` | `TCamApiThemeKind` | UI engine family — `tkTheme1` (classic), `tkTheme2` (quarter), `tkTheme3` (modern) |
 | `IsDark()` | `bool` | `true` for a dark palette (orthogonal to `Kind` — a kind may have both light and dark variants) |
-| `GetColor(colorKind)` | `int` | Palette color as a `TColor` integer in **BGR** layout (low byte = blue) |
+| `GetColor(colorKind)` | `int` | Palette color as a `TColor` integer in **BGR** layout (low byte = red) |
 
 `TCamApiColorKind` palette slots: `ckColorWindowBackground` (0) · `ckColorPanelBackground` (1)
 · `ckColorText` (2) · `ckColorAccent` (3) · `ckColorTitleBackground` (4) ·
@@ -217,6 +217,10 @@ if (themeCom != null)
 
 > **Note the BGR layout:** ENCY returns Delphi `TColor` (`0x00BBGGRR`). To build a WPF/WinForms
 > color, extract `R = c & 0xFF`, `G = (c >> 8) & 0xFF`, `B = (c >> 16) & 0xFF`.
+
+Reading the palette is only half the job — see
+[Theming plugin windows](../general/theming-plugin-windows.md) for applying it to your own window
+(WPF resource brushes, WinForms visual-styles pitfalls, scrollbars, title bar).
 
 ---
 

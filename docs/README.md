@@ -29,6 +29,7 @@ This documentation is written for Claude instances helping developers write plug
 - [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
 - [UI patterns](general/ui-patterns.md) — Inspector dialog, modal WPF (STA thread), non-modal WPF + IExtensionLazyUnloadable
+- [Theming plugin windows](general/theming-plugin-windows.md) — applying the host palette to your own window; WinForms visual-styles pitfalls, scrollbars, title bar
 
 ### CAMAPI domain reference
 - [Application & singletons](api/application.md) — ICamApiApplication, utilities, macros, events, collections
