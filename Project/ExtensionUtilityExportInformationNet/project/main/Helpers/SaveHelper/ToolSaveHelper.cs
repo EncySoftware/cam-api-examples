@@ -41,8 +41,16 @@ namespace ExtensionUtilityExportInformationNet
                 _jsonBuilder.BeginObject(); // tool
                 if (!toolCom.IsNull)
                 {
+                    string toolId = toolInfoCom.ToolID();
                     _jsonBuilder.AddStrPair("ToolName", toolCom.ToolName());
+                    //_jsonBuilder.AddStrPair("ToolNotes", toolCom.Notes());
+                    _jsonBuilder.AddStrPair("ToolID", toolId);
+                    _jsonBuilder.AddStrPair("ToolGUID", toolInfoCom.ToolGUID());
+                    _jsonBuilder.AddStrPair("ToolCaption", toolInfoCom.ToolCaption());
+                    _jsonBuilder.AddIntPair("ToolNumber", toolInfoCom.ToolNumber());
+                    _jsonBuilder.AddIntPair("MagazineNumber", toolInfoCom.MagazineNumber());
                     WriteAssemblyItems(toolCom.AssemblyItemsJSON());
+                    WriteOperationsUsingTool(toolsList, toolId);
                 }
                 _jsonBuilder.EndObject(); // tool closing
             }
@@ -75,6 +83,35 @@ namespace ExtensionUtilityExportInformationNet
                 }
             }
             _jsonBuilder.EndArray(); // AssemblyItems closing
+        }
+
+        /// <summary>
+        /// Writes the "UsedInOperations" array: operations that use the given tool
+        /// (link for the viewer to show tool->operations and operation->tool).
+        /// </summary>
+        private static void WriteOperationsUsingTool(
+            ComWrapper<ICamApiMachiningToolsList> toolsList, string toolId)
+        {
+            if (_jsonBuilder == null)
+                throw new Exception("Create JSON builder!");
+
+            _jsonBuilder.BeginArray("UsedInOperations");
+            using var operationsIterator = toolsList.GetOperationsUsingTheTool(toolId);
+            if (!operationsIterator.IsNull)
+            {
+                operationsIterator.Reset();
+                do
+                {
+                    if (operationsIterator.CurrentOperationIsEmpty())
+                        continue;
+                    _jsonBuilder.BeginObject();
+                    _jsonBuilder.AddStrPair("OperationID", operationsIterator.GetCurrentOperationID());
+                    _jsonBuilder.AddStrPair("OperationCaption", operationsIterator.GetCurrentOperationCaption());
+                    _jsonBuilder.EndObject();
+                }
+                while (operationsIterator.MoveNext());
+            }
+            _jsonBuilder.EndArray(); // UsedInOperations closing
         }
     }    
 }

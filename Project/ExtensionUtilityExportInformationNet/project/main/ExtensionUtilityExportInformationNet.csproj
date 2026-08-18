@@ -14,6 +14,7 @@
     <!-- <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5" /> -->
      <Reference Include="$(CAMPath)\STTypes.dll" />
     <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
+    <Reference Include="$(CAMPath)\STXMLPropTypes.dll" />
     <Reference Include="$(CAMPath)\STGeomApiTypes.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Application.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.ApplicationMainForm.dll" />
@@ -26,6 +27,7 @@
     <Reference Include="$(CAMPath)\CAMAPI.ExtensionManager.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Extensions.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.FeatureFinder.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.FilesInStream.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Generic.Dictionary.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Generic.List.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.GeomImporter.dll" />
@@ -52,8 +54,13 @@
     <Reference Include="$(CAMPath)\CAMAPI.Utilities.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.UIDialogs.DotnetHelper.dll" />
+    <Reference Include="$(CAMPath)\CAMAPI.UserTechOperation.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Workpiece.dll" />
     <Reference Include="$(CAMPath)\Geometry.VecMatrLib.dll" />
     <Reference Include="$(CAMPath)\NativeLibUtils.dll" />
   </ItemGroup>
+
+  <Target Name="PublishViewer" AfterTargets="Build">
+    <Exec Command="dotnet publish &quot;$(MSBuildProjectDirectory)\..\..\viewer\main\ProjectInfoViewer.csproj&quot; -c Release -o &quot;$(TargetDir)Viewer&quot; --nologo -v q" />
+  </Target>
 </Project>
