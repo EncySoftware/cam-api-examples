@@ -67,6 +67,9 @@ app.MapGet("/api/project", () => File.Exists(state.JsonPath)
     ? Results.File(state.JsonPath, "application/json; charset=utf-8")
     : Results.NotFound(new { error = $"JSON file not found: {state.JsonPath}" }));
 
+app.MapGet("/api/screenshot", (string file) =>
+    ServeDataFile(DataRoot(), file, ImageContentType(file)));
+
 // Groundwork for future iterations: operation toolpaths and 3D models (.osd/.stl).
 app.MapGet("/api/toolpath", (string file) =>
     ServeDataFile(DataRoot(), file, "application/json; charset=utf-8"));
@@ -122,6 +125,15 @@ static void StartIdleMonitor(WebApplication app, ViewerState state, int idleTime
         }
     });
 }
+
+static string ImageContentType(string fileName) =>
+    Path.GetExtension(fileName).ToLowerInvariant() switch
+    {
+        ".png" => "image/png",
+        ".bmp" => "image/bmp",
+        ".gif" => "image/gif",
+        _ => "image/jpeg",
+    };
 
 // Serves a file from the data directory with path traversal protection.
 static IResult ServeDataFile(string allowedRoot, string relativePath, string contentType)

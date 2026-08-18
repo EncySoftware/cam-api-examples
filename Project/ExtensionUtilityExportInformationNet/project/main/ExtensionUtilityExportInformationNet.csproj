@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5" /> -->
-     <Reference Include="$(CAMPath)\STTypes.dll" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5" />
+     <!-- <Reference Include="$(CAMPath)\STTypes.dll" />
     <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
     <Reference Include="$(CAMPath)\STXMLPropTypes.dll" />
     <Reference Include="$(CAMPath)\STGeomApiTypes.dll" />
@@ -57,7 +57,11 @@
     <Reference Include="$(CAMPath)\CAMAPI.UserTechOperation.dll" />
     <Reference Include="$(CAMPath)\CAMAPI.Workpiece.dll" />
     <Reference Include="$(CAMPath)\Geometry.VecMatrLib.dll" />
-    <Reference Include="$(CAMPath)\NativeLibUtils.dll" />
+    <Reference Include="$(CAMPath)\NativeLibUtils.dll" /> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\FilesInStreamApi\*.cs" LinkBase="FilesInStreamApi" />
   </ItemGroup>
 
   <Target Name="PublishViewer" AfterTargets="Build">

@@ -26,9 +26,9 @@ public class ImportToolpathPoints : IExtension, IExtensionUtility
 
         try
         {
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var designedFolder = Path.Combine(currentDirectory, "project", "main", "OperationToolpathsJSON", "Designed");
-            var sgfFilePath = Path.Combine(currentDirectory, "toolpath_points.sgf");
+            var outputRoot = ExportOutputPaths.Root;
+            var designedFolder = Path.Combine(outputRoot, "project", "main", "OperationToolpathsJSON", "Designed");
+            var sgfFilePath = Path.Combine(outputRoot, "toolpath_points.sgf");
 
             if (!Directory.Exists(designedFolder))
                 throw new Exception("Folder not found: " + designedFolder);

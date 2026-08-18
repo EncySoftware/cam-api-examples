@@ -62,22 +62,33 @@ function tile(label, value, sub, kind = "") {
 // Card with the project screenshot from .stcp: the main preview shown large,
 // the rest of the Thumbnails files as miniatures. No section — the card is not rendered.
 function screenshotCard(project) {
+    if (project?.ScreenshotsError) {
+        return `<div class="card"><h2>Project screenshot</h2>
+                    <p class="screenshot-error">Failed to extract: ${esc(project.ScreenshotsError)}</p>
+                </div>`;
+    }
     const shots = project?.Screenshots;
-    if (!Array.isArray(shots) || shots.length === 0) {
-        return project?.ScreenshotsError
-            ? `<div class="card"><h2>Project screenshot</h2>
-                   <p class="screenshot-error">Failed to extract: ${esc(project.ScreenshotsError)}</p>
-               </div>`
-            : "";
+    if (!Array.isArray(shots))
+        return "";
+    if (shots.length === 0) {
+        return `<div class="card"><h2>Project screenshot</h2>
+                    <div class="screenshot-empty">The project has no saved preview</div>
+                </div>`;
     }
     const main = shots.find(s => s.IsProjectPreview) ?? shots[0];
     const others = shots.filter(s => s !== main);
     return `<div class="card screenshot-card">
         <h2>Project screenshot</h2>
-        <img class="screenshot-main" src="${esc(main.DataUri)}" alt="${esc(main.Name)}" title="${esc(main.StoragePath)}">
+        <img class="screenshot-main" src="${esc(screenshotSrc(main))}" alt="${esc(main.Name)}" title="${esc(main.StoragePath)}">
         ${others.length ? `<div class="screenshot-thumbs">${others.map(s =>
-            `<img src="${esc(s.DataUri)}" alt="${esc(s.Name)}" title="${esc(s.StoragePath)}">`).join("")}</div>` : ""}
+            `<img src="${esc(screenshotSrc(s))}" alt="${esc(s.Name)}" title="${esc(s.StoragePath)}">`).join("")}</div>` : ""}
     </div>`;
+}
+
+function screenshotSrc(shot) {
+    return shot.File
+        ? `/api/screenshot?file=${encodeURIComponent(shot.File)}`
+        : (shot.DataUri ?? "");
 }
 
 function machineCard(project) {

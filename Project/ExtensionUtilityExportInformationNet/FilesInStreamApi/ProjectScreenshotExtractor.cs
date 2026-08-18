@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using CAMAPI.DotnetHelper;
 using CAMAPI.FilesInStream;
 using CAMAPI.ResultStatus;
 
@@ -10,11 +7,6 @@ namespace ExtensionUtilityExportInformationNet;
 
 /// <summary>
 /// Extracts screenshots from an .stcp project via ICAMAPIFilesInStreamStorage.
-///
-/// Project storage layout:
-///  - ActiveSnapshot.ref — text (UTF-8) with the name of the active snapshot (*.snp);
-///  - *.snp — XML, the Thumbnails/ProjectPreviewFile node holds the preview path;
-///  - Thumbnails/ — folder with the images themselves.
 /// </summary>
 public static class ProjectScreenshotExtractor
 {
@@ -36,29 +28,40 @@ public static class ProjectScreenshotExtractor
         if (!loader.LoadDll(dllPath))
             throw new InvalidOperationException("Failed to load " + dllPath);
 
-        var lib = loader.Lib
+        var libCom = loader.LibCom
             ?? throw new InvalidOperationException("ICAMAPIFilesInStreamStorageLib is not available.");
-        using var storageCom = ComWrapper.Create(lib.CreateNewStorage());
-        var storage = storageCom.Instance
-            ?? throw new InvalidOperationException("CreateNewStorage returned null.");
 
-        var openStatus = storage.Open(projectFilePath, TFISStorageOpenMode.fsomRead);
-        if (openStatus.Code == TResultStatusCode.rsError)
-            throw new InvalidOperationException("Cannot open project storage: " + openStatus.Description);
-        try
+        List<ProjectScreenshot>? screenshots = null;
+        libCom.Invoke(lib =>
         {
-            var previewStoragePath = ReadPreviewPathFromActiveSnapshot(storage);
-            return CollectThumbnailFiles(loader, storage, previewStoragePath);
-        }
-        finally
-        {
-            storage.Close(false);
-        }
+            var storage = lib.CreateNewStorage()
+                ?? throw new InvalidOperationException("CreateNewStorage returned null.");
+            try
+            {
+                var openStatus = storage.Open(projectFilePath, TFISStorageOpenMode.fsomRead);
+                try
+                {
+                    if (openStatus.Code == TResultStatusCode.rsError)
+                        throw new InvalidOperationException("Cannot open project storage: " + openStatus.Description);
+
+                    var previewStoragePath = ReadPreviewPathFromActiveSnapshot(storage);
+                    screenshots = CollectThumbnailFiles(loader, storage, previewStoragePath);
+                }
+                finally
+                {
+                    storage.Close(false);
+                }
+            }
+            finally
+            {
+                Marshal.ReleaseComObject(storage);
+            }
+        });
+        return screenshots ?? new List<ProjectScreenshot>();
     }
 
     /// <summary>
-    /// Reads ActiveSnapshot.ref, then the active snapshot XML, and returns
-    /// the normalized preview path inside the storage (Thumbnails/...); "" — if not found.
+    /// Returns the project preview path inside the storage; "" — if not found.
     /// </summary>
     private static string ReadPreviewPathFromActiveSnapshot(ICAMAPIFilesInStreamStorage storage)
     {
@@ -78,8 +81,7 @@ public static class ProjectScreenshotExtractor
     }
 
     /// <summary>
-    /// Takes the Thumbnails/ProjectPreviewFile node value from the snapshot XML and
-    /// trims it down to the path inside the storage (the snapshot may hold an absolute path).
+    /// Returns the preview path from the snapshot XML; "" — if the node is missing.
     /// </summary>
     private static string ParsePreviewPath(string snapshotXml)
     {
@@ -113,7 +115,7 @@ public static class ProjectScreenshotExtractor
     }
 
     /// <summary>
-    /// Enumerates files of the Thumbnails folder via the ItemChildIndex/ItemSiblingIndex chain.
+    /// Collects all files of the Thumbnails folder.
     /// </summary>
     private static List<ProjectScreenshot> CollectThumbnailFiles(
         FilesInStreamLibLoader loader,

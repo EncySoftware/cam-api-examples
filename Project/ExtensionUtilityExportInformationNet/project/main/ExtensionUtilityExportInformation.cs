@@ -62,7 +62,7 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             ToolpathSaveHelper.Initialize(jsonBuilder);
             MachineSaveHelper.Initialize(jsonBuilder);
             ToolSaveHelper.Initialize(jsonBuilder);
-            
+            ScreenshotSaveHelper.Initialize(jsonBuilder);
             
 
             using var applicationCom = ComWrapper.Create(context.CamApplication);
@@ -148,15 +148,15 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
 
             ToolSaveHelper.SaveToolDetails(projectCom);
             
-            ScreenshotSaveHelper.SaveScreenshots(projectCom);
+            string jsonFullPath = Path.Combine(ExportOutputPaths.Root, "test.json");
+            ScreenshotSaveHelper.SaveScreenshots(projectCom, Path.GetDirectoryName(jsonFullPath)!);
 
             jsonBuilder.EndObject(); // CAMProject closing
             jsonBuilder.EndObject(); // json closing
 
             string json = jsonBuilder.GetJsonString(pretty: true);
-            string jsonFullPath = Path.GetFullPath("test.json");
             File.WriteAllText(jsonFullPath, json);
-            LaunchViewer(jsonFullPath);
+            ViewerLauncher.Show(jsonFullPath, ExportOutputPaths.Root, applicationCom);
         }
         catch (Exception e)
         {
@@ -164,34 +164,5 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             resultStatus.Description = e.Message;
         }
         
-    }
-
-    /// <summary>
-    /// Opens exported json in the web viewer (Viewer\ProjectInfoViewer.exe next to the extension dll).
-    /// Viewer is optional: if it is not deployed or fails to start, export result stays intact.
-    /// </summary>
-    private static void LaunchViewer(string jsonFullPath)
-    {
-        try
-        {
-            var extensionDir = Path.GetDirectoryName(typeof(ExtensionUtilityExportInformation).Assembly.Location);
-            if (extensionDir is null)
-                return;
-
-            var viewerExe = Path.Combine(extensionDir, "Viewer", "ProjectInfoViewer.exe");
-            if (!File.Exists(viewerExe))
-                return;
-
-            Process.Start(new ProcessStartInfo(viewerExe)
-            {
-                ArgumentList = { jsonFullPath },
-                UseShellExecute = true,
-                WorkingDirectory = extensionDir,
-            });
-        }
-        catch (Exception)
-        {
-            // Launching the viewer must not break the export: the json is already written successfully.
-        }
     }
 }

@@ -60,7 +60,8 @@ namespace ExtensionUtilityExportInformationNet
             string json = jsonToolPathbuilder.GetJsonString(pretty: true);
 
             string subFolder = (mode == TCamApiReorderingMode.rmDesigned) ? "Designed" : "Reordered";
-            string folderPath = Path.Combine("project","main","OperationToolpathsJSON", subFolder);
+            string relativeFolder = Path.Combine("project", "main", "OperationToolpathsJSON", subFolder);
+            string folderPath = Path.Combine(ExportOutputPaths.Root, relativeFolder);
             
             var opSetupStageIndex = TechOperationHelper.SetupStageIndex(operationCom);
             var opPartIndex = TechOperationHelper.PartIndex(operationCom);
@@ -68,12 +69,11 @@ namespace ExtensionUtilityExportInformationNet
             var opType = TechOperationHelper.OperationType(operationCom);
             string fileName = 
                 $"I_{opSetupStageIndex}_{opPartIndex}_{_operationIndex++}_{opType}_{opFullName}.json";
-            string fullPath = Path.Combine(folderPath, fileName);
             
             Directory.CreateDirectory(folderPath);
-            File.WriteAllText(fullPath, json);
+            File.WriteAllText(Path.Combine(folderPath, fileName), json);
 
-            _jsonBuilder?.AddStrPair("ToolpathFileName", fullPath); 
+            _jsonBuilder?.AddStrPair("ToolpathFileName", Path.Combine(relativeFolder, fileName)); 
         }
 
         private static string SanitizeFileName(string name)

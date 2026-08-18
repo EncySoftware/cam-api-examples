@@ -8,6 +8,8 @@ namespace ExtensionUtilityExportInformationNet
     /// </summary>
     public static class ScreenshotSaveHelper
     {
+        private const string ScreenshotsFolderName = "screenshots";
+
         private static JsonBuilder? _jsonBuilder;
 
         /// <summary>
@@ -19,11 +21,13 @@ namespace ExtensionUtilityExportInformationNet
         }
 
         /// <summary>
-        /// Writes the Screenshots section. Screenshots correspond to the last saved
-        /// state of the project, so an unsaved project gets no section. Any extraction
-        /// error does not fail the export — ScreenshotsError is written instead.
+        /// Writes the Screenshots section (an empty array — the project has no screenshots)
+        /// and saves the images into the screenshots subfolder inside
+        /// <paramref name="outputDirectory"/> (the folder of the resulting json).
+        /// An unsaved project gets no section; an extraction error does not fail
+        /// the export — ScreenshotsError is written instead.
         /// </summary>
-        public static void SaveScreenshots(ComWrapper<ICamApiProject> projectCom)
+        public static void SaveScreenshots(ComWrapper<ICamApiProject> projectCom, string outputDirectory)
         {
             var projectFilePath = ProjectHelper.FilePath(projectCom);
             if (string.IsNullOrEmpty(projectFilePath) || !File.Exists(projectFilePath))
@@ -32,16 +36,13 @@ namespace ExtensionUtilityExportInformationNet
             try
             {
                 var screenshots = ProjectScreenshotExtractor.Extract(projectFilePath);
-                if (screenshots.Count == 0)
-                {
-                    _jsonBuilder?.AddStrPair("ScreenshotsError",
-                        "No screenshots found: storage has no Thumbnails files (" + projectFilePath + ")");
-                    return;
-                }
-
                 _jsonBuilder?.BeginArray("Screenshots");
-                foreach (var screenshot in screenshots)
-                    SaveScreenshot(screenshot);
+                if (screenshots.Count > 0)
+                {
+                    var screenshotsDir = PrepareScreenshotsFolder(outputDirectory);
+                    foreach (var screenshot in screenshots)
+                        SaveScreenshot(screenshot, screenshotsDir);
+                }
                 _jsonBuilder?.EndArray();
             }
             catch (Exception e)
@@ -50,31 +51,35 @@ namespace ExtensionUtilityExportInformationNet
             }
         }
 
-        private static void SaveScreenshot(ProjectScreenshot screenshot)
+        /// <summary>
+        /// Creates the screenshots folder next to the json (or cleans it from the previous export).
+        /// </summary>
+        private static string PrepareScreenshotsFolder(string outputDirectory)
         {
+            var screenshotsDir = Path.Combine(outputDirectory, ScreenshotsFolderName);
+            if (Directory.Exists(screenshotsDir))
+            {
+                foreach (var staleFile in Directory.EnumerateFiles(screenshotsDir))
+                    File.Delete(staleFile);
+            }
+            else
+            {
+                Directory.CreateDirectory(screenshotsDir);
+            }
+            return screenshotsDir;
+        }
+
+        private static void SaveScreenshot(ProjectScreenshot screenshot, string screenshotsDir)
+        {
+            File.WriteAllBytes(Path.Combine(screenshotsDir, screenshot.Name), screenshot.Data);
+
             _jsonBuilder?.BeginObject();
             _jsonBuilder?.AddStrPair("Name", screenshot.Name);
             _jsonBuilder?.AddStrPair("StoragePath", screenshot.StoragePath);
             _jsonBuilder?.AddBoolPair("IsProjectPreview", screenshot.IsProjectPreview);
-            _jsonBuilder?.AddStrPair("DataUri", BuildDataUri(screenshot));
+            // Path relative to the json — the viewer requests the file by it via /api/screenshot.
+            _jsonBuilder?.AddStrPair("File", ScreenshotsFolderName + "/" + screenshot.Name);
             _jsonBuilder?.EndObject();
-        }
-
-        private static string BuildDataUri(ProjectScreenshot screenshot)
-        {
-            return "data:" + MimeTypeByExtension(screenshot.Name) + ";base64,"
-                 + Convert.ToBase64String(screenshot.Data);
-        }
-
-        private static string MimeTypeByExtension(string fileName)
-        {
-            return Path.GetExtension(fileName).ToLowerInvariant() switch
-            {
-                ".png" => "image/png",
-                ".bmp" => "image/bmp",
-                ".gif" => "image/gif",
-                _ => "image/jpeg",
-            };
         }
     }
 }
