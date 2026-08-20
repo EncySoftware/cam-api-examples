@@ -20,7 +20,7 @@ bool    b = MacroParams.GetBol(stepIndex, "enabled", false);
 
 ## The overrides format
 
-`context.Params` is a JSON dictionary `{ "stepIndex": { "key": "value" }, ... }` — exactly what `ICamApiMacroManager.Execute(id, paramsJson)` accepts (see [../api/application.md](../api/application.md#icamapimacomanager)). Empty string = no overrides (all `GetXxx` return their defaults).
+`context.Params` is a JSON dictionary `{ "stepIndex": { "key": "value" }, ... }` — exactly what `ICamApiMacroManager.Execute(id, paramsJson)` accepts (see [../api/application.md](../api/application.md#icamapimacromanager)). Empty string = no overrides (all `GetXxx` return their defaults).
 
 ```json
 { "0": { "value": "7.5" }, "3": { "fullName": "Part\\Face1" } }
@@ -45,4 +45,4 @@ The macro's `commands.json` (written next to the built macro) drives the editing
 - `default_value: null` (or absent) marks the parameter **required** — the UI refuses to run until the user supplies a value.
 - `display_text` uses `{N}` placeholders that the UI replaces with editable fields.
 
-A host can discover these programmatically via `ICamApiMacroInfo.Step[i].Param[j]` (`Key` / `LabelText` / `ParamType` / `Required` / `DefaultValue` / `ValuesString`) — see [../api/application.md](../api/application.md#icamapimacomanager).
+A host can discover these programmatically via `ICamApiMacroInfo.Step[i].Param[j]` (`Key` / `LabelText` / `ParamType` / `Required` / `DefaultValue` / `ValuesString`) — see [../api/application.md](../api/application.md#icamapimacromanager).

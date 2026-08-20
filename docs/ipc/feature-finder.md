@@ -85,7 +85,7 @@ context). All retrieval and recognition methods take `ref TExecuteContext`:
 `SubFeature[i]`, `BaseEntityName[i]`) carry the same members as their CAMAPI counterparts with
 no context parameter — they are pure property reads — plus `GetInstanceId()`. `ICamIpcFeature`
 also adds the `Highlighted` (RW) property — a transient viewport highlight that does not change
-the actual selection (see [`../api/feature-finder.md`](../api/feature-finder.md#8-icamapifeature--members)).
+the actual selection (see [`../api/feature-finder.md`](../api/feature-finder.md#6-icamapifeature--the-base-feature)).
 
 The specialised feature interfaces (`ICamIpcHoleFeature`, `ICamIpcComplexHoleFeature`,
 `ICamIpcHoleGrooveFeature`, `ICamIpcPocketFeature`, `ICamIpcFilletFeature`,
@@ -116,6 +116,6 @@ for (int i = 0; i < count; i++)
 `ICamIpcHandlerFeatureFinderUpdated.FeatureFinderUpdated(handlerIdent)` mirrors the CAMAPI
 handler. Register it through the IPC event mechanism (`RegisterHandler` /
 `ICamIpcEventHandler`) rather than the in-process `ICamApiApplication.RegisterHandler`; see
-[`connection.md`](connection.md#event-listeners) and [`project.md`](project.md) for the IPC
+[`connection.md`](connection.md#icamipceventlistener--subscribing-to-ency-events) and [`project.md`](project.md) for the IPC
 event-listener pattern. Listener callbacks arrive on a background thread — marshal to your UI
 thread if needed.

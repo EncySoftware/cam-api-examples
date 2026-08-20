@@ -121,9 +121,46 @@ All retrieval helpers return a `ComWrapper<ICamApiFeatureList>` (dispose it with
 | `finderCom.GetFeatureById(id)` | A single `ICamApiFeature?` by its unique id (`null` if not found) |
 | `finderCom.GetFeaturesForNode(nodeName, useRefMatrix, refMatrix)` | Recognize candidates for one geometry tree node (by `FullName`) |
 | `finderCom.GetFeaturesForSelected()` | Recognize candidates aggregated over the selected geometry nodes |
+| `GetFeaturesByType(featureType, out ret)` | **All** recognized features of one type across the whole model — no helper, call via `Invoke` |
 
 `includeDeleted` defaults to `false`; pass `true` to include features whose status is
 `cafsDeleted`.
+
+### GetFeaturesByType — when GetFeatures comes back under-typed
+
+`GetFeatures` returns the **cached whole-model** recognition result, which routinely reports
+generic features where a specific type exists — so a `QueryInterface` to
+`ICamApiPocketFeature`, `ICamApiFilletFeature`, `ICamApiChamferFeature` or
+`ICamApiPlaneFeature` yields `null` and the specific data is unreachable.
+
+`GetFeaturesByType` avoids that: it scans **every** geometry tree node with per-node
+recognition — the same path the right-click *Recognize* menu uses — and returns the
+deduplicated instances of the requested type, including the ones the cached set omits.
+
+```csharp
+using var listCom = finderCom.InvokeAndWrap(f =>
+{
+    var list = f.GetFeaturesByType(TCamApiFeatureType.caftPocket, out var status);
+    if (status.Code == TResultStatusCode.rsError)
+        throw new Exception(status.Description);
+    return list;
+});
+
+foreach (var featureCom in listCom.Enumerate())
+{
+    using var pocketCom = featureCom.AsInstanceOf<ICamApiPocketFeature>();
+    if (!pocketCom.IsNull)
+    {
+        // typed pocket data is actually available here
+    }
+}
+```
+
+> It returns an empty list when the model has no feature of that type — an empty result is
+> not an error.
+
+> **It re-recognizes per node, so it is far more expensive than `GetFeatures`.** Call it for
+> the one type you need, not in a loop over every `TCamApiFeatureType`.
 
 ### Typical read loop
 

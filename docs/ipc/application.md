@@ -11,7 +11,7 @@ IPC interfaces mirror the in-process `CAMAPI` interfaces but add `TExecuteContex
 1. [ICamIpcApplication — remote application instance](#icamipcapplication)
 2. [ICamIpcListApplication — managing multiple instances](#icamipclistapplication)
 3. [IPC application event handlers](#ipc-application-event-handlers)
-4. [ICamIpcPaths — system path properties](#icamiipcpaths)
+4. [ICamIpcPaths — system path properties](#icamipcpaths)
 5. [IIpcExtensionManager — managing extensions over IPC](#iipcextensionmanager)
 6. [ICamIpcUtilityManager / ICamIpcUtilityInfo](#icamipcutilitymanager--icamipcutilityinfo)
 7. [IIpcLogger — logging from an IPC context](#iipclogger)
@@ -174,6 +174,8 @@ The IPC proxy for the ENCY extension manager. All methods take a `TExecuteContex
 |---|---|
 | `RegisterLibrary(storageType, descFilePath, ctx) → IIpcExtensionLibraryInfo*` | Registers an extension library from a JSON description file |
 | `UnRegisterLibrary(libraryPath, ctx)` | Removes a library registration |
+| `RegisterLibraryFromFolder(storageType, folderPath, out needReload, ctx) → IIpcExtensionLibraryInfo*` | Finds the `settings.json` in `folderPath`, **copies the library into ENCY's own folder**, then registers it. `needReload` reports that a restart is required to pick it up |
+| `GetPendingDeletionLibraries() → IIpcListExtensionLibraryInfo*` | Libraries whose unregistration could not complete because the DLL was locked (a `_del_` cleanup artifact is still on disk). Stale entries are dropped automatically, so a non-empty result means a real leftover. **No `ctx` parameter** |
 | `ReloadStorage(storageType, ctx)` | Re-reads a storage layer |
 | `GetLibrariesInfo() → IIpcListExtensionLibraryInfo*` | Lists all registered libraries |
 | `GetLibraryInfo(extensionTypeId, ctx) → IIpcExtensionLibraryInfo*` | Gets library info by extension type ID |
@@ -222,7 +224,7 @@ Helper (`ExtensionManagerHelper`): `emCom.GetApiVersion()`, `emCom.GetApiDepende
 
 ## ICamIpcMacroManager
 
-IPC mirror of `ICamApiMacroManager` — list and run existing macros, and create new ones. See [docs/api/application.md](../api/application.md#icamapimacomanager) for the full conceptual model; this section gives the IPC helper surface. (Writing the body of a macro itself is covered in [docs/macros](../macros/README.md).)
+IPC mirror of `ICamApiMacroManager` — list and run existing macros, and create new ones. See [docs/api/application.md](../api/application.md#icamapimacromanager) for the full conceptual model; this section gives the IPC helper surface. (Writing the body of a macro itself is covered in [docs/macros](../macros/README.md).)
 
 ```csharp
 using var macroMgrCom = appCom.MacroManager();   // ComWrapper<ICamIpcMacroManager>
@@ -388,8 +390,25 @@ Writes log entries into the ENCY log stream from an external process.
 | `head(message)` | Writes a `leHead` entry |
 | `warning(message)` | Writes a `leWarning` entry |
 | `error(message)` | Writes a `leError` entry |
+| `IsEventTypeActive(eventType) → boolean` | Whether entries of that severity are currently being recorded |
+| `Notify(eventType, message, title)` | Shows a **user-visible notification** in the host application, in addition to logging |
+
+Use `IsEventTypeActive` to skip building an expensive message that would be discarded:
+
+```csharp
+if (logger.IsEventTypeActive(TLogEventType.leDebug))
+    logger.debug(BuildExpensiveDump());
+```
+
+`Notify` is not just a log write — it surfaces a toast/message to the user, so reserve it for
+things they must actually see.
 
 `LogItem` is the same struct used in the in-process API — see [api/application.md](../api/application.md#tlogeventtype--logitem).
+
+> **Moved and retyped.** `IIpcLogger` now lives in `CAMIPC.IpcInteraction` (it was in
+> `CAMIPC.Helper`), and `IIpcInteraction.Logger` is now typed `IIpcLogger*` instead of
+> `IExtensionLogger*`. Client code that assigned an `IExtensionLogger` to that property, or
+> imported the interface from `CAMIPC.Helper`, must be updated.
 
 ```csharp
 // Obtain via ICamIpcSingletons:

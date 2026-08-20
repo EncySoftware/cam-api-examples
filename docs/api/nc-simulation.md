@@ -876,6 +876,102 @@ These typed `ComWrapper` specialisations are produced by the factories above. Ea
 | `ICamApiAreaModelItem` | `AreaModelItemHelper` | Area item (perimeter + floor level) |
 | `ICamApiModelItemReference` | — | Reference to another item (e.g. reuse a job zone) |
 
+### Identifying an existing item — Role and Caption
+
+`ICamApiModelItem` carries three different "what is this" fields, and picking the wrong one is
+the usual cause of a rebind/replace workflow failing:
+
+| Property | Granularity | Use it for |
+|---|---|---|
+| `ItemType` | Coarse geometric shape (`TModelItemType`) | Broad shape checks |
+| `ItemGUID` / `ClassName` | Per-class type identity | Exact implementation class |
+| `Role` | Flat job-assignment classification (`TModelItemRole`) | **Which `Add…Selected` produced this item** |
+
+`Role` is the one to switch on when you walk an existing job assignment and need to recreate
+or rebind items:
+
+| Value | Produced by |
+|---|---|
+| `amirNone` | Not classified |
+| `amirHole` | `AddHolesSelected` |
+| `amirCurve2D` | `AddCurves2DSelected` |
+| `amirCurve5D` | `AddCurves5DSelected` |
+| `amirLevel` | `AddLevel…` — use `ICamApiLevelModelItem.LevelType` to tell Top from Bottom |
+| `amirPocket` | `AddPocketSelected` |
+| `amirDriveFace` | `AddDriveFacesSelected` |
+| `amirJobZone` | `AddJobZoneSelected` |
+| `amirRestrictedZone` | `AddRestrictedZoneSelected` |
+| `amirFace` | `AddFacesSelected` |
+| `amirProjectCurve` | `AddProjectCurvesSelected` |
+| `amirGeom25D` | `AddGeom25DSelected` |
+| `amirArea` | `AddArea` |
+| `amirLinkToPreviousOperation` | Reference to the previous operation |
+
+**`Caption` is a full hierarchical geometry path** for items created from geometry (curves,
+faces, holes, …) — e.g. `"Part\Part1.igs\Face6"`. It is exactly the string
+`ICamApiGeomModel.FindByFullName` accepts, and the field `ICamApiModelFormer.FindByFullName`
+matches against — so it round-trips between the geometry tree and the job assignment.
+
+```csharp
+for (int i = 0; i < mfCom.Count(); i++)
+{
+    using var itemCom = mfCom.Item(i);
+    var role = itemCom.Invoke(it => it.Role);
+    if (role == TModelItemRole.amirFace)
+    {
+        string geomPath = itemCom.Caption();          // "Part\Part1.igs\Face6"
+        using var nodeCom = geomModelCom.FindByFullName(geomPath);
+    }
+}
+```
+
+`ICamApiLevelModelItem` additionally exposes read-only `LevelType`
+(`TModelFormerLevelType`) alongside its `Stock`.
+
+### ICamApiModelFormerWithJobMode — swarf drive mode
+
+Mixin of the swarf operation only, obtained by `QueryInterface`; it exposes the UI's
+**"Drive mode"** toggle and persists as the operation's `JobMode` XML field.
+
+| `TModelFormerJobMode` | Meaning |
+|---|---|
+| `mfjmNone` | Not applicable to this operation |
+| `mfjmByBottomEdge` | Drive by the bottom edge (single guide curve) |
+| `mfjmByTwoCurves` | Drive between two curves (First curve + Second curve) |
+
+```csharp
+using var jobModeCom = mfCom.InvokeAndWrap(mf => mf as ICamApiModelFormerWithJobMode);
+if (!jobModeCom.IsNull)
+{
+    jobModeCom.SetJobMode(TModelFormerJobMode.mfjmByTwoCurves);   // do this FIRST
+    // ... only now add the curves
+}
+```
+
+> **Setting `JobMode` clears the current job assignment** — assign the mode before adding
+> curves, or the geometry you just added is discarded.
+
+Helper: `ModelFormerWithJobModeHelper`.
+
+### Fixtures — nested nodes and selection helpers
+
+The fixture tree is a **chain, not a flat list**: a vise is component → Body → Jaw, so the jaw
+is reached as a child *of the body*, not as a second node of the component. Each
+`ICamApiFixtureNodeItem` therefore exposes its own children:
+
+| Member | Description |
+|---|---|
+| `NodeCount` | Number of child axis nodes directly under this node |
+| `GetNode(index)` | Child axis node by zero-based index |
+| `AddNode()` | Add a fixed child node nested under this node |
+
+`ICamApiModelFormerWithFixtures` also mirrors two Fixtures-tab buttons:
+
+| Method | Description |
+|---|---|
+| `AddFacesSelected()` | Add the currently selected geometry faces to the fixtures tree, like the **Add faces** button — uses the current fixture selection or auto-creates a node. Returns the added items |
+| `DeleteItemByCaption(caption)` | Delete the **first** fixture item whose `Caption` matches, like the **Delete** button. Returns `true` if one was found and removed |
+
 ---
 
 ### ICamApiModelFormer — base operations

@@ -9,24 +9,24 @@ All .NET examples use the `ComWrapper<T>` pattern and the extension methods from
 ## Table of contents
 
 1. [Concepts and object model](#1-concepts-and-object-model)
-2. [ICAMAPIGeomLibrary — factory](#2-icamapigeomlibrarymdash-factory)
-3. [ICAMAPIGeometryModel — model root](#3-icamapigeometrymodel-model-root)
-4. [ICAMAPIGeometryTreeNode — tree navigation](#4-icamapigeometrytreenode-tree-navigation)
+2. [ICAMAPIGeomLibrary — factory](#2-icamapigeomlibrary--factory)
+3. [ICAMAPIGeometryModel — model root](#3-icamapigeometrymodel--model-root)
+4. [ICAMAPIGeometryTreeNode — tree navigation](#4-icamapigeometrytreenode--tree-navigation)
 5. [Traversing the geometry tree](#5-traversing-the-geometry-tree)
-6. [ICAMAPIGeometryEntity — entity inspection](#6-icamapigeometryentity-entity-inspection)
+6. [ICAMAPIGeometryEntity — entity inspection](#6-icamapigeometryentity--entity-inspection)
 7. [B-rep structure: Face, Loop, CoEdge](#7-b-rep-structure-face-loop-coedge)
-8. [ICamApiSurface — underlying surface](#8-icamapisurface-underlying-surface)
+8. [ICamApiSurface — underlying surface](#8-icamapisurface--underlying-surface)
 9. [ICamApiCurve and ICamApiCurve5D](#9-icamapicurve-and-icamapicurve5d)
-10. [ICamApiMesh — triangulated representation](#10-icamapimesh-triangulated-representation)
+10. [ICamApiMesh — triangulated representation](#10-icamapimesh--triangulated-representation)
 11. [ICamApiCoordinateSystem](#11-icamapicoordinatesystem)
-12. [ICAMAPIGeometryImporter — importing files](#12-icamapigeometryimporter-importing-files)
-13. [ICamApiGeomPicker — interactive picking](#13-icamapigeompicker-interactive-picking)
-14. [IExtensionGeomModelNodePopup — context menu](#14-iextensiongeommodelnodepopup-context-menu)
-15. [ICMAPITurnGeneratrixExtractor — lathe generatrix](#15-icmapiturngenatrixextractor-lathe-generatrix)
+12. [ICAMAPIGeometryImporter — importing files](#12-icamapigeometryimporter--importing-files)
+13. [ICamApiGeomPicker — interactive picking](#13-icamapigeompicker--interactive-picking)
+14. [IExtensionGeomModelNodePopup — context menu](#14-iextensiongeommodelnodepopup--context-menu)
+15. [ICMAPITurnGeneratrixExtractor — lathe generatrix](#15-icmapiturngeneratrixextractor--lathe-generatrix)
 16. [Export helpers](#16-export-helpers)
 17. [Entity type reference](#17-entity-type-reference)
-18. [ICamApiGeometryModelSketcher — creating primitives](#18-icamapigeometrymodelsketcher-creating-primitives)
-19. [ICamApiPointSnapper — snapping points to faces](#19-icamapipointsnapper-snapping-points-to-faces)
+18. [ICamApiGeometryModelSketcher — creating primitives](#18-icamapigeometrymodelsketcher--creating-primitives)
+19. [ICamApiPointSnapper — snapping points to faces](#19-icamapipointsnapper--snapping-points-to-faces)
 
 ---
 
@@ -112,7 +112,7 @@ using var modelCom = new ComWrapper<ICAMAPIGeometryModel>(activeProject.CAMAPIGe
 | `ExportSelectedToDXF(fileName)` | Export selected nodes to DXF |
 | `DeselectAll()` | Deselect all nodes |
 | `DeleteNode(node)` | Remove a node from the tree |
-| `GetFaceListOfSelected()` | Returns `ICAMAPIFaceList` of selected face nodes |
+| `GetFaceListOfSelected()` | Returns `ICamApiFaceList` of selected face nodes |
 | `AddGroup(parentNode)` | Add an empty group node under `parentNode` |
 | `AddCadGroup(name, lcs?)` | Add a CAD-typed group (a fresh GeCAD model) at the given LCS; helper defaults `lcs` to identity. The returned node hosts an editable `ICadApiModel` — reach it with `AsCadModel()` from CADAPI.DotnetHelper |
 | `ExportSelectedToStep(fileName)` | Export selected nodes to a STEP file (experimental) |
@@ -428,6 +428,7 @@ Obtained from `ICamApiFaceGeometryEntity.Face` or from `ICamApiFaceList`.
 | `IsCylindricalHole(tol, ...)` | Convenience test; returns center, axis, radius, ZMin, ZMax |
 | `SurfaceKind` | Classified analytic kind of the surface — `TCamApiSurfaceKind` |
 | `GetMinCurvatureRadius(tol)` | Minimum radius of curvature over the face; `MaxFloat` for a planar face |
+| `GetMaxCurvatureRadius(tol)` | Maximum radius of curvature over the face — on a sphere this is the sphere radius. `MaxFloat` when no finite curved direction exists (planar face, or the straight direction of a cylinder or cone) |
 | `GetPlane(out origin, out normal)` | If planar, returns plane origin and unit normal; `true` when planar |
 | `GetCylinder(out center, out axis, out radius)` | If cylindrical, returns axis and radius; `true` when cylindrical |
 | `GetCone(out center, out axis, out radius, out halfAngle)` | If conical, returns apex, axis, base radius and half-angle (rad); `true` when conical |
@@ -478,7 +479,7 @@ switch (faceCom.SurfaceKind())
 double rMin = faceCom.GetMinCurvatureRadius(0.01);   // MaxFloat for a plane
 ```
 
-`FaceHelper` exposes `SurfaceKind`, `GetMinCurvatureRadius`, `GetPlane`, `GetCylinder`, `GetCone`.
+`FaceHelper` exposes `SurfaceKind`, `GetMinCurvatureRadius`, `GetMaxCurvatureRadius`, `GetPlane`, `GetCylinder`, `GetCone`.
 
 ### ICamApiLoop
 
@@ -591,6 +592,85 @@ for (int i = 0; i < edgeInfoListCom.Count(); i++)
 ```
 
 Helpers: `EdgeAnalyzerHelper`, `FaceListBuilderHelper`, `EdgeFaceInfoListHelper`, `EdgeFaceInfoHelper`.
+
+### Shape descriptors — ICamApiShapeAnalyzer
+
+Where `ICamApiEdgeAnalyzer` answers *how faces connect*, `ICamApiShapeAnalyzer` answers *what
+a shape looks like numerically*: it computes **shape descriptors** — form characteristics of a
+single face or a whole face set — intended for shape recognition and AI classification.
+
+Also a singleton extension: `ShapeAnalyzerHelper.GetSingleton()`.
+
+Descriptors come at two levels:
+
+- **Level 1 — scale-dependent**: areas, volume, bounding box, centroid, curvature radii,
+  face and edge counts. Real millimetres; two parts of the same shape and different size
+  differ here.
+- **Level 2 — scale-invariant**: ratios, normalized inertia, sphericity, distance histogram.
+  Dimensionless, so the same shape at any size gives the same numbers. This is what
+  `GetVector()` packs for a classifier.
+
+| Method | Description |
+|---|---|
+| `CreateFaceList()` | Empty `ICamApiFaceListBuilder` (same builder as the edge analyzer) |
+| `BuildFaceInfo(face, tolerance)` | Descriptor of one face → `ICamApiShapeFaceInfo`. Throws on error |
+| `BuildBodyInfo(faces, tolerance)` | Descriptor of a face set → `ICamApiShapeBodyInfo`. Throws on error |
+
+`tolerance` drives tessellation, curvature sampling and edge matching — the same value used
+for the edge analyzer is a reasonable choice.
+
+**`ICamApiShapeFaceInfo`** — level 1: `Area`, `BoxMin`, `BoxMax`, `MinCurvatureRadius`,
+`MaxCurvatureRadius`, `LoopCount` (1 = simple face, ≥2 = face with holes), `SurfaceKind`;
+level 2: `CurvatureRatio` (≈1 when the face bends alike in both directions like a sphere or
+plane, ≈0 when one direction is straight like a cylinder or cone), `GetNormalizedInertia()`,
+`GetVector()`.
+
+**`ICamApiShapeBodyInfo`** — level 1: `IsClosed`, `Volume`, `TotalArea`, `BoxMin`, `BoxMax`,
+`Centroid`, `FaceCount`, `GetFaceCountByKind(kind)`, `ConvexEdgeCount`, `ConcaveEdgeCount`,
+`SmoothEdgeCount`, `BoundaryEdgeCount`, `GetPrincipalInertia(...)`; level 2: `Sphericity`
+(exactly 1 for a ball), `GetNormalizedInertia()`, `GetDistanceHistogram()`, `GetVector()`.
+
+```csharp
+using var analyzerCom = ShapeAnalyzerHelper.GetSingleton();
+
+using var builderCom = analyzerCom.CreateFaceList();
+builderCom.AddRange(faceListCom);            // ALL faces of the solid
+using var facesCom = builderCom.Build();
+
+using var bodyCom = analyzerCom.BuildBodyInfo(facesCom, 0.001);
+if (bodyCom.IsClosed())
+    Console.WriteLine($"volume {bodyCom.Volume():0.##}, sphericity {bodyCom.Sphericity():0.###}");
+
+// Scale-invariant feature vector for a classifier
+double[] vector = bodyCom.GetVector();
+int schema = bodyCom.VectorSchemaVersion();
+
+// Per-face descriptor
+using var faceInfoCom = analyzerCom.BuildFaceInfo(faceCom, 0.001);
+if (faceInfoCom.SurfaceKind() == TCamApiSurfaceKind.skCylinder)
+    Console.WriteLine($"cylinder R≈{faceInfoCom.MinCurvatureRadius():0.###}");
+```
+
+> **Always check `VectorSchemaVersion` before feeding `GetVector()` to a trained model** — the
+> vector's meaning and order are versioned, and a classifier trained on one version must not
+> consume another.
+
+> **Pass every face of the solid to `BuildBodyInfo`.** Closedness, boundary-edge count and
+> volume are derived from the set you hand in — a partial set silently reports as an open
+> shell with `Volume = 0`.
+
+> Curvature radii return `MaxFloat` (not infinity, not an error) where there is no finite
+> curved direction — a planar face, or the straight direction of a cylinder or cone. Guard for
+> that before using them in arithmetic.
+
+> `Volume`, `Sphericity` and the volume-based inertia are meaningless for an open face set:
+> volume and sphericity read `0`, and inertia falls back to surface-area weighting.
+
+> `GetDistanceHistogram()` is estimated from a fixed-size sample of the tessellation, so
+> identical shapes agree closely rather than bit-exactly — compare with a tolerance.
+
+Helpers: `ShapeAnalyzerHelper`, `ShapeFaceInfoHelper`, `ShapeBodyInfoHelper` (the last two
+wrap the indexed `VectorValue` / `DistanceHistogramBin` properties as plain `double[]`).
 
 ---
 
@@ -1012,7 +1092,7 @@ geomNodeCom.Invoke(node =>
 
 ### ICamApiFacesToTriangulatedFilesConverter
 
-Converts a `ICAMAPIFaceList` to STL or OSD without requiring node selection. Obtained from `ICAMAPIGeomLibrary.CreateFacesToTriangulatedFilesConverter()`.
+Converts a `ICamApiFaceList` to STL or OSD without requiring node selection. Obtained from `ICAMAPIGeomLibrary.CreateFacesToTriangulatedFilesConverter()`.
 
 | Member | Description |
 |---|---|
@@ -1090,6 +1170,45 @@ Helper class: `GeometryModelSketcherHelper`. Every method returns the created
 | `AddNormalLine(origin, endPoint)` | A "normal line" anchored at `origin`, ending at `endPoint` |
 | `StartPolyline()` | Begins a polyline — returns an `ICamApiSpatialCurveBuilder` |
 | `StartSpline()` | Begins a smooth spline — returns an `ICamApiSpatialCurveBuilder` |
+
+### Sketching in a local coordinate system
+
+By default all coordinates are **Global**. To sketch in a local CS instead — on a machined
+face, in a workpiece CS — there are two ways:
+
+**`TargetCS`** sets a *sticky* CS applied to every subsequent `AddPoint`, `AddLine`,
+`AddNormalLine`, `StartPolyline` and `StartSpline`. The matrix maps sketch-local coordinates
+to world, the same convention as `ICamApiCoordinateSystem.Matrix`; identity means Global.
+`SetTargetCS` accepts either a raw `TST3DMatrix` or a `ComWrapper<ICamApiCoordinateSystem>`.
+
+```csharp
+sketcherCom.SetTargetCS(csCom);                          // everything below is CS-local
+using (var ptCom = sketcherCom.AddPoint(0, 0, 0)) { }    // origin of that CS
+```
+
+**One-shot variants** — pass the CS as an extra last argument and `TargetCS` is neither read
+nor changed. Each sketch method has two such overloads, taking a `TST3DMatrix` or a
+`ComWrapper<ICamApiCoordinateSystem>`:
+
+| Helper overload | Creates |
+|---|---|
+| `AddPoint(x, y, z, cs)` | Point in `cs` |
+| `AddLine(p1, p2, cs)` | Line in `cs` |
+| `AddNormalLine(origin, endPoint, cs)` | Normal line in `cs` |
+| `StartPolyline(cs)` | Polyline builder whose knots are in `cs` |
+| `StartSpline(cs)` | Spline builder whose knots are in `cs` |
+
+```csharp
+using var ptCom = sketcherCom.AddPoint(0, 0, 0, csCom);   // TargetCS untouched
+```
+
+> The underlying IDL methods are `AddPointInCS`, `AddLineInCS`, `AddNormalLineInCS`,
+> `StartPolylineInCS`, `StartSplineInCS` — the helpers expose them as overloads of the plain
+> names instead.
+
+> `TargetCS` is **sticky state on the sketcher**, which is the geometry model itself — so it
+> stays until you set it back. Prefer the one-shot overloads for occasional geometry, or
+> restore the previous matrix (`GetTargetCS()`) when you are done.
 
 ### Multi-knot curves — ICamApiSpatialCurveBuilder
 

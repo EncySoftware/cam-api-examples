@@ -19,7 +19,7 @@ relevant.
 8. [ICamApiSetupStage](#icamapisetupstage)
 9. [ICamApiPartStage](#icamapipartstage)
 10. [ICamApiPartAndStageList](#icamapipartandstagelist)
-11. [ICamApiSnapshot / IListCamApiSnapshot](#icamapiartsnapshot--ilistcamapiartsnapshot)
+11. [ICamApiSnapshot / IListCamApiSnapshot](#icamapisnapshot--ilistcamapisnapshot)
 12. [ICamApiUserTechOperationInfo / ICamApiUserTechOperationList](#icamapiusertechoperationinfo--icamapiusertechoperationlist)
 
 ---
@@ -70,6 +70,7 @@ var project = application.GetActiveProject(out var status);
 | `projectCom.SaveCLDataInfo(path, iterator?)` | `ComWrapper<ICamApiNCMakerCLDataInfo>` | Like `SaveClData`, but also returns the list of operations that produced the file — pass the result to `NCMaker.GenerateNC` (see [nc-simulation.md](nc-simulation.md)) |
 | `projectCom.PLMItemId()` | `string` | Item id inside the PLM system, if the project was loaded from PLM (empty otherwise) |
 | `projectCom.PLMConnectionId()` | `Guid` | PLM connection id, if the project was loaded from PLM |
+| `IsModified` | `bool` | `true` if the project has unsaved changes — a live check of the same condition that triggers the save prompt on close. No helper — use `projectCom.Invoke(p => p.IsModified)` |
 
 ### Event handlers
 
@@ -102,7 +103,7 @@ for (int i = 0; i < count; i++)
 projectCom.SetOperationTool(someOperationId, "12");
 ```
 
-**Reference example:** [`ProjectToolsList/ExtensionUtilityProjectToolsListNet/project/main/ExtensionUtilityProjectToolsList.cs`](../../ProjectToolsList/ExtensionUtilityProjectToolsListNet/project/main/ExtensionUtilityProjectToolsList.cs)
+**Reference example:** [`ProjectToolsList/ExtensionToolsListPopupNet/project/main/ExtensionToolsListPopup.cs`](../../ProjectToolsList/ExtensionToolsListPopupNet/project/main/ExtensionToolsListPopup.cs)
 
 ---
 
@@ -339,6 +340,11 @@ status flags, model formers, approach/retract rules, and more.
 | `operationCom.ModelFormerRestrictions()` | `ComWrapper<ICamApiModelFormer>` | Restriction surfaces |
 | `operationCom.ModelFormerFixtures()` | `ComWrapper<ICamApiModelFormer>` | Fixture geometry |
 | `operationCom.Technologist()` | `ComWrapper<ICamApiTechOperationOwner>` | Back-reference to the owning technologist (cast to `ICamApiTechnologist` if needed) |
+| `operationCom.ResetToolpathLocked()` | `bool` | Whether the toolpath is frozen against reset/recalculation |
+| `operationCom.SetResetToolpathLocked(value)` | `void` | Freeze the toolpath — `Calculate` and reset commands then keep the computed toolpath instead of clearing it |
+| `operationCom.ApproachCalculated()` | `bool` | The approach move has been calculated |
+| `operationCom.ReturnCalculated()` | `bool` | The return move has been calculated |
+| `GetOperationDefaults()` | `string` | JSON path→value map of defaults the operation materialised at creation that diverge from the schema/formula default (empty when none). No helper — use `Invoke` |
 
 **Approach/retract rule format.** The string value follows CLData notation:
 
@@ -350,6 +356,83 @@ status flags, model formers, approach/retract rules, and more.
 | `[SHORT]` | Short approach/retract |
 | `[Default]` | Use operation default |
 | `G53 A1(v) A2(v) ...` | Custom absolute axis positions in machine CS |
+
+### Custom approach/return as a command list
+
+Instead of hand-building the CLData string, a custom transition can be edited structurally —
+as an ordered list of commands, each a position type plus per-axis values. This is the same
+model the operation's Approach/Return UI edits.
+
+```csharp
+// Seeded from the current approach regardless of whether it is already custom
+bool wasCustom = operationCom.Invoke(op =>
+{
+    var isCustom = op.GetApproachRuleIsCustom(out var rule, out var status);
+    if (status.Code == TResultStatusCode.rsError)
+        throw new Exception(status.Description);
+
+    using var ruleCom = ComWrapper.Create(rule);
+    using var cmdCom = ruleCom.InvokeAndWrap(r =>
+        r.AddCommand(TCamApiApproachReturnPositionType.aprtGoto, out var s));
+
+    cmdCom.Invoke(c =>
+    {
+        c.SetAxisValue(2, 50.0, out var s1);   // Z = 50
+        c.SetAxisAuto(0, out var s2);          // X from the operation's final position
+    });
+
+    op.SetApproachRuleIsCustom(rule, out var setStatus);
+    if (setStatus.Code == TResultStatusCode.rsError)
+        throw new Exception(setStatus.Description);
+    return isCustom;
+});
+```
+
+`GetApproachRuleIsCustom` / `GetReturnRuleIsCustom` return **whether** the transition is
+currently custom, and always hand back a rule seeded from the current transition — so the
+same call works for "edit the existing custom rule" and "start from what Auto produced".
+Nothing is persisted until the matching `Set…IsCustom`.
+
+**`ICamApiApproachReturnRule`:** `GetCommandCount`, `GetCommand(index)`,
+`AddCommand(positionType)` (appends, returns the new command), `DeleteCommand(index)`, `Clear`.
+
+**`ICamApiApproachReturnCommand`:** `GetPositionType` / `SetPositionType`, `GetAxisCount`,
+and per-axis `GetAxisId`, `GetAxisKind`, `GetAxisMode`, `GetAxisValue`, `SetAxisValue`,
+`SetAxisAuto`, `SetAxisUnset`.
+
+**`TCamApiApproachReturnPositionType`:**
+
+| Value | Meaning |
+|---|---|
+| `aprtGoto` (0) | Point in geometric axes (X, Y, Z) |
+| `aprtMultiGoto` (1) | Point with full orientation in geometric machine axes |
+| `aprtPhysicGoto` (2) | Output in physical machine axes (robot joints) — avoids singularities |
+| `aprtLcsOn` (3) | Turn the local coordinate system on |
+| `aprtStartLcsOn` (4) | Turn the LCS on at the first point |
+| `aprtLcsOff` (5) | Turn the LCS off |
+| `aprtStop` (6) | Stop (M00) |
+| `aprtOptionalStop` (7) | Optional stop (M01) |
+| `aprtTcpmOn` (8) | Turn TCPM on — **added automatically only** |
+| `aprtTcpmOff` (9) | Turn TCPM off — **added automatically only** |
+
+**`TCamApiApproachReturnAxisMode`:** `aamUnset` (0) — undefined, value taken from the current
+machine state; `aamValue` (1) — fixed manual value; `aamAuto` (2) — taken from the
+operation's final position.
+
+**`TCamApiApproachReturnAxisKind`:** `akSpatial` (0) — geometric X/Y/Z, GOTO only;
+`akLinear` (1) — machine linear axis; `akRotary` (2) — machine rotary axis; `akOther` (3) —
+axis outside the current tool-workpiece chain.
+
+> **The axis set depends on the position type**: 3 spatial axes for `aprtGoto`, the machine's
+> axes for `aprtMultiGoto`/`aprtPhysicGoto`, and none for the LCS/Stop/TCPM types.
+> `SetPositionType` **rebuilds** the command's axis set, so set the type first and only then
+> the axis values — and re-read `GetAxisCount` after changing it.
+
+> `aprtTcpmOn`/`aprtTcpmOff` are inserted by the engine; passing them to `AddCommand` is
+> rejected through `ResultStatus`.
+
+> These interfaces report every failure through their `out ResultStatus` and never raise
+> across the COM boundary — check it rather than relying on an exception.
 
 ### Reading and writing XML properties
 
@@ -657,7 +740,7 @@ void RenameRecursive(ComWrapper<ICamApiTechOperationIterator> it, string prefix,
 }
 ```
 
-**Reference example:** [`Technologist/Operation/RenameOperationsNet/project/main/ExtensionRenameOperations.cs`](../../Technologist/Operation/RenameOperationsNet/project/main/ExtensionRenameOperations.cs)
+**Related examples:** [`Technologist/Operation/OperationNet`](../../Technologist/Operation/OperationNet/project/main/ExtensionCreateOperation.cs) — creating operations, parts and setup stages through the technologist.
 
 ---
 

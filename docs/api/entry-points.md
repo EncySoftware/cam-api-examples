@@ -229,8 +229,21 @@ using var allLibsCom = managerCom.GetLibrariesInfo();
 ```
 
 Each `IExtensionLibraryInfo` carries, besides its path and `UnloadMode`, the descriptive
-fields taken from the library's `settings.json`: `Version`, `Id`, `Author`, `IconPath`, and
-`Tags` (all read-only strings).
+fields taken from the library's `settings.json`: `Version`, `Id`, `Author`, `IconPath`,
+`Tags`, and `SettingsPath` — the path to the `*.settings.json` the library was registered
+from (all read-only strings).
+
+#### `GetPendingDeletionLibraries`
+
+Returns the libraries whose unregistration could not finish because their DLL was locked at
+the time (`UnRegisterLibrary` left a `_del_` cleanup artifact on disk instead of deleting).
+
+```csharp
+using var pendingCom = managerCom.InvokeAndWrap(m => m.GetPendingDeletionLibraries());
+```
+
+Entries whose artifact is already gone are dropped automatically, so a non-empty result means
+a real leftover — typically a library that will only disappear after ENCY restarts.
 
 ---
 
@@ -413,6 +426,39 @@ utility kinds documented there, the API also declares:
 | `IExtensionTypeInfoPostprocessorPopup` | Context menu of a postprocessor |
 | `IExtensionTypeInfoToolsListPopup` | Context menu of the tools list |
 | `IExtensionTypeInfoNCFilesExporter` | Export generated NC files to an external target (pairs with `IExtensionNCFilesExporter` — see [nc-simulation.md](nc-simulation.md#generatenc-and-result-objects)) |
+| `IExtensionTypeInfoMacroBuilder` | Builds macros for one macro language (pairs with `IExtensionMacroBuilder` — see below) |
+
+---
+
+## IExtensionMacroBuilder — adding a macro language
+
+A macro-builder extension teaches ENCY how to turn a recorded command sequence into a
+runnable macro in one particular language. The built-in `dotnet` and `spr` builders are
+exactly such extensions; the macro manager dispatches to one of them by
+`ICamApiMacroInfo.LanguageId`.
+
+This is the *producer* side. To merely record, build or run macros from a plugin, use
+[`ICamApiMacroManager`](application.md#icamapimacromanager) instead — you do not need this
+interface.
+
+| Method | Description |
+|---|---|
+| `CheckEnvironment(languageSettings, out ret)` | Verify the toolchain is usable (compiler reachable, references resolvable). `rsError` + `Description` on failure |
+| `SetupEnvironment(languageSettings, out ret)` | Try to repair the environment so `CheckEnvironment` passes; no-op for languages needing no external tooling |
+| `AddCommand(data)` | Feed one recorded command (`ICamApiMacroCommandData`) into the builder |
+| `AddCommandSetDriveFaceItemProperties(...)` | Record a drive-face item property change. Separate from `AddCommand` because it carries a **string list** (`Faces`), which the scalar command bag cannot hold |
+| `AddCommandAddFixture(operationGuid, addType)` | Record an "add fixture" command (`TFixtureAddType`: 0 = Chuck, 1 = Vise, 2 = Clamp, 3 = Node) |
+| `CreateMacro(context, mainSettings, languageSettings, out ret)` → `string` | Generate the macro **source** from the accumulated commands; returns its path. A new file each call — not yet runnable |
+| `Build(id, caption, description, macroPath, out ret)` → `string` | Compile the source into something ENCY can execute. Stateless |
+| `OpenInEditor(macroPath, context, out ret)` | Open the source for editing in whatever is native for the language (project folder in VS Code, host scripting IDE, …) |
+| `Reset()` | Drop all accumulated commands |
+
+`IExtensionMacroBuilderContext` carries a single member — `CamApplication`
+(`ICamApiApplication*`).
+
+> **Always `Reset()` around a build.** The builder instance is shared and long-lived, so a
+> failed build otherwise leaves its commands behind and they leak into the next macro until
+> ENCY restarts.
 
 ---
 

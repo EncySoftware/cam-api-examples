@@ -9,17 +9,17 @@ This document describes the IPC (inter-process communication) variants of the ge
 ## Table of contents
 
 1. [Overview of IPC differences](#1-overview-of-ipc-differences)
-2. [ICamIpcGeomLibrary — factory](#2-icamipcgeomlibrarymdash-factory)
-3. [ICamIpcGeometryModel — model root](#3-icamipcgeometrymodel-model-root)
+2. [ICamIpcGeomLibrary — factory](#2-icamipcgeomlibrary--factory)
+3. [ICamIpcGeometryModel — model root](#3-icamipcgeometrymodel--model-root)
 4. [ICamIpcGeometryTreeNode and iterator](#4-icamipcgeometrytreenode-and-iterator)
 5. [ICamIpcGeometryEntity and subtypes](#5-icamipcgeometryentity-and-subtypes)
 6. [ICamIpcFace, ICamIpcLoop, ICamIpcCoEdge](#6-icamipcface-icamipcloop-icamipccoedge)
-7. [ICamIpcSurface and ICamIpcNurbsSurface](#7-icamipcface-and-icamipcnurbssurface)
+7. [ICamIpcSurface and ICamIpcNurbsSurface](#7-icamipcsurface-and-icamipcnurbssurface)
 8. [ICamIpcCurve and related interfaces](#8-icamipccurve-and-related-interfaces)
 9. [ICamIpcMesh](#9-icamipcmesh)
 10. [ICamIpcCoordinateSystem](#10-icamipccoordinatesystem)
 11. [ICamIpcGeometryImporter](#11-icamipcgeometryimporter)
-12. [ICamIpcTurnGeneratrixExtractor — lathe-specific](#12-icamipcturngeneratrixextractor-lathe-specific)
+12. [ICamIpcTurnGeneratrixExtractor — lathe-specific](#12-icamipcturngeneratrixextractor--lathe-specific)
 
 ---
 
@@ -275,6 +275,47 @@ The IPC version differs in:
 - `Receiver` property type is `ICamIpcAbstractCurveReceiver` instead of `ICamApiAbstractCurveReceiver`.
 - `MakeGeneratrixForNode(node, ref ctx)` — the context parameter is required.
 
-All other properties (`Tolerance`, `SewTolerance`, `NeedJoinCurves`, `TurnAxis`, `NeedCloseToAxis`) have identical types and semantics to the CAMAPI version described in [`../api/geometry.md §15`](../api/geometry.md#15-icmapiturngenatrixextractor-lathe-generatrix).
+All other properties (`Tolerance`, `SewTolerance`, `NeedJoinCurves`, `TurnAxis`, `NeedCloseToAxis`) have identical types and semantics to the CAMAPI version described in [`../api/geometry.md §15`](../api/geometry.md#15-icmapiturngeneratrixextractor--lathe-generatrix).
 
 Obtained from `ICamIpcGeomLibrary.CreateTurnGeneratrixExtractor()` (no context parameter on the factory method itself).
+
+---
+
+## 13. ICamIpcGeometryModelSketcher — creating primitives
+
+IPC mirror of `ICamApiGeometryModelSketcher`
+([`../api/geometry.md §18`](../api/geometry.md#18-icamapigeometrymodelsketcher--creating-primitives)).
+Every method takes `ctx` and returns an `ICamIpcGeometryTreeNode`.
+
+| Method | Creates |
+|---|---|
+| `AddPoint(x, y, z, ctx)` | A single point |
+| `AddLine(p1, p2, ctx)` | A line segment |
+| `AddNormalLine(origin, endPoint, ctx)` | A "normal line" |
+| `StartPolyline(ctx)` | Polyline → `ICamIpcSpatialCurveBuilder` |
+| `StartSpline(ctx)` | Smooth spline → `ICamIpcSpatialCurveBuilder` |
+
+### Sketching in a local coordinate system
+
+Coordinates are **Global** by default. Two ways to change that, same model as CAMAPI:
+
+**Sticky** — `GetTargetCS(ctx)` / `SetTargetCS(matrix, ctx)` set the CS applied to every
+subsequent `AddPoint`, `AddLine`, `AddNormalLine`, `StartPolyline` and `StartSpline`. The
+matrix maps sketch-local coordinates to world, the same convention as
+`ICamIpcCoordinateSystem.Matrix`; identity means Global.
+
+**One-shot** — these take the CS explicitly and neither read nor modify `TargetCS`:
+
+| Method | Creates |
+|---|---|
+| `AddPointInCS(x, y, z, lcs, ctx)` | Point in `lcs` |
+| `AddLineInCS(p1, p2, lcs, ctx)` | Line in `lcs` |
+| `AddNormalLineInCS(origin, endPoint, lcs, ctx)` | Normal line in `lcs` |
+| `StartPolylineInCS(lcs, ctx)` | Polyline builder in `lcs` |
+| `StartSplineInCS(lcs, ctx)` | Spline builder in `lcs` |
+
+> Unlike the CAMAPI helpers — which expose these as overloads of the plain names — the IPC
+> interface keeps the explicit `…InCS` method names.
+
+> `TargetCS` is sticky server-side state on the geometry model, shared by every IPC client.
+> Prefer the `…InCS` variants, or restore the previous matrix when done.

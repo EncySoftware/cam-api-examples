@@ -147,6 +147,19 @@ Surface matches `ICamApiMachineConfiguration` with the following differences:
 
 All flip and axis read/write properties are present with the same semantics as CAMAPI.
 
+### Per-operation axis limits
+
+Mirrors the CAMAPI properties ([`../api/tools-machine.md`](../api/tools-machine.md#per-operation-axis-limits)).
+All three are indexed by axis, read/write, and take **no** `TExecuteContext`:
+
+| Property | Type | Description |
+|---|---|---|
+| `AxisLimitsEnabled[index]` | `boolean` | `true` — the limits below apply; `false` — inherited from the parent |
+| `AxisLimitMin[index]` | `double` | Lower limit, degrees for rotary axes and mm for linear |
+| `AxisLimitMax[index]` | `double` | Upper limit, same units |
+
+> The bounds are only honoured while `AxisLimitsEnabled[index]` is `true`.
+
 ---
 
 ## ICamIpcMachinesLibrary

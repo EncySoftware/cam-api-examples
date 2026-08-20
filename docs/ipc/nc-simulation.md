@@ -130,7 +130,7 @@ ipcSimulator.SaveMachiningResultToSTL(null, stlPath, ref ctx);
 
 ## ICamIpcCLDReceiver — toolpath command stream (IPC)
 
-Mirrors `ICamApiCLDReceiver` exactly. The method signatures are identical — no `TExecuteContext` is required on individual toolpath commands. The full command set is documented in [../api/nc-simulation.md#icamapicldreceiver](../api/nc-simulation.md#icamapicldreceiver).
+Mirrors `ICamApiCLDReceiver` exactly. The method signatures are identical — no `TExecuteContext` is required on individual toolpath commands. The full command set is documented in [../api/nc-simulation.md#icamapicldreceiver--toolpath-command-stream](../api/nc-simulation.md#icamapicldreceiver--toolpath-command-stream).
 
 Key methods:
 
@@ -190,6 +190,36 @@ All mirror their `ICamApi*` counterparts. The `GetInstanceId()` method is added 
 | `ICamIpcModelFormerWithBoxPrimitives` / `WithCylinderPrimitives` / `WithCastingPrimitive` | `AddBoxPrimitive(...)` / `AddCylinderPrimitive(...)` / `AddCastingPrimitive(...)` | `GetInstanceId()` added |
 | `ICamIpcModelFormerWithReferenceToPrevious` | `SetReferenceToPrevious(flag)` | `GetInstanceId()` added |
 | `ICamIpcModelFormerWithProbingItems` | Full probing-cycle factory surface (see below) | `GetInstanceId()` added |
+| `ICamIpcModelFormerWithJobMode` | `JobMode` (RW) | New — swarf "Drive mode", see below |
+
+### Identifying items — Role and LevelType
+
+`ICamIpcModelItem` adds read-only `Role` (`TModelItemRole`), the flat classification saying
+**which `Add…Selected` produced the item** — the field to switch on when walking an existing
+job assignment. `ICamIpcLevelModelItem` adds read-only `LevelType`
+(`TModelFormerLevelType`) next to its `Stock`, which is how you tell a Top level from a
+Bottom one.
+
+Both mirror CAMAPI exactly — the value table is in
+[`../api/nc-simulation.md`](../api/nc-simulation.md#identifying-an-existing-item--role-and-caption),
+along with the note that `Caption` is a full hierarchical geometry path that round-trips
+through `FindByFullName`.
+
+### ICamIpcModelFormerWithJobMode — swarf drive mode
+
+Mixin of the swarf operation: `JobMode` (RW, `TModelFormerJobMode`) toggles between
+`mfjmByBottomEdge` (single guide curve) and `mfjmByTwoCurves`, plus `mfjmNone` when not
+applicable. The enum is imported from `CAMAPI.ModelFormerTypes`.
+
+> **Setting `JobMode` clears the current job assignment** — set the mode *before* adding
+> curves, or the geometry is discarded. See
+> [`../api/nc-simulation.md`](../api/nc-simulation.md#icamapimodelformerwithjobmode--swarf-drive-mode).
+
+### Fixtures — nested nodes
+
+`ICamIpcFixtureNodeItem` gains `NodeCount`, `GetNode(index)` and `AddNode()`. The fixture tree
+is a **chain, not a flat list**: a vise is component → Body → Jaw, so the jaw is a child *of
+the body*, not a second node of the component.
 
 ### ICamIpcModelFormerWithProbingItems — probing cycles (IPC)
 
