@@ -11,7 +11,7 @@ IPC interfaces mirror the in-process `CAMAPI` interfaces but add `TExecuteContex
 1. [ICamIpcApplication — remote application instance](#icamipcapplication)
 2. [ICamIpcListApplication — managing multiple instances](#icamipclistapplication)
 3. [IPC application event handlers](#ipc-application-event-handlers)
-4. [ICamIpcPaths — system path properties](#icamiipcpaths)
+4. [ICamIpcPaths — system path properties](#icamipcpaths)
 5. [IIpcExtensionManager — managing extensions over IPC](#iipcextensionmanager)
 6. [ICamIpcUtilityManager / ICamIpcUtilityInfo](#icamipcutilitymanager--icamipcutilityinfo)
 7. [IIpcLogger — logging from an IPC context](#iipclogger)
@@ -174,6 +174,8 @@ The IPC proxy for the ENCY extension manager. All methods take a `TExecuteContex
 |---|---|
 | `RegisterLibrary(storageType, descFilePath, ctx) → IIpcExtensionLibraryInfo*` | Registers an extension library from a JSON description file |
 | `UnRegisterLibrary(libraryPath, ctx)` | Removes a library registration |
+| `RegisterLibraryFromFolder(storageType, folderPath, out needReload, ctx) → IIpcExtensionLibraryInfo*` | Finds the `settings.json` in `folderPath`, **copies the library into ENCY's own folder**, then registers it. `needReload` reports that a restart is required to pick it up |
+| `GetPendingDeletionLibraries() → IIpcListExtensionLibraryInfo*` | Libraries whose unregistration could not complete because the DLL was locked (a `_del_` cleanup artifact is still on disk). Stale entries are dropped automatically, so a non-empty result means a real leftover. **No `ctx` parameter** |
 | `ReloadStorage(storageType, ctx)` | Re-reads a storage layer |
 | `GetLibrariesInfo() → IIpcListExtensionLibraryInfo*` | Lists all registered libraries |
 | `GetLibraryInfo(extensionTypeId, ctx) → IIpcExtensionLibraryInfo*` | Gets library info by extension type ID |
@@ -205,9 +207,77 @@ The IPC proxy for the ENCY extension manager. All methods take a `TExecuteContex
 | `GetSingletonExtension(extensionTypeId, ctx) → IIpcExtension*` | Returns the single shared instance of a singleton extension by its type id; narrow to a concrete interface with `AsInstanceOf` on the client |
 | `FreeExtension(extensionInstanceId, ctx)` | Unloads an extension instance |
 
+### Extension settings
+
+Named key/value settings owned by an extension type and stored by the extension manager, for
+deployment-provided configuration (server URL, license key, shared folder). Resolution is a
+cascade, independent of the disabled/inherited machinery above:
+
+```
+stCurrentUser → stAllUsers → stDealer → stSystem → manifest default
+```
+
+| Method | Description |
+|---|---|
+| `GetExtensionSetting(extensionTypeId, key, out found, ctx) → string` | Effective value after the whole cascade; `found` is `false` when nothing defines the key |
+| `GetExtensionSettingSourceLevel(extensionTypeId, key, out found, out fromDefault, ctx) → TStorageType` | Where the effective value came from. When `fromDefault` is `true` the value is the manifest default and the returned tier is meaningless |
+| `GetExtensionSettingKeys(extensionTypeId, ctx) → IListString*` | Union of all keys defined across every tier and the defaults |
+| `SetExtensionSetting(storageType, extensionTypeId, key, value, ctx)` | Write a value into one tier and persist it |
+| `RemoveExtensionSetting(storageType, extensionTypeId, key, ctx)` | Drop the key from one tier so the next tier down (or the default) becomes effective again |
+
+`ExtensionManagerHelper` wraps all five and throws on `rsError`, so no `TExecuteContext` is
+passed by the caller. `GetExtensionSetting` folds the `found` flag into the return value —
+it returns **`null`** when nothing defines the key:
+
+```csharp
+using var emCom = appCom.ExtensionManager();
+const string extensionTypeId = "My.Company.MyExtension";
+
+var url = emCom.GetExtensionSetting(extensionTypeId, "serverUrl");
+if (url == null)
+    throw new Exception("The 'serverUrl' setting is not configured for this installation");
+
+var level = emCom.GetExtensionSettingSourceLevel(
+    extensionTypeId, "serverUrl", out var found, out var fromDefault);
+
+if (found && !fromDefault && level == TStorageType.stAllUsers)
+{
+    // machine-wide value — override it for this user only
+    emCom.SetExtensionSetting(TStorageType.stCurrentUser, extensionTypeId, "serverUrl", url);
+}
+
+// back to the inherited value
+emCom.RemoveExtensionSetting(TStorageType.stCurrentUser, extensionTypeId, "serverUrl");
+
+// enumerate everything this extension is configured with
+using var keysCom = emCom.GetExtensionSettingKeys(extensionTypeId);
+```
+
+Writing to a tier that has no storage in this installation (`stDebugMode` outside a debug
+session) fails instead of silently doing nothing. A key marked secret is **kept in memory for
+the session only and never written to disk** — the calls look identical, but the value is gone
+after a restart.
+
+Settings are keyed by extension type id alone, so they can be written and read for an id that
+is not registered — handy for provisioning an extension before it is installed. `TStorageType`
+comes from the `CAMAPI.Extensions` namespace even in IPC clients.
+
+The in-process equivalents live on `IExtensionManager` and have no helper wrappers — see
+[../api/entry-points.md](../api/entry-points.md#extension-settings).
+
 ### Storage type enum — TStorageType
 
-Values: `stSystem`, `stUser` (and potentially project-level). Defines which configuration layer a library or enable/disable flag belongs to.
+The configuration tier a library, flag, or setting belongs to. Tiers are merged in priority
+order — the highest-priority tier carrying a value wins.
+
+| Value | Priority | Scope | Writable |
+|---|---|---|---|
+| `stSystem` | Lowest | Machine-wide, shipped with the installation | No |
+| `stDealer` | 2 | Machine-wide, provisioned by the distributor | No |
+| `stAllUsers` | 3 | Machine-wide | Yes |
+| `stCurrentUser` | 4 | Current user | Yes |
+| `stDebugMode` | 5 | Current user, only while a debug session provides the folder | Yes |
+| `stTestMode` | Highest | Automated test runs | Yes |
 
 ### Macro build support
 
@@ -222,7 +292,7 @@ Helper (`ExtensionManagerHelper`): `emCom.GetApiVersion()`, `emCom.GetApiDepende
 
 ## ICamIpcMacroManager
 
-IPC mirror of `ICamApiMacroManager` — list and run existing macros, and create new ones. See [docs/api/application.md](../api/application.md#icamapimacomanager) for the full conceptual model; this section gives the IPC helper surface. (Writing the body of a macro itself is covered in [docs/macros](../macros/README.md).)
+IPC mirror of `ICamApiMacroManager` — list and run existing macros, and create new ones. See [docs/api/application.md](../api/application.md#icamapimacromanager) for the full conceptual model; this section gives the IPC helper surface. (Writing the body of a macro itself is covered in [docs/macros](../macros/README.md).)
 
 ```csharp
 using var macroMgrCom = appCom.MacroManager();   // ComWrapper<ICamIpcMacroManager>
@@ -388,8 +458,25 @@ Writes log entries into the ENCY log stream from an external process.
 | `head(message)` | Writes a `leHead` entry |
 | `warning(message)` | Writes a `leWarning` entry |
 | `error(message)` | Writes a `leError` entry |
+| `IsEventTypeActive(eventType) → boolean` | Whether entries of that severity are currently being recorded |
+| `Notify(eventType, message, title)` | Shows a **user-visible notification** in the host application, in addition to logging |
+
+Use `IsEventTypeActive` to skip building an expensive message that would be discarded:
+
+```csharp
+if (logger.IsEventTypeActive(TLogEventType.leDebug))
+    logger.debug(BuildExpensiveDump());
+```
+
+`Notify` is not just a log write — it surfaces a toast/message to the user, so reserve it for
+things they must actually see.
 
 `LogItem` is the same struct used in the in-process API — see [api/application.md](../api/application.md#tlogeventtype--logitem).
+
+> **Moved and retyped.** `IIpcLogger` now lives in `CAMIPC.IpcInteraction` (it was in
+> `CAMIPC.Helper`), and `IIpcInteraction.Logger` is now typed `IIpcLogger*` instead of
+> `IExtensionLogger*`. Client code that assigned an `IExtensionLogger` to that property, or
+> imported the interface from `CAMIPC.Helper`, must be updated.
 
 ```csharp
 // Obtain via ICamIpcSingletons:

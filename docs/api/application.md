@@ -17,7 +17,7 @@ This document covers the in-process (same-DLL) Application API used by extension
 9. [IListString, IListInteger, IDictionaryStringString — collections](#iliststring-ilistinteger-idictionarystringstring)
 10. [ICAMAPIFilesInStreamStorage — file-in-stream storage](#icamapifilesinstreamstorage)
 11. [TLogEventType / LogItem — logging](#tlogeventtype--logitem)
-12. [ICamApiMacroManager](#icamapimacomanager)
+12. [ICamApiMacroManager](#icamapimacromanager)
 
 ---
 
@@ -40,11 +40,14 @@ This document covers the in-process (same-DLL) Application API used by extension
 | `UtilityManager` | `ICamApiUtilityManager*` | R | Manager for registered utilities |
 | `MacroManager` | `ICamApiMacroManager*` | R | Macro system manager |
 | `PLMManager` | `IPLMManager*` | R | PLM integration manager |
-| `AttributesManager` | `ICAMAPICustomAttributesManager*` | R | Custom attributes manager |
+| `AttributesManager` | `ICamApiCustomAttributesManager*` | R | Custom attributes manager |
 | `UserTechOperationList` | `ICamApiUserTechOperationList*` | R | User-defined tech operations |
 | `Started` | `boolean` | R | `true` once the instance is ready to work; `false` while opening a project or shutting down |
 | `Theme` | `ICamApiTheme*` | R | Snapshot of the active UI theme/palette — see [ui.md](ui.md#icamapitheme) |
 | `HotkeyManager` | `ICamApiHotkeyManager*` | R | Manager for plugin-registered global keyboard shortcuts — see [Plugin hotkeys](#plugin-hotkeys). Available at application level so a global extension can register hotkeys during startup, before the main form exists |
+| `Paths` | `ICamApiPaths*` | R | Standard folders used by ENCY — see [below](#icamapipaths--icamapiconstants) |
+| `Constants` | `ICamApiConstants*` | R | Application constants — see [below](#icamapipaths--icamapiconstants) |
+| `LastActionIdleSeconds` | `double` | R | Seconds since the last raw user input (mouse click / key / wheel) in ENCY's windows; `0` if there has been no input yet (e.g. a headless run). Native modal dialogs — message boxes, file pickers — are **not** tracked, so this keeps growing while one is open |
 
 ### Methods
 
@@ -60,6 +63,38 @@ This document covers the in-process (same-DLL) Application API used by extension
 | `OpenProjectFromPLM(plmItemId, connectionId, out TResultStatus)` | Opens a project from a PLM system |
 | `RegisterHandler(handlerIdent, handler, events, out TResultStatus)` | Registers an event handler |
 | `UnregisterHandler(handlerIdent, out TResultStatus)` | Removes an event handler |
+| `AskCamAgent(message, interruptOnError, timeoutMs, out TResultStatus) → string` | Sends a free-text instruction to the paired CAM Agent and **blocks** until it finishes, returning the agent's answer — see [below](#askcamagent) |
+
+### AskCamAgent
+
+Sends a plain-text instruction to the paired CAM Agent (a headless ENCY started with
+`--serve`) and blocks until it is done. Generated macro code calls this for the
+`mctAskCamAgent` step, but any plugin may use it.
+
+| Parameter | Meaning |
+|---|---|
+| `message` | The instruction text |
+| `interruptOnError` | `true` → a failed or unreachable agent sets `ret.Code = rsError`; `false` → the failure is swallowed and `ret.Code` stays `rsOk` |
+| `timeoutMs` | Overall wait budget; `0` keeps the client default (10 minutes) |
+
+Returns the agent's answer, or an empty string on failure (or when the answer itself is empty).
+
+```csharp
+string answer = appCom.Invoke(a =>
+{
+    var text = a.AskCamAgent("Create a roughing operation for the top face", true, 0, out var status);
+    if (status.Code == TResultStatusCode.rsError)
+        throw new Exception(status.Description);
+    return text;
+});
+```
+
+> **This blocks the calling thread for as long as the agent works** — up to the 10-minute
+> default. Do not call it on the UI thread without freezing the window
+> ([`BeginFreeze`](ui.md#icamapiapplicationmainform)) or moving the call off-thread.
+
+> With `interruptOnError: false` an unreachable agent is indistinguishable from an agent that
+> answered with an empty string. Pass `true` when you need to tell those apart.
 
 ### TMainWorkMode enum
 
@@ -128,6 +163,25 @@ Your handler class must also implement `ICamApiEventHandler` (which exposes `Get
 | `ICamApiHandlerApplicationAfterSaveProject` | `ApplicationAfterSaveProject(handlerIdent, project)` | Any project has been saved |
 | `ICamApiHandlerApplicationUpdateStartProgress` | `ApplicationUpdateStartProgress(handlerIdent, caption, percent)` | Application startup progress has changed |
 | `ICamApiHandlerApplicationUpdateProcessState` | `ApplicationUpdateProcessState(handlerIdent, caption, percent)` | A running process has updated its progress |
+
+Handlers for other objects register through the same `RegisterHandler` call:
+
+| Interface | Method | Fires when |
+|---|---|---|
+| `ICamApiHandlerProjectBeforeSave` | `ProjectBeforeSave(handlerIdent, project)` | That project is about to be saved |
+| `ICamApiHandlerProjectAfterSave` | `ProjectAfterSave(handlerIdent, project)` | That project has been saved |
+| `ICamApiHandlerTechOperationInitModelFormers` | `InitModelFormers(...)` | An operation initialises its model formers |
+| `ICamApiHandlerTechOperationLoadFromXmlProp` | `LoadFromXmlProp(xmlProp)` | Operation properties were read from XML |
+| `ICamApiHandlerTechOperationSaveToXmlProp` | `SaveToXmlProp(xmlProp)` | Operation properties are being written to XML |
+| `ICamApiHandlerTechOperationToolChanged` | `ToolChanged(...)` | The operation's tool was replaced |
+| `ICamApiHandlerTechOperationToolpathCalculated` | `ToolpathCalculated(handlerIdent, operation)` | The operation's **body** toolpath was just (re)computed |
+| `ICamApiHandlerFeatureFinderUpdated` | see [feature-finder.md](feature-finder.md) | Recognition finished or the feature list changed |
+| `ICamApiHandlerApplicationMainForm…` | see [ui.md](ui.md#icamapiapplicationmainform) | Main-window events (visibility, minimize, cloud buttons, UI info) |
+| `ICamApiHandlerProgressIndicator` | see [ui.md](ui.md#icamapiprogressindicator) | Progress indicator shown/hidden/advanced/broken |
+
+> `ToolpathCalculated` fires only on a real body recompute. It does **not** fire for
+> link/approach recomputes, nor when a locked operation
+> ([`ResetToolpathLocked`](project.md#icamapitechoperation)) keeps its frozen toolpath.
 
 ### Registration example
 
@@ -283,6 +337,7 @@ The `PathsHelper` extension class (`CAMAPI.DotnetHelper`) exposes all properties
 | `ExeName` | Executable file name |
 | `ExeVersion` | Application version string |
 | `Language` | Selected UI language |
+| `OrgName` | Name of the head organization |
 
 ```csharp
 using var constantsCom = /* obtain from singleton */;
@@ -303,6 +358,29 @@ Reload()
 GetUtilsUiInfoJson() → string
 ```
 
+### The three sources of utilities
+
+Utilities come from three places, exposed as separate read-only lists plus a combined one:
+
+| Property | Type | Contents |
+|---|---|---|
+| `EmbeddedSystemUtils` | `ICamApiUtilitiesList*` | Utilities built into the CAM core (hardcoded) |
+| `ExtensionUtils` | `ICamApiUtilitiesList*` | Utilities implemented as extensions (read from the extension manager) |
+| `UserUtils` | `ICamApiListUtilityInfo*` | Utilities added by the user — the only **editable** list |
+| `SummaryUtilsList` | `ICamApiUtilitiesList*` | All three combined |
+
+> **`GetListInfo` returns only `UserUtils`**, not everything. For the full set — including
+> built-in and extension-provided utilities — walk `SummaryUtilsList`.
+
+`ICamApiUtilitiesList` is a plain indexed list of `IUtilButtonContext`:
+
+| Method | Description |
+|---|---|
+| `Count()` → `integer` | Number of utilities |
+| `Get(index)` → `IUtilButtonContext*` | Utility at index |
+| `GetByUid(uid)` → `IUtilButtonContext*` | Utility by its UID |
+| `GetIndex(uid)` → `integer` | Index of a utility by UID |
+
 `ICamApiListUtilityInfo` gives indexed access to `IUtilButtonContext` items, each describing a single utility:
 
 | Property | Description |
@@ -316,6 +394,10 @@ GetUtilsUiInfoJson() → string
 | `IconPath` / `IconId` | Icon file path or internal icon ID |
 | `VisibleOnlyInExpertMode` | Restricts visibility to expert mode |
 | `UiVisible` | Whether the utility appears in the UI |
+| `Visible` | Whether the button is visible (currently mirrors `Enabled`) |
+
+> `VisibleOnlyInExpertMode` and `UiVisible` have no helper wrappers — read them via
+> `Invoke`.
 
 ### .NET helper usage
 
@@ -331,6 +413,11 @@ for (int i = 0; i < count; i++)
 
 // Execute by UID:
 managerCom.Execute("MyUtility.UID");
+
+// Every utility, not just the user-defined ones:
+using var allCom = managerCom.InvokeAndWrap(m => m.SummaryUtilsList);
+int total = allCom.Invoke(l => l.Count());
+using var oneCom = allCom.InvokeAndWrap(l => l.GetByUid("MyUtility.UID"));
 ```
 
 ---
@@ -418,9 +505,20 @@ string text = list.GetText(";"); // "a;c"
 list.Read("x,y,z", ",");        // clears and repopulates
 ```
 
+When you receive one of these as a COM object (rather than constructing it yourself), the
+helpers convert it to a normal .NET collection in one call:
+
+```csharp
+foreach (string s in listStringCom.AsEnumerable()) { /* ... */ }
+Dictionary<string, string> map = dictCom.ToDictionary();
+```
+
 ### IListInteger
 
 Same pattern as `IListString` but for `int` values. Does not have `GetText` or `Read`.
+`ListIntegerHelper` wraps the members as extension methods on
+`ComWrapper<IListInteger>`: `Count()`, `Get(index)`, `Add(v)`, `Remove(v)`, `Clear()`,
+`Contains(v)`.
 
 ### IDictionaryStringString
 
@@ -566,8 +664,18 @@ macroMgrCom.Execute(id, paramsJson);   // run a macro by id; paramsJson "" = rec
 | `MacroBuilder` (R) → `ICamApiMacroBuilder*` | The builder — create macros programmatically (see below) |
 | `NotifyMacroStep(stepIndex, out ret)` | Report that playback reached a step; called from **inside** a running macro for UI step highlighting (see [docs/macros](../macros/notify-step.md)) |
 | `OpenInEditor(macro, out ret)` | Open the macro source in the editor for its language |
+| `ExportMacro(id, targetPath, out ret)` | Export the macro into a single self-contained **`.dmcr`** archive (a ZIP of the macro folder including its `manifest.json`). Works for any macro language |
+| `ImportMacro(sourcePath, out ret)` → `ICamApiMacroInfo*` | Import a macro from a `.dmcr` archive and register it, returning the registered macro |
 
-> **Direct call (no helper):** only `Execute` and `NotifyMacroStep` have helper wrappers; for the rest use `macroMgrCom.Invoke(m => m.GetMacroById(id))` / `InvokeAndWrap(...)`.
+```csharp
+macroMgrCom.ExportMacro("MyMacro", @"C:\share\MyMacro.dmcr");
+using var importedCom = macroMgrCom.ImportMacro(@"C:\share\OtherMacro.dmcr");
+```
+
+> **`ImportMacro` overwrites**: a macro with the same id is replaced, including its previous
+> folder. Check `GetMacroById` first if that matters.
+
+> **Direct call (no helper):** `Execute`, `NotifyMacroStep`, `ExportMacro` and `ImportMacro` have helper wrappers (the first four throw on `rsError` instead of returning a status); for the rest use `macroMgrCom.Invoke(m => m.GetMacroById(id))` / `InvokeAndWrap(...)`.
 
 ### ICamApiMacroInfo — macro metadata
 
@@ -578,10 +686,40 @@ macroMgrCom.Execute(id, paramsJson);   // run a macro by id; paramsJson "" = rec
 
 To learn which keys a macro's step accepts in `Execute`'s `params` JSON, walk the steps:
 
-- `ICamApiMacroStepInfo`: `DisplayText`, `ParamCount`, `Param[index]` → `ICamApiMacroStepParam*`, `GroupCaption`.
-- `ICamApiMacroStepParam` (read-only): `Key` (the JSON key), `LabelText`, `ParamType` (`TMacroCommandParamType`), `Required`, `DefaultValue`, `ValuesString` (semicolon-separated allowed values, empty = free-form).
+- `ICamApiMacroStepInfo`: `DisplayText` (may contain `{N}` placeholders for editable params), `ParamCount`, `Param[index]` → `ICamApiMacroStepParam*`, `GroupCaption`.
+- `ICamApiMacroStepParam` (read-only): `Key` (the JSON key), `LabelText`, `ParamType` (`TMacroCommandParamType`), `Required`, `DefaultValue`, `ValuesString` (semicolon-separated allowed values, empty = free-form), `Caption` (locale-aware sub-row caption for composite rows; empty falls back to `Key`/`LabelText`).
 
-**`TMacroCommandParamType`:** `mptStr` (0), `mptBol` (1), `mptInt` (2), `mptFlt` (3).
+`Required` means `default_value` was JSON `null` (or absent) at record time — a playback UI must refuse to run until the user supplies a value.
+
+**Presentation flags on `ICamApiMacroStepInfo`** — only relevant if you render your own macro
+step UI; they describe how ENCY draws the row:
+
+| Property | Meaning |
+|---|---|
+| `IsComposite` | The step renders as a collapsible row (header + a sub-panel of editable params) |
+| `IsModelItem` | A `selectModelItem` step — its single param is a read-only label with clear + geometry-pickup, not a free-form edit |
+| `SupportsUseCurrent` | The row exposes the "use current item" (star) toggle |
+| `IsUseCurrent` | Current value of that toggle |
+| `OpType` | Operation type for `setOperationParam` rows (drives caption/enum resolution); empty otherwise |
+| `PropPath` | Property path for `setOperationParam` rows; empty otherwise |
+
+**`TMacroCommandParamType`** — the first four are plain value fields; the rest are fields the
+UI renders as a clickable pill that opens a dedicated editor:
+
+| Value | Meaning |
+|---|---|
+| `mptStr` (0) | String or enumerated value |
+| `mptBol` (1) | Boolean |
+| `mptInt` (2) | Integer |
+| `mptFlt` (3) | Float (double) |
+| `mptOffsetEditor` (4) | **Not value-bearing** — a glyph button opening a detached offset editor (workpiece CS / base-setup offset). The override travels in the step's own param keys, not this param |
+| `mptCoordSystemEditor` (5) | Read-only display string; opens the 6-value coordinate-system editor (translation + rotation). The transform travels via the step's own data |
+| `mptColorEditor` (6) | Colour swatch pill; opens the colour picker. The colour travels via the step's own data |
+| `mptGeomPicker` (7) | Geometry reference; clicking arms viewport geometry pickup (Esc cancels) |
+| `mptPointEditor` (8) | Read-only `"x; y; z"` string; opens the 3-value point editor (e.g. a fixture node's Origin). Distinct from `mptCoordSystemEditor`, which is a 6-value LCS |
+
+> For the pill types the string you read is **display only** — the real value is carried by
+> the step's own param keys. Do not try to write geometry or a transform through it.
 
 ### Creating a macro programmatically — ICamApiMacroBuilder + ICamApiMacroCommandsManager
 
@@ -674,11 +812,37 @@ The documented set is filled incrementally; command types / discriminators witho
 - `ICamApiMacroBuilderSettings` (from `CreateMainSettings`): `Id`, `Caption`, `Description`, `OutputFolder`, `ExecuteExtensionId`, `CreateOperations`.
 - `ICamApiMacroBuilderLanguageSettings` (from `CreateLanguageSettings(languageId)`): base; QI to the concrete type:
   - `"dotnet"` → `ICamApiMacroBuilderDotNetSettings` — `TargetFramework`, `SDKVersion`, `References` (builds a .NET macro DLL).
-  - `"script"` → script-language settings (builds a script macro).
+  - `"spr"` → `ICamApiMacroBuilderSprSettings` (builds a script macro; carries no extra properties).
 
-#### Commands that carry lists
+  Any other language id makes `CreateLanguageSettings` fail with `rsError`.
 
-A few commands carry a string list, which the scalar command bag cannot hold. They have dedicated typed methods on `ICamApiMacroCommandsManager`: `RegisterSetDriveFaceItemProperties`, `RegisterAddFixture`, `RegisterSetFixtureItemStock`, `RegisterSetFixtureItemColor`, `RegisterSetFixtureItemCaption`.
+#### Recording state
+
+`ICamApiMacroCommandsManager.IsStarted` (read-only) is `true` while a recording session is
+active — i.e. between `Start` and `Stop`. Query it instead of tracking the state yourself,
+which matters when the user may also be recording through the UI.
+
+#### ICamApiMacroObject — letting a model object record itself
+
+Model objects (e.g. job-assignment model items) may implement `ICamApiMacroObject`. The
+capture side does a `QueryInterface` for it, takes the JSON and feeds it into the recording
+pipeline — so there is no per-type dispatch in the macro manager.
+
+| Method | Description |
+|---|---|
+| `GetRecordInfo()` → `string` | JSON array of the command bags needed to recreate this object on replay |
+
+Each element is a flat object where `"type"` is the **`TMacroCommandType` ordinal** and the
+remaining keys are the fields read back via `GetStr`/`GetInt`/`GetFloat`/`GetBool`:
+
+```json
+[
+  {"type": 3, "FullName": ""},
+  {"type": 3, "FullName": "Group1\\Face1"},
+  {"type": 1, "ItemType": 0},
+  {"type": 20, "ItemCaption": "Group1\\Face1", "Stock": 0.1}
+]
+```
 
 #### Environment
 

@@ -68,6 +68,10 @@ so the call sites look identical to CAMAPI.
    | `Snapshots` (property) | `GetSnapshots(ctx)` |
    | `NCMaker` (property) | `GetNCMaker(ctx)` |
    | `GeomImporter` (property) | `GetGeomImporter(ctx)` |
+   | `IsModified` (property) | `GetIsModified(ctx)` |
+
+   `GetIsModified` is a live check of the same condition that triggers the save prompt on
+   close.
 
 2. **`ToolsList`, `CoordinateSystems`, `MachineInformation`, `Machine`, `Simulator`,
    `GeomModel`, `FeatureFinder`** remain as read-only properties (no `ctx`) on
@@ -75,6 +79,14 @@ so the call sites look identical to CAMAPI.
    `ICamIpcFeatureFinder`, etc.). `FeatureFinder` is the new feature-recognition axis — see
    [`feature-finder.md`](feature-finder.md). `SetMachine(guid, filePath, typeName, ctx)`
    assigns a machine to the project.
+
+   `LoadMachineFromXmlProp(ctx)` rebuilds the machine from its current XML properties — the
+   apply step after editing `Machine.XMLProp`, for example flipping an `ActiveNode` selector
+   to add or remove a turn table or a tail stock. **Until it is called, the XML and the machine
+   in memory disagree.** Unlike `Machine.LoadFromOperationXml`, which reloads the machine object
+   alone, it also rebuilds everything derived from the machine: the initial machine state, the
+   operation enability, the toolpath and the simulation. See
+   [`../api/tools-machine.md`](../api/tools-machine.md#icamapimachine) for the walkthrough.
 
 3. **`SaveClData`** takes `ICamIpcTechOperationIterator*` (the IPC variant) instead of
    `ICamApiTechOperationIterator*`.
@@ -236,6 +248,47 @@ The CAMAPI equivalent is `ICamApiHandlerTechnologistOperationAdded`.
 | `ICamIpcHandlerTechOperationLoadFromXmlProp` | Properties loaded from XML | Uses `IST_XmlPropPointer*` (same type name as CAMAPI) |
 | `ICamIpcHandlerTechOperationSaveToXmlProp` | Properties saved to XML | Uses `IST_XmlPropPointer*` |
 | `ICamIpcHandlerTechOperationToolChanged` | Tool changed | Extra `justPropertyChange: boolean` parameter |
+| `ICamIpcHandlerTechOperationToolpathCalculated` | Body toolpath (re)computed | Receives only `operation` — no `handlerIdent` parameter, unlike the CAMAPI handler |
+
+`ToolpathCalculated` fires only on a real **body** recompute — not for link/approach
+recomputes, and not when a locked operation keeps its frozen toolpath.
+
+### Custom approach/return over IPC
+
+The same structural editor as CAMAPI ([`../api/project.md`](../api/project.md#custom-approachreturn-as-a-command-list)),
+but wired differently — worth reading even if you know the in-process API:
+
+| CAMAPI | CAMIPC |
+|---|---|
+| `GetApproachRuleIsCustom(out rule)` — one call returns the flag *and* a seeded rule | `GetApproachRule(ctx)` and `GetApproachIsCustom(ctx)` — **two separate calls** |
+| `SetApproachRuleIsCustom(rule)` — takes the rule you built | `ApplyApproachRuleAsCustom(ctx)` — **no argument**; persists the live list |
+
+Over IPC the rule object is **live over the operation**: mutate its commands in place, then
+call `ApplyApproachRuleAsCustom` / `ApplyReturnRuleAsCustom` to commit. There is nothing to
+pass back, because the rule you edited *is* the operation's list.
+
+```
+rule := operation.GetApproachRule(ctx)
+cmd  := rule.AddCommand(0, ctx)          // 0 = aprtGoto
+cmd.SetAxisValue(2, 50.0, ctx)           // Z = 50
+cmd.SetAxisAuto(0, ctx)                  // X from the operation's final position
+operation.ApplyApproachRuleAsCustom(ctx) // commit
+```
+
+`ICamIpcApproachReturnRule`: `GetCommandCount`, `GetCommand(index)`,
+`AddCommand(positionType)`, `DeleteCommand(index)`, `Clear`.
+
+`ICamIpcApproachReturnCommand`: `GetPositionType` / `SetPositionType`, `GetAxisCount`, and
+per-axis `GetAxisId`, `GetAxisKind`, `GetAxisMode`, `GetAxisValue`, `SetAxisValue`,
+`SetAxisAuto`, `SetAxisUnset`.
+
+> **Position type, axis mode and axis kind are plain `integer` over IPC**, not enums — pass
+> and compare the ordinals of `TCamApiApproachReturnPositionType`,
+> `TCamApiApproachReturnAxisMode` and `TCamApiApproachReturnAxisKind`. The value tables are in
+> [`../api/project.md`](../api/project.md#custom-approachreturn-as-a-command-list).
+
+> `SetPositionType` rebuilds the command's axis set, so set it before the axis values and
+> re-read `GetAxisCount` afterwards.
 
 ---
 

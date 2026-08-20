@@ -11,7 +11,7 @@ This folder is **only about authoring the macro body** — the code that runs *i
 | Let the user override values before running | [macro-params.md](macro-params.md) |
 | Report progress / enable step highlighting | [notify-step.md](notify-step.md) |
 | **Call actual CAM commands** (operations, geometry, …) | [../api/](../api/) — the regular API docs (start at [project.md](../api/project.md), [geometry.md](../api/geometry.md), …) |
-| Manage / build / run macros from a host plugin or external app | [../api/application.md](../api/application.md#icamapimacomanager) (in-process) · [../ipc/application.md](../ipc/application.md#icamipcmacromanager) (IPC) |
+| Manage / build / run macros from a host plugin or external app | [../api/application.md](../api/application.md#icamapimacromanager) (in-process) · [../ipc/application.md](../ipc/application.md#icamipcmacromanager) (IPC) |
 | COM object lifetime (`ComWrapper`, MTA) | [../general/com-lifetime.md](../general/com-lifetime.md) |
 | Returning errors across the COM boundary | [../general/error-handling.md](../general/error-handling.md) |
 
@@ -82,6 +82,6 @@ When a macro is created via the builder, ENCY generates a small project:
 - `Extension.cs` — the macro class (`Run` body).
 - `ExtensionFactory.cs` — the factory above.
 - a global-usings file — brings in `CAMAPI.Extensions`, `CAMAPI.ResultStatus`, `CAMAPI.Macros`, `CAMAPI.Application`, `CAMAPI.DotnetHelper`, etc., so the body needs no explicit `using`s.
-- a `.csproj` — its `TargetFramework`, `SDKVersion` and reference assemblies are filled by the builder. **Do not hand-edit the references** — if they are wrong the project will not resolve CAMAPI types. (Builders set them from the extension manager; see [../api/application.md](../api/application.md#icamapimacomanager).)
+- a `.csproj` — its `TargetFramework`, `SDKVersion` and reference assemblies are filled by the builder. **Do not hand-edit the references** — if they are wrong the project will not resolve CAMAPI types. (Builders set them from the extension manager; see [../api/application.md](../api/application.md#icamapimacromanager).)
 
 If you edit `Extension.cs` by hand, the two macro-specific things to keep in mind are **`MacroParams`** ([macro-params.md](macro-params.md)) and **`NotifyMacroStep`** ([notify-step.md](notify-step.md)); for everything else (the commands you call) consult the regular API docs in [../api/](../api/).

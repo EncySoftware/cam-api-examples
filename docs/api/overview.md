@@ -20,7 +20,8 @@ CAMAPI is the in-process plugin API. Your plugin (DLL) is loaded by ENCY and cal
 | NC Generation & Simulation | [api/nc-simulation.md](nc-simulation.md) |
 | Probing Operations (measuring cycles) | [api/probing.md](probing.md) |
 | Application, Events, Logger | [api/application.md](application.md) |
-| UI (dialogs, viewport) | [api/ui.md](ui.md) |
+| Macros (record, build, replay) | [api/application.md](application.md#icamapimacromanager) · [macros/](../macros/README.md) |
+| UI (dialogs, viewport, custom 3D rendering) | [api/ui.md](ui.md) |
 | COM lifetime (.NET) | [general/com-lifetime.md](../general/com-lifetime.md) |
 | Error handling | [general/error-handling.md](../general/error-handling.md) |
 | UI patterns (.NET) | [general/ui-patterns.md](../general/ui-patterns.md) |

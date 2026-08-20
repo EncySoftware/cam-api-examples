@@ -505,5 +505,4 @@ reportAction.SetFeatureNumber(1);
 
 ## Examples
 
-- [ProbingAddMovementNet](../../Probing/ProbingAddMovementNet/) — Adds a movement item; demonstrates getting `ICamApiModelFormerWithProbingItems`, `AddMovement()`, and reading/writing `CycleCaption` via XMLProp.
-- [ProbingCyclePaletteNet](../../Probing/ProbingCyclePaletteNet/) — WPF dialog showing all 17 cycle types; user picks one and it is added to the current probing operation. Shows MTA/STA threading pattern with probing API.
+- [`FullWorkflow/PartCalibrationWorkflowNet` → `ProbingCyclesService.cs`](../../FullWorkflow/PartCalibrationWorkflowNet/project/main/Service/ProbingCyclesService.cs) — detects a probing operation by narrowing its model former to `ICamApiModelFormerWithProbingItems`, then adds and configures measuring cycles as part of a full part-calibration workflow.

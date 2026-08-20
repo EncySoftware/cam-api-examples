@@ -128,3 +128,70 @@ variantFields := schema.GetClassItemCommand(commandType, discriminator)
 | `CreateMacro` | called again without a new `Start` | **error** — "Macro record wasn't started yet" |
 | `Save` | no preceding `CreateMacro` | **error** — "Macro code file is not created. Call CreateMacro first." |
 | `AddMachineState` / `AddWorkpieceState` / `AddStrategyState` / `AddRecognizeFeature` | called before `Start` or after `Stop` | **error** — "Macro recording is not started" |
+
+Instead of tracking the session yourself, ask: `commands.GetIsStarted()` is `true` between
+`Start` and `Stop`. Worth checking when the user may also be recording through the UI.
+
+## Managing and running macros
+
+`application.MacroManager` (`ICamIpcMacroManager`) is the entry point for everything that is
+not recording:
+
+| Method | Description |
+|---|---|
+| `GetCount()` | Number of registered macros |
+| `GetMacro(index)` | Macro by index → `ICamIpcMacroInfo` |
+| `GetMacroById(id)` | Macro by id |
+| `CreateMacroInstance()` | New empty `ICamIpcMacroInfo` to fill and register |
+| `AddMacro(macro)` | Register a macro |
+| `RemoveMacro(id, deleteSources)` | Unregister; `deleteSources` also deletes its files |
+| `GetMacroBuilder()` | The builder used for recording (above) |
+| `Execute(id, params)` | Run a macro — see below |
+| `NotifyMacroStep(stepIndex)` | Report replay progress for the given step |
+| `OpenInEditor(macro)` | Open the macro source in the editor for its language |
+| `ExportMacro(id, targetPath)` | Export to a single self-contained `.dmcr` archive |
+| `ImportMacro(sourcePath)` | Import a `.dmcr` archive and register it → `ICamIpcMacroInfo` |
+
+`Execute`'s `params` is a **JSON dictionary of user-overridden values**, keyed by step index:
+
+```json
+{"0": {"feed": "250"}, "3": {"depth": "12.5"}}
+```
+
+Pass an **empty string** to run with the recorded defaults.
+
+> `ImportMacro` overwrites a macro with the same id, including its previous folder — check
+> `GetMacroById` first if that matters.
+
+## Inspecting a macro's steps
+
+`ICamIpcMacroInfo` exposes the recorded steps, which is what a playback UI needs to show
+editable parameters before running:
+
+- `ICamIpcMacroInfo`: `GetStepCount()`, `GetStep(index)`, plus read/write `Id`, `Caption`,
+  `Description`, `MacroPath`, `ExecutablePath`, `LanguageId`, `ExecuteExtensionId`.
+- `ICamIpcMacroStepInfo` (read-only): `GetDisplayText()`, `GetParamCount()`,
+  `GetParam(index)`, `GetGroupCaption()`.
+- `ICamIpcMacroStepParam` (read-only): `GetKey()`, `GetLabelText()`, `GetParamType()`,
+  `GetRequired()`, `GetDefaultValue()`, `GetValuesString()`.
+
+`GetParamType()` returns the **integer ordinal** of `TMacroCommandParamType` — `0 = Str`,
+`1 = Bool`, `2 = Int`, `3 = Float` — the same numbering as `GetFieldType` above.
+`GetValuesString()` is a semicolon-separated list of allowed values, empty for free-form.
+`GetRequired()` means the step was recorded without a default, so a playback UI must refuse
+to run until the user supplies one.
+
+The keys you collect this way are exactly the keys of the `Execute` params JSON.
+
+> The full CAMAPI-side model — including the composite/pill parameter types and the
+> presentation flags — is documented in
+> [`../api/application.md`](../api/application.md#icamapimacrostepinfo--icamapimacrostepparam--discover-overridable-parameters).
+> The IPC mirror exposes the read-only subset listed above.
+
+## Language settings and .NET
+
+`ICamIpcMacroBuilderLanguageSettings` folds the .NET-specific properties
+(`TargetFramework`, `SDKVersion`, `References`) directly into the one interface — the server
+narrows the wrapped object to the concrete language interface. For **SPR** settings the .NET
+getters return empty strings and the setters do nothing, so there is no separate interface to
+request. `References` marshals by value as a comma-separated list.

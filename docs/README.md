@@ -32,7 +32,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Theming plugin windows](general/theming-plugin-windows.md) — applying the host palette to your own window; WinForms visual-styles pitfalls, scrollbars, title bar
 
 ### Writing macros
-- [Macros](macros/README.md) — authoring a macro body (`ICamApiMacro.Run`, run context, `MacroParams`, `NotifyMacroStep`). Managing/building/running macros from a host is in [api/application.md](api/application.md#icamapimacomanager) (in-process) and [ipc/application.md](ipc/application.md#icamipcmacromanager) (IPC).
+- [Macros](macros/README.md) — authoring a macro body (`ICamApiMacro.Run`, run context, `MacroParams`, `NotifyMacroStep`). Managing/building/running macros from a host is in [api/application.md](api/application.md#icamapimacromanager) (in-process) and [ipc/application.md](ipc/application.md#icamipcmacromanager) (IPC).
 
 ### CAMAPI domain reference
 - [Application & singletons](api/application.md) — ICamApiApplication, utilities, macros, events, collections

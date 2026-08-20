@@ -99,7 +99,7 @@ toolInfoCom.SetConnectorID("Spindle1");
 
 > **Direct access (IDL):** `ICamApiMachiningToolInfo` (uuid `f3dee0e0-89d3-4870-9869-9b31d13a20b1`) in `CAMAPI.ToolsList`.
 
-**Full working example:** [`ProjectToolsList/ExtensionUtilityProjectToolsListNet/project/main/ExtensionUtilityProjectToolsList.cs`](../../ProjectToolsList/ExtensionUtilityProjectToolsListNet/project/main/ExtensionUtilityProjectToolsList.cs)
+**Full working example:** [`ProjectToolsList/ExtensionToolsListPopupNet/project/main/ExtensionToolsListPopup.cs`](../../ProjectToolsList/ExtensionToolsListPopupNet/project/main/ExtensionToolsListPopup.cs)
 
 ---
 
@@ -338,6 +338,35 @@ xmlPropCom.Invoke(xmlProp =>
 });
 ```
 
+**Structural edits — switching optional nodes off:**
+
+Simple dimension edits take effect immediately. Structural edits — enabling or disabling an
+optional machine node such as a turn table or a tail stock — change what the machine *consists
+of*, so the machine has to be rebuilt from the edited XML afterwards:
+
+```csharp
+using var machineCom = activeProjectCom.Machine();
+using var xmlPropCom = machineCom.XMLProp();
+xmlPropCom.SetStr("Schema.AxisY.AxisX.TurnTable.ActiveNode", "Base0");   // "Base0" = the empty variant
+xmlPropCom.SetStr("Schema.AxisY.AxisX.TailStock.ActiveNode", "Base0");
+
+activeProjectCom.LoadMachineFromXmlProp();   // rebuild the machine and everything derived from it
+```
+
+The selector path mirrors the node chain of the schema file, and the shared `.xml` schema on
+disk is never modified — the edit lives in the project.
+
+**Until `LoadMachineFromXmlProp` is called, the XML and the machine in memory disagree.** It
+differs from `LoadFromOperationXml`, which reloads the machine object alone: it also rebuilds
+the initial machine state, the operation enability, the toolpath and the simulation. That is
+what makes it the right call for structural changes and the wrong one for a tight loop.
+
+> **Removing a node also removes its connectors**, which shifts the whole connector list. Locate
+> connectors by `Name` *after* the structural edit, never by a hard-coded index.
+
+`LoadMachineFromXmlProp` lives on the project, not on the machine — see
+[project.md](project.md#icamapiproject).
+
 **Iterating connectors:**
 
 ```csharp
@@ -505,6 +534,30 @@ set it; `IsVec` / `IsVecCustom` read it back; `PositioningMode()` /
 `artvCustom`) · `TRobotRotaryTablePositioningMode` (`arpmToolAxis`, `arpmTooltipPoint`,
 `arpmMixed`).
 
+### Per-operation axis limits
+
+An operation can narrow the travel of individual machine axes, overriding the limits it would
+otherwise inherit. All three are indexed by axis, read/write, and have no helper wrappers —
+call them through `Invoke`.
+
+| Property | Type | Description |
+|---|---|---|
+| `AxisLimitsEnabled[index]` | `bool` | `true` — the per-operation limits below apply; `false` — limits are inherited from the parent |
+| `AxisLimitMin[index]` | `double` | Lower limit, degrees for rotary axes and mm for linear |
+| `AxisLimitMax[index]` | `double` | Upper limit, same units |
+
+```csharp
+machineConfigCom.Invoke(cfg =>
+{
+    cfg.AxisLimitsEnabled[3] = true;      // constrain axis 3 for this operation only
+    cfg.AxisLimitMin[3] = -120.0;
+    cfg.AxisLimitMax[3] =  120.0;
+});
+```
+
+> `AxisLimitMin` / `AxisLimitMax` are only honoured while `AxisLimitsEnabled[index]` is
+> `true` — writing the bounds alone changes nothing.
+
 ---
 
 ## ICamApiMachinesLibrary
@@ -542,13 +595,19 @@ if (foundCom != null)
 **Namespace:** `CAMAPI.Workpiece`
 **Helper:** `WorkpieceSetupHelper`
 
-Describes how the workpiece is mounted on the machine for a given operation — which machine connector is used and where the workpiece coordinate system origin is placed.
+The **physical placement** of the workpiece in the machine cell, used to calculate the
+trajectory. Called *"Base setup"* for robots and *"Workpiece setup"* for mills.
+
+> **Do not confuse this with [`ICamApiWorkpieceCoordinateSystem`](#icamapiworkpiececoordinatesystem)**, which
+> declares the **NC output frame** (the named frame the NC program references). This
+> interface answers *"where does the part physically sit?"* and so affects CAM
+> calculation; that one answers *"which frame is written into the program?"*.
 
 | Helper method | Returns | Writable | Description |
 |---|---|---|---|
-| `MachineSideConnectorIndex(...)` | `int` | Yes (`SetMachineSideConnectorIndex`) | Index into `ICamApiMachine.WorkpieceConnector[...]` |
-| `WorkpieceSideCoordinateSystemName(...)` | `string` | Yes (`SetWorkpieceSideCoordinateSystemName`) | Name of the coordinate system on the workpiece side |
-| `Offset(...)` | `TST3DMatrix` | Yes (`SetOffset`) | Offset of the workpiece coordinate system relative to the global coordinate system |
+| `MachineSideConnectorIndex(...)` | `int` | Yes (`SetMachineSideConnectorIndex`) | Index into `ICamApiMachine.WorkpieceConnector[...]` — which fixture / rotatable holder holds the part |
+| `WorkpieceSideCoordinateSystemName(...)` | `string` | Yes (`SetWorkpieceSideCoordinateSystemName`) | Name of the coordinate system defining the workpiece orientation in the machine cell |
+| `Offset(...)` | `TST3DMatrix` | Yes (`SetOffset`) | Additional offset (rotation + translation) applied **on top of** that coordinate system |
 
 ```csharp
 using var setupCom = /* obtained from operation context */;
@@ -570,7 +629,12 @@ setupCom.SetMachineSideConnectorIndex(1);
 **Namespace:** `CAMAPI.Workpiece`
 **Helper:** `WorkpieceCoordinateSystemHelper`
 
-Controls the G-code coordinate system offset (G54–G59 and sub-variants) for an operation.
+The **NC output coordinate system** — the *Base* frame for robots, `G54`/`G55`… for mills.
+It determines which named frame the NC program references.
+
+> **Do not confuse this with [`ICamApiWorkpieceSetup`](#icamapiworkpiecesetup)**, which
+> defines the workpiece's *physical* position in the machine cell used for CAM calculation.
+> Changing the mode here changes what is emitted into the program, not where the part sits.
 
 ### Coordinate system modes (`TCamApiWorkpieceCoordinateSystemMode`)
 
@@ -697,5 +761,6 @@ var toolInfoCom = toolsListCom.ToolInfo(i); // leaks if not disposed
 | Project tools list | [`ProjectToolsList/ExtensionUtilityProjectToolsListNet/`](../../ProjectToolsList/ExtensionUtilityProjectToolsListNet/) | `ICamApiMachiningToolsList`, `ICamApiMachiningToolInfo`, `ICamApiMachiningToolOperationsIterator` |
 | Machine info | [`ProjectMachine/ExtensionUtilityProjectMachineInfoNet/`](../../ProjectMachine/ExtensionUtilityProjectMachineInfoNet/) | `ICamApiMachineInfo` |
 | Machine XML props change | [`ProjectMachine/MachinePropsChangeNet/`](../../ProjectMachine/MachinePropsChangeNet/) | `ICamApiMachine`, `XMLProp` |
+| Bundled machine + structural XML edit | [`FullWorkflow/WorkpieceMillingWorkflowNet/`](../../FullWorkflow/WorkpieceMillingWorkflowNet/) | `SetMachine` from a schema outside the machines folder, switching optional nodes off, `LoadMachineFromXmlProp`, locating a connector by `Name`, `OpenExistingLibrary` + `AddToolToProject` from a bundled `.db` |
 | Add tool to operation | [`Technologist/Operation/OperationToolAddNet/`](../../Technologist/Operation/OperationToolAddNet/) | `ICamApiMachiningToolsManager`, `AddToolToProject` |
 | DIN 4000 tool import | [`MachiningTools/DIN4000ImportPluginNet/`](../../MachiningTools/DIN4000ImportPluginNet/) | `IMTI_MachiningToolsImportLibrary`, tool storage creation |

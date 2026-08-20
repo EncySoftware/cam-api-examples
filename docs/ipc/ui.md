@@ -72,7 +72,7 @@ Handler interfaces for the main form (IPC versions mirror the in-process set):
 | `BeginFreeze(freezeType)` | Prevents user interaction (`TFreezeInterfaceType`) |
 | `EndFreeze()` | Restores user interaction |
 | `RunAppSetup(out settingsChanged)` | Opens the application settings dialog |
-| `RunUtilitiesSetup()` | Opens the utilities configuration dialog |
+| `RunUtilitiesSetup(anchorRect)` | Opens the utilities configuration popup. `anchorRect` (`TCamApiRect`) is the **screen** rectangle of the button that triggered it, so the popup opens directly underneath; pass an empty rect (all zeroes) to center instead |
 | `OpenAiAssistant()` | Opens the AI assistant |
 | `ShowHelpContents()` | Shows the help documentation |
 | `SupportRequest()` | Opens the support request dialog |
@@ -115,6 +115,64 @@ GetHotkeyManager(ctx) → ICamIpcHotkeyManager*
 ```
 
 IPC mirror of the CAMAPI hotkey manager ([`../api/application.md`](../api/application.md#plugin-hotkeys)). Over IPC the manager keeps the binding table only — a hotkey is added by shortcut **and caption** in one call; the command-fire callback is **not** part of this manager (fire notifications go through the application event-listener mechanism, not a per-hotkey `OnExecute`).
+
+### Status-bar progress — ICamIpcProgressIndicator
+
+```
+CreateProcessIndicator(caption, ctx) → ICamIpcProgressIndicator*
+```
+
+Drives ENCY's own status-bar progress indicator, so an out-of-process tool can report
+progress in the host UI instead of its own window. IPC mirror of
+[`ICamApiProgressIndicator`](../api/ui.md#icamapiprogressindicator).
+
+| Method | Description |
+|---|---|
+| `Show()` | Occupies the status bar and shows the indicator. **Fails if another process already holds it** |
+| `Hide()` | Hides the indicator and releases the status bar |
+| `SetPercent(value)` | Completion 0..100. Fails unless this indicator currently holds the status bar |
+| `SetCaption(value)` | Text shown next to the indicator. Same precondition |
+| `GetPercent()` / `GetCaption()` | Current values |
+| `RegisterHandler(ident, handler, listener, ctx)` | Subscribe an `ICamIpcHandlerProgressIndicator` to Show/Hide/Break/Progress |
+| `UnregisterHandler(ident)` | Remove the subscription |
+
+The handler receives `ProgressIndicatorEvent(handlerIdent, eventType)` where `eventType` is
+`TProgressIndicatorEventType`: `pietShow` (0), `pietHide` (1), `pietBreak` (2),
+`pietProgress` (3). **`pietBreak` is the user pressing Break** — that is how a cancel request
+reaches your loop.
+
+> The status bar is a single shared resource. Always `Hide()` when done (or on failure),
+> otherwise it stays occupied for every other client.
+
+### Verify compare — ICamIpcVerifyCompareManager
+
+```
+GetVerifyCompareManager(ctx) → ICamIpcVerifyCompareManager*
+```
+
+Controls the "Verify compare" mode — machining result against the part, coloured by
+deviation. IPC mirror of
+[`ICamApiVerifyCompareManager`](../api/ui.md#icamapiverifycomparemanager).
+
+| Method | Description |
+|---|---|
+| `GetEnabled()` / `SetEnabled(value)` | Whether compare mode is active |
+| `GetTolerance()` / `SetTolerance(value)` | Half-width of the green "in tolerance" band, mm |
+| `GetScale()` / `SetScale(scale)` | Deviation scale as `TCamApiVerifyCompareCompareScale` (`Stock`, `PosInner`, `PosOuter`, `NegInner`, `NegOuter`) |
+| `GetMeasureEnabled()` / `SetMeasureEnabled(value)` | Whether clicking a point reports its local deviation |
+
+> `GetScale` returns only the edge levels per side and `SetScale` takes `abs()` and sorts what
+> you pass — see the [CAMAPI note](../api/ui.md#icamapiverifycomparemanager) before doing a
+> read-modify-write.
+
+### Script editor — ICamIpcScriptEditor
+
+```
+OpenScriptEditor(ctx) → ICamIpcScriptEditor*
+```
+
+Opens ENCY's script editor (Script IDE) and returns its handle. The only method is
+`Load(scriptPath, ctx)`, which loads a `.spr` script project/file and shows it for editing.
 
 - `ICamIpcHotkeyManager` — `AddShortcut(shortcut, caption, ctx)` (fails if taken), `RemoveShortcut(shortcut, ctx)` (fails for reserved), `FindByShortcut(shortcut, ctx)`, `GetCount(ctx)`, `GetHotkey(index, ctx)`.
 - `ICamIpcHotkey` — `GetShortcut(ctx)`, `GetCaption(ctx)`/`SetCaption(caption, ctx)`, `GetEnabled(ctx)`/`SetEnabled(enabled, ctx)`, `GetIsReserved(ctx)`. The `Shortcut` is fixed at creation.
