@@ -2,6 +2,8 @@
 
 ENCY plugins run inside a Delphi host that uses VCL for its own UI and COM for the .NET bridge. This creates threading constraints that determine which UI pattern is appropriate. There are three distinct patterns, each suited to different use cases.
 
+> **Patterns 2 and 3 open a window you own, and ENCY does not paint it.** To match the active host theme, see [theming-plugin-windows.md](theming-plugin-windows.md). Pattern 1 needs nothing — the inspector dialog is rendered by the host.
+
 ---
 
 ## Pattern 1: Inspector Dialog (Recommended for Parameter Input)

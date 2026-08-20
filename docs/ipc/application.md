@@ -202,6 +202,7 @@ The IPC proxy for the ENCY extension manager. All methods take a `TExecuteContex
 | `CreateExtension(extensionTypeId, ctx) → IIpcExtension*` | Creates (loads) a new extension instance |
 | `CreateExtensions(extensionTypeIds, ctx) → IIpcListExtension*` | Creates multiple extensions (semicolon-separated IDs) |
 | `GetExtension(extensionInstanceId, ctx) → IIpcExtension*` | Returns an existing extension instance by ID |
+| `GetSingletonExtension(extensionTypeId, ctx) → IIpcExtension*` | Returns the single shared instance of a singleton extension by its type id; narrow to a concrete interface with `AsInstanceOf` on the client |
 | `FreeExtension(extensionInstanceId, ctx)` | Unloads an extension instance |
 
 ### Storage type enum — TStorageType

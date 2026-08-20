@@ -9,14 +9,15 @@ This document covers the in-process (same-DLL) Application API used by extension
 1. [ICamApiApplication](#icamapiapplication)
 2. [Application event handlers](#application-event-handlers)
 3. [ICamApiApplicationSingleton — getting the app from a Global extension](#icamapiapplicationsingleton)
-4. [ICamApiPaths / ICamApiConstants — system paths and constants](#icamapipaths--icamapiconstants)
-5. [ICamApiUtilityManager — utilities](#icamapiutilitymanager)
-6. [TResultStatus / TResultStatusCode — error handling](#tresultstatus--tresultstatuscode)
-7. [ICamApiEventHandler — event registration pattern](#icamapieventhandler)
-8. [IListString, IListInteger, IDictionaryStringString — collections](#iliststring-ilistinteger-idictionarystringstring)
-9. [ICAMAPIFilesInStreamStorage — file-in-stream storage](#icamapifilesinstreamstorage)
-10. [TLogEventType / LogItem — logging](#tlogeventtype--logitem)
-11. [ICamApiMacroManager](#icamapimacomanager)
+4. [Plugin hotkeys — global keyboard shortcuts](#plugin-hotkeys)
+5. [ICamApiPaths / ICamApiConstants — system paths and constants](#icamapipaths--icamapiconstants)
+6. [ICamApiUtilityManager — utilities](#icamapiutilitymanager)
+7. [TResultStatus / TResultStatusCode — error handling](#tresultstatus--tresultstatuscode)
+8. [ICamApiEventHandler — event registration pattern](#icamapieventhandler)
+9. [IListString, IListInteger, IDictionaryStringString — collections](#iliststring-ilistinteger-idictionarystringstring)
+10. [ICAMAPIFilesInStreamStorage — file-in-stream storage](#icamapifilesinstreamstorage)
+11. [TLogEventType / LogItem — logging](#tlogeventtype--logitem)
+12. [ICamApiMacroManager](#icamapimacomanager)
 
 ---
 
@@ -41,6 +42,9 @@ This document covers the in-process (same-DLL) Application API used by extension
 | `PLMManager` | `IPLMManager*` | R | PLM integration manager |
 | `AttributesManager` | `ICAMAPICustomAttributesManager*` | R | Custom attributes manager |
 | `UserTechOperationList` | `ICamApiUserTechOperationList*` | R | User-defined tech operations |
+| `Started` | `boolean` | R | `true` once the instance is ready to work; `false` while opening a project or shutting down |
+| `Theme` | `ICamApiTheme*` | R | Snapshot of the active UI theme/palette — see [ui.md](ui.md#icamapitheme) |
+| `HotkeyManager` | `ICamApiHotkeyManager*` | R | Manager for plugin-registered global keyboard shortcuts — see [Plugin hotkeys](#plugin-hotkeys). Available at application level so a global extension can register hotkeys during startup, before the main form exists |
 
 ### Methods
 
@@ -65,6 +69,10 @@ mwmMachining  = 1   // Calculating toolpaths
 mwmSimulating = 2   // Running simulation
 ```
 
+> The `TMainWorkMode` enum now lives in `CAMAPI.ApplicationMainForm` (it is also used by
+> `ICamApiVisibilityManager` — see [ui.md](ui.md#icamapivisibilitymanager)); the
+> `MainWorkMode` property on the application is unchanged.
+
 ### .NET helper usage
 
 The `ApplicationHelper` static class (namespace `CAMAPI.DotnetHelper`) provides extension methods on `ComWrapper<ICamApiApplication>`:
@@ -87,6 +95,14 @@ appCom.SetMainWorkMode(TMainWorkMode.mwmMachining);
 
 // Access sub-managers
 using var utilMgrCom = appCom.Invoke(app => app.UtilityManager);
+
+// Read the active UI theme (null in headless builds)
+using var themeCom = appCom.Theme();
+if (themeCom != null)
+{
+    bool dark = themeCom.IsDark();
+    themeCom.Dispose();
+}
 ```
 
 ---
@@ -164,6 +180,65 @@ public TResultStatus OnSCInitializing()
 ```
 
 > See: [`ExtensionGlobal\ExtensionGlobalNet\project\main\ExtensionGlobal.cs`](../../ExtensionGlobal/ExtensionGlobalNet/project/main/ExtensionGlobal.cs)
+
+**Shortcut helper:** `SystemExtensionFactory.GetApplication()` wraps the singleton lookup — call it from `OnSCInitializing` (where no context is provided) to reach the application in one line:
+
+```csharp
+using var appCom = SystemExtensionFactory.GetApplication();   // throws on error
+```
+
+---
+
+## Plugin hotkeys
+
+Plugins can register **global keyboard shortcuts** through `ICamApiHotkeyManager`, reached from `application.HotkeyManager` (or `mainForm.HotkeyManager`). Because it lives at the application level, a **Global extension** can register hotkeys during startup — before the main form exists.
+
+Plugin hotkeys are dispatched after the viewport but before classic menu/action shortcuts, and only while the main window is active and focus is not in a text editor. The host's own native shortcuts are pre-registered as **reserved** entries, so `FindByShortcut` reports a conflict against them (they cannot be removed).
+
+### Interfaces
+
+| Interface | Purpose |
+|---|---|
+| `ICamApiHotkeyManager` | Create / add / remove / look up hotkeys; enumerate registered ones |
+| `ICamApiHotkey` | One shortcut binding — `Shortcut` (R, identity), `Caption` (RW), `Enabled` (RW), `OnExecute` (RW), `IsReserved` (R) |
+| `ICamApiHotkeyOnExecute` | Callback fired on the UI thread when the shortcut is pressed |
+
+The `Shortcut` is fixed at creation (it identifies the binding); to re-bind, create a new hotkey carrying the same handler and replace the old one.
+
+### .NET helpers
+
+`HotkeyManagerHelper` — `CreateHotkey`, `AddShortcut` (throws if the shortcut is taken), `RemoveShortcut` (throws for a reserved one), `FindByShortcut`, `Count`, `GetHotkey`, `EnumerateShortcuts`.
+`HotkeyHelper` — `Shortcut`, `GetCaption`/`SetCaption`, `GetEnabled`/`SetEnabled`, `SetOnExecute`, `IsReserved`.
+
+Instead of implementing `ICamApiHotkeyOnExecute` by hand, wrap a delegate with the `HotkeyOnExecute` adapter — it casts the raw application pointer to `ICamApiApplication` for you.
+
+```csharp
+using var appCom = SystemExtensionFactory.GetApplication();
+using var managerCom = appCom.HotkeyManager();   // null in headless / kernel-only builds
+if (managerCom == null)
+    return;
+
+// Refuse to clobber an existing (plugin or reserved native) binding
+using (var existing = managerCom.FindByShortcut("Ctrl+Shift+K"))
+{
+    if (!existing.IsNull)
+        return;
+}
+
+var handler = new HotkeyOnExecute(app =>
+{
+    // fires on the UI thread; 'app' is a ComWrapper<ICamApiApplication>
+    using var projectCom = app.GetActiveProject();
+    // ... do work
+});
+
+using var hotkeyCom = managerCom.CreateHotkey("Ctrl+Shift+K");
+hotkeyCom.SetCaption("My plugin action");
+hotkeyCom.SetOnExecute(handler);
+managerCom.AddShortcut(hotkeyCom);
+```
+
+> `HotkeyManager()` returns `ComWrapper<ICamApiHotkeyManager>?` — it is `null` in headless / kernel-only builds where no GUI hotkey registry exists. Always null-check.
 
 ---
 

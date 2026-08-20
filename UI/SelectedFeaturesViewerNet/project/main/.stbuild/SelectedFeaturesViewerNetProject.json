@@ -1,0 +1,10 @@
+{
+	"type": "CSharp",
+	"project_path": "../SelectedFeaturesViewerNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.xaml",
+		"../*.csproj",
+		"*.json"
+	]
+}

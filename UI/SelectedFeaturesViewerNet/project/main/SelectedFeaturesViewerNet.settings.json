@@ -1,0 +1,14 @@
+{
+    "name": "Selected Features Viewer",
+    "description": "Lists the features recognized on the geometry nodes currently selected in the viewport (ICamApiFeatureFinder.GetFeaturesForSelected)",
+    "module_path": "${extensionJsonFolder}/SelectedFeaturesViewerNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Selected Features Viewer",
+                "caption": "Selected Features Viewer",
+                "id": "Extension.Utility.SelectedFeaturesViewerNet"
+            }
+        }
+    ]
+}

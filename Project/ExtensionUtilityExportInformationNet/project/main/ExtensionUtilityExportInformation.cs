@@ -61,7 +61,8 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
             OperationSaveHelper.Initialize(jsonBuilder);
             ToolpathSaveHelper.Initialize(jsonBuilder);
             MachineSaveHelper.Initialize(jsonBuilder);
-            
+            ToolSaveHelper.Initialize(jsonBuilder);
+            ScreenshotSaveHelper.Initialize(jsonBuilder);
             
 
             using var applicationCom = ComWrapper.Create(context.CamApplication);
@@ -145,12 +146,17 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
 
             OperationSaveHelper.SaveOperationsData(technologistCom, evaluatorCom);
 
+            ToolSaveHelper.SaveToolDetails(projectCom);
+            
+            string jsonFullPath = Path.Combine(ExportOutputPaths.Root, "test.json");
+            ScreenshotSaveHelper.SaveScreenshots(projectCom, Path.GetDirectoryName(jsonFullPath)!);
+
             jsonBuilder.EndObject(); // CAMProject closing
             jsonBuilder.EndObject(); // json closing
 
             string json = jsonBuilder.GetJsonString(pretty: true);
-            string fileName = "test.json";
-            File.WriteAllText(fileName, json);
+            File.WriteAllText(jsonFullPath, json);
+            ViewerLauncher.Show(jsonFullPath, ExportOutputPaths.Root, applicationCom);
         }
         catch (Exception e)
         {

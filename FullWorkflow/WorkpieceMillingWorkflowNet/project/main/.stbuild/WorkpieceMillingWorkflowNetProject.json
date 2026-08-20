@@ -1,0 +1,10 @@
+{
+	"type": "CSharp",
+	"project_path": "../WorkpieceMillingWorkflowNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"../json.cs",
+		"*.json"
+	]
+}

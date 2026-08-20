@@ -225,6 +225,22 @@ public class Build : NukeBuild
                 using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
                 archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
                 archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
+
+                
+                var viewerDir = Path.Combine(outputFolder, "Viewer");
+                if (Directory.Exists(viewerDir))
+                {
+                    foreach (var file in Directory.GetFiles(viewerDir, "*", SearchOption.AllDirectories))
+                    {
+                        var entryName = "Viewer/" + Path.GetRelativePath(viewerDir, file).Replace('\\', '/');
+                        archive.CreateEntryFromFile(file, entryName);
+                    }
+                    Logger.head($"Included viewer into dext from: {viewerDir}");
+                }
+                else
+                {
+                    Logger.head($"⚠️  Viewer folder not found, dext created without viewer: {viewerDir}");
+                }
                 Logger.head($"Created dext file: {dextPath}");
             }
         });

@@ -62,6 +62,7 @@ type
     function GetItemData(ItemType: TPLMItemType; const ItemId: WideString;
                          out ItemData: IPLMDataItem): IPLMResult; safecall;
     function Get_SupportProjectLoad: WordBool; safecall;
+    function Get_SupportModelLoad: WordBool; safecall;
     function Get_SupportMachineLoad: WordBool; safecall;
     function Get_SupportPostprocessorLoad: WordBool; safecall;
     function Get_SupportPostprocessorInsideMachineLoad: WordBool; safecall;
@@ -378,6 +379,11 @@ begin
 end;
 
 function TTestPLMInterface.Get_SupportProjectLoad: WordBool;
+begin
+  result := true;
+end;
+
+function TTestPLMInterface.Get_SupportModelLoad: WordBool;
 begin
   result := true;
 end;

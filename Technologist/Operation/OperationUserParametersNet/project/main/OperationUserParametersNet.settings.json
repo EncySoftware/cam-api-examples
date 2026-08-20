@@ -1,0 +1,14 @@
+{
+    "name": "Operation user parameters example (C#)",
+    "description": "Window with Get / Add / Delete buttons for the user parameters of the current operation",
+    "module_path": "${extensionJsonFolder}/OperationUserParametersNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Operation user params",
+                "caption": "Operation user params",
+                "id": "Extension.Utility.OperationUserParameters"
+            }
+        }
+    ]
+}

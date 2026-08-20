@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -12,6 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Svg" Version="3.4.7" />
-    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="3.0.1-dev.95" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="3.0.7-dev.3" />
   </ItemGroup>
 </Project>

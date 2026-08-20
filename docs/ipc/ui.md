@@ -108,6 +108,19 @@ Returns the OS window handle (`HWND`, 64-bit value) of the ENCY main window. Use
 GetMainWindowHandle(ctx) → int64
 ```
 
+### Plugin hotkeys
+
+```
+GetHotkeyManager(ctx) → ICamIpcHotkeyManager*
+```
+
+IPC mirror of the CAMAPI hotkey manager ([`../api/application.md`](../api/application.md#plugin-hotkeys)). Over IPC the manager keeps the binding table only — a hotkey is added by shortcut **and caption** in one call; the command-fire callback is **not** part of this manager (fire notifications go through the application event-listener mechanism, not a per-hotkey `OnExecute`).
+
+- `ICamIpcHotkeyManager` — `AddShortcut(shortcut, caption, ctx)` (fails if taken), `RemoveShortcut(shortcut, ctx)` (fails for reserved), `FindByShortcut(shortcut, ctx)`, `GetCount(ctx)`, `GetHotkey(index, ctx)`.
+- `ICamIpcHotkey` — `GetShortcut(ctx)`, `GetCaption(ctx)`/`SetCaption(caption, ctx)`, `GetEnabled(ctx)`/`SetEnabled(enabled, ctx)`, `GetIsReserved(ctx)`. The `Shortcut` is fixed at creation.
+
+Native application shortcuts are pre-registered as reserved entries, so `FindByShortcut` reports conflicts against them.
+
 ### ICamIpcMainFormUiInfo — UI state snapshot
 
 Returned by `GetUiInfo(ctx)`. Equivalent to the in-process `ICamApiMainFormUiInfo` with one addition:

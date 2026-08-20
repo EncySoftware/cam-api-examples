@@ -1,13 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
         <UseWPF>true</UseWPF>
         <OutDir>C:\Program Files\ENCY Software\ENCY 2\Bin64</OutDir>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="EncySoftware.CAMIPC.Sdk.Net" Version="3.0.1-dev.95" />
+        <PackageReference Include="EncySoftware.CAMIPC.Sdk.Net" Version="3.0.7-dev.3" />
+        <PackageReference Include="EncySoftware.PathAliasesInterface.Net" Version="3.0.1-dev.28" />
+        <PackageReference Include="EncySoftware.AssemblyLoaderTypes.Net" Version="3.0.1-dev.1" />
+        <PackageReference Include="EncySoftware.AppStarterInterface.Net" Version="3.0.1-dev.3" />
+        <PackageReference Include="EncySoftware.STLoggingInterface.Net" Version="3.0.1-dev.2" />
     </ItemGroup>
 </Project>

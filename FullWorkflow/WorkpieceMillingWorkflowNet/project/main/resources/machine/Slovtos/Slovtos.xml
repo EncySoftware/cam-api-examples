@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<SCCollection>
+	
+    <SCType ID="TurnTable_Selector" Caption="Turn table Selector" Type="TCaseNode" IsStructural="True">
+        <ActiveNode DefaultValue="Base1"/>
+        <SCType ID="Base0" Caption="No Turn table" Type="TMachineNode"/>
+        <SCType ID="Base1" Caption="Turn table" Type="TMachineNode">
+			<SCType ID="AxisAPos" Caption="Axis A position" type="TMachineStateParameter">
+				<Address DefaultValue="A"/>
+				<Order DefaultValue="4"/>
+				<Group DefaultValue="RotaryAxis"/>
+				<Priority DefaultValue="4"/>
+			</SCType>
+			<SCType ID="TablePos" Caption="Rotary table position" type="TMachineStateParameter">
+				<Address DefaultValue="XX"/>
+				<Order DefaultValue="5"/>
+				<Group DefaultValue="LinearAxis"/>
+				<Priority DefaultValue="5"/>
+				<AxisControl DefaultValue="Manual"/>
+			</SCType>
+			<SCType ID="Table" Caption="Table axis X" type="TToolAxisX">
+				<ImageFile DefaultValue="AXAxis.osd"/>
+				<ParameterName DefaultValue="TablePos"/>
+				<SCType ID="AxisA" Caption="Axis A" type="TMachineAxis">
+					<Matrix>
+						<SCType ID="T1" type="TRotateY" DefaultValue="90"/>
+						<!--SCType ID="T2" type="TTranslateZ" DefaultValue="254.6"/-->
+					</Matrix>
+					<ParameterName DefaultValue="AxisAPos"/>
+					<AxisType DefaultValue="Rotary"/>
+					<ImageFile DefaultValue="AAxis.osd"/>
+					<VisualProperties>
+						<Color>
+							<R DefaultValue="244/256"/>
+							<G DefaultValue="244/256"/>
+							<B DefaultValue="244/256"/>
+						</Color>
+					</VisualProperties>
+					<SCType ID="ChuckNode" Caption="Chuck" type="TMachineNode">
+						<Matrix>
+							<SCType ID="T1" type="TRotateY" DefaultValue="-90"/>
+						</Matrix>
+						<SCType ID="Table" Caption="Turn table" type="TWorkpieceHolderNode"/>
+					</SCType>
+				</SCType>
+			</SCType>			
+		</SCType>
+	</SCType>
+
+    <SCType ID="TailStock_Selector" Caption="TailStock Selector" Type="TCaseNode">
+        <ActiveNode DefaultValue="Base1"/>
+			<SCType ID="Base0" Caption="No Tailstock" Type="TMachineNode"/>
+			<SCType ID="Base1" Caption="Tailstock" Type="TMachineNode">			
+				<SCType ID="TailXPos" Caption="Tailstock X" type="TMachineStateParameter">
+					<Address DefaultValue="TX"/>
+					<Order DefaultValue="6"/>
+					<Group DefaultValue="LinearAxis"/>
+					<Priority DefaultValue="6"/>
+					<AxisControl DefaultValue="Manual"/>
+				</SCType>
+				<SCType ID="TailZPos" Caption="Tailstock Z" type="TMachineStateParameter">
+					<Address DefaultValue="TZ"/>
+					<Order DefaultValue="7"/>
+					<Group DefaultValue="LinearAxis"/>
+					<Priority DefaultValue="7"/>
+					<AxisControl DefaultValue="Manual"/>
+				</SCType>
+					<SCType ID="TailX" Caption="Tail X" type="TToolAxisX">
+					<ImageFile DefaultValue="XTailStock.osd"/>
+					<ParameterName DefaultValue="TailXPos"/>
+					<VisualProperties>
+						<Visible DefaultValue="True"/>
+						<IsTransparent DefaultValue="True"/>
+						<Transparence DefaultValue="0.8"/>
+					</VisualProperties>
+					<SCType ID="TailZ" Caption="Tail Z" type="TToolAxisZ">
+						<Direction>
+							<X DefaultValue="-2.9238044001630872522327544133663"/>
+							<Y DefaultValue="0"/>
+							<Z DefaultValue="1"/>
+						</Direction>
+						<ImageFile DefaultValue="ZTailStock.osd"/>
+						<ParameterName DefaultValue="TailZPos"/>
+						<VisualProperties>
+							<Visible DefaultValue="True"/>
+							<IsTransparent DefaultValue="True"/>
+							<Transparence DefaultValue="0.8"/>
+						</VisualProperties>
+					</SCType>
+				</SCType>
+			</SCType>
+	</SCType>	
+
+	<SCType ID="Slovtos" Caption="Slovtos 4-axis" type="AbstractMachine" Enabled="true">
+		<GUID DefaultValue="{F916895F-26E0-463E-B29C-995CF58C5C41}"/>
+		<Priority DefaultValue="132"/>
+		<Name DefaultValue="Slovtos"/>
+		<Comment DefaultValue="Slovtos"/>
+		<Image DefaultValue="Slovtos.jpg"/>
+		<Icon DefaultValue="Mill_3Axis_ico.bmp"/>
+		<Group DefaultValue="Milling"/>
+		<Developer DefaultValue="Slovtos"/>
+		<ControlData>
+			<UseArcInYZ DefaultValue="true"/>
+			<UseArcInZX DefaultValue="true"/>
+			<RotaryTrans>
+				<PolarAvailable DefaultValue="false"/>
+				<CNCSupPolar DefaultValue="false"/>
+				<CylindAvailable DefaultValue="true"/>
+				<CNCSupCylind DefaultValue="true"/>
+				<TCPMAvailable DefaultValue="True"/>
+				<TCPMDefault DefaultValue="False"/>
+			</RotaryTrans>
+		</ControlData>
+		<Origin>
+			<OriginLCS DefaultValue="WorkpieceLCS"/>
+			<InitialX DefaultValue="Zero"/>
+			<InitialY DefaultValue="Zero"/>
+			<InitialZ DefaultValue="MinZ"/>
+		</Origin>
+		<MachineStateParameters>
+			<SCType ID="AxisXPos" type="TAxisXPosition"/>
+			<SCType ID="AxisYPos" type="TAxisYPosition"/>
+			<SCType ID="AxisZPos" type="TAxisZPosition">
+				<InitialValue DefaultValue="254"/>
+			</SCType>
+		</MachineStateParameters>
+		<Schema>
+			<ImageFile DefaultValue="Frame.osd"/>
+                <VisualProperties>
+                    <Color>
+                        <R DefaultValue="239/256"/>
+                        <G DefaultValue="243/256"/>
+                        <B DefaultValue="250/256"/>
+                    </Color>
+                </VisualProperties>
+			<SCType ID="AxisZ" Caption="Axis Z" type="TToolAxisZ">
+				<ImageFile DefaultValue="ZAxis.osd"/>
+				<SCType ID="Spindle" Caption="Spindle" type="TMillToolHolder"/>
+			</SCType>
+			<SCType ID="AxisY" Caption="Axis Y" type="TToolAxisY">
+				<ImageFile DefaultValue="YAxis.osd"/>
+				<Direction>
+					<X DefaultValue="0"/>
+					<Y DefaultValue="-1"/>
+					<Z DefaultValue="0"/>
+				</Direction>
+				<SCType ID="AxisX" Caption="Axis X" type="TToolAxisX">
+					<ImageFile DefaultValue="XAxis.osd"/>
+					<Direction>
+						<X DefaultValue="-1"/>
+						<Y DefaultValue="0"/>
+						<Z DefaultValue="0"/>
+					</Direction>
+						<SCType ID="TurnTable" Caption="Turn table" Type="TurnTable_Selector"/>
+						<SCType ID="BaseTableNode" Caption="Base table node" Type="TMachineNode">
+							<Matrix>
+								<SCType ID="T12" Type="TTranslateZ" DefaultValue="0"/>
+								<SCType ID="T11" Type="TTranslateZ" DefaultValue="0"/>
+								<SCType ID="T1" Type="TTranslateZ" DefaultValue="-95+0.165"/>
+							</Matrix>
+							<SCType ID="BaseTableWrk" Caption="Base table" Type="TWorkpieceHolderNode"/>
+						</SCType>
+						<SCType ID="TailStock" Caption="TailStock" Type="TailStock_Selector"/>
+				</SCType>
+			</SCType>
+		</Schema>
+        <Simulation>
+            <CDIgnoreList>
+                <SCArray>
+                    <CollisionPair>
+                        <Node1>
+                            <NodeID>TailZ</NodeID>
+                            <WithChildren>True</WithChildren>
+                        </Node1>
+                        <Node2>
+                            <NodeID>AxisA</NodeID>
+                            <WithChildren>True</WithChildren>
+                        </Node2>
+                    </CollisionPair>
+                    <CollisionPair>
+                        <Node1>
+                            <NodeID>AxisA</NodeID>
+                            <WithChildren>True</WithChildren>
+                        </Node1>
+                        <Node2>
+                            <NodeID>AxisA</NodeID>
+                            <WithChildren>True</WithChildren>
+                        </Node2>
+                    </CollisionPair>
+                </SCArray>
+            </CDIgnoreList>
+        </Simulation>
+		<SimulateToolChange DefaultValue="true"/>
+		<ToolChangeMachineState DefaultValue="X0 Y0 Z254"/>
+		<ToolChange>
+			<OutputMode DefaultValue="Machine"/>
+		</ToolChange>
+		<Leads>			
+			<ApproachCommands>
+					<SCArray>
+							<Rule>
+									<RuleID>{7d089eca-7915-4502-a13a-e5611b7ebfe4}</RuleID>
+									<Command>A; LCS; XY; Z</Command>
+									<Name>Turn Table</Name>
+							</Rule>
+							<Rule>
+									<RuleID>{95a4111b-7b84-45a5-8c33-0410687fe800}</RuleID>
+									<Command>XY;Z</Command>
+									<Name>No Turn Table</Name>
+							</Rule>
+					</SCArray>
+			</ApproachCommands>
+			<ReturnCommands>
+					<SCArray>
+							<Rule>
+									<RuleID>{14c80877-9880-4745-b5e7-d291d583dfb1}</RuleID>
+									<Command>LCS; Z; XY; A</Command>
+									<Name>Turn Table</Name>
+							</Rule>
+							<Rule>
+									<RuleID>{2c0abcb2-a05a-4e5e-bdbd-f0a28ff9fbe2}</RuleID>
+									<Command>Z;XY</Command>
+									<Name>No Turn Table</Name>
+							</Rule>
+					</SCArray>
+			</ReturnCommands>		
+		</Leads>
+	</SCType>
+</SCCollection>
