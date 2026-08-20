@@ -1,0 +1,9 @@
+{
+	"type": "CSharp",
+	"project_path": "../CadSketchDrawingNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"*.json"
+	]
+}

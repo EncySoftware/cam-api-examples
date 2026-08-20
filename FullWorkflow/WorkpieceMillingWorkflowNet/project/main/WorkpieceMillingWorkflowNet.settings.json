@@ -1,0 +1,14 @@
+{
+    "name": "Milling workflow with programmatic stock",
+    "description": "Import a part, build the stock as a box through the workpiece model former, add a vise fixture, create the roughing, scallop and corners cleanup operations, simulate and generate G-code",
+    "module_path": "${extensionJsonFolder}/WorkpieceMillingWorkflowNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Milling workflow with programmatic stock",
+                "caption": "Milling workflow with programmatic stock",
+                "id": "Extension.Utility.FullWorkflow.WorkpieceMilling"
+            }
+        }
+    ]
+}

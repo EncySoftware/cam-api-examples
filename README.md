@@ -39,6 +39,9 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Full 3D workflow demo through utility** - [**FullWorkflow3DProject**](./FullWorkflow/FullWorkflow3DProject/project/main/README.md)
 [**Demo movie**]()
 
+- **Milling workflow with programmatic stock and fixtures** - [**WorkpieceMillingWorkflowNet**](./FullWorkflow/WorkpieceMillingWorkflowNet/project/main/README.md)
+[**Demo movie**]()
+
 
 ### CAMIPC examples
 - **Create operations workflow** - [**ApplicationCreateOperations**](./ApplicationNet/CreateOperations/project/main/README.md)  
@@ -83,6 +86,9 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 [**Demo movie**](https://learn.encycam.com/examples/Osdmaker.mp4)
 
 - **Picking selected objects of model** - [**UtilityGeometryEntityReader**](./Geometry/UtilityGeometryEntityReader/project/main/README.md)  
+[**Demo movie**]()
+
+- **Parametric 2D sketch drawing through the CAD API** - [**CadSketchDrawingNet**](./Geometry/CadSketchDrawingNet/project/main/README.md)  
 [**Demo movie**]()
 
 
