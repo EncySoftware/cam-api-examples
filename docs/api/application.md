@@ -9,14 +9,15 @@ This document covers the in-process (same-DLL) Application API used by extension
 1. [ICamApiApplication](#icamapiapplication)
 2. [Application event handlers](#application-event-handlers)
 3. [ICamApiApplicationSingleton — getting the app from a Global extension](#icamapiapplicationsingleton)
-4. [ICamApiPaths / ICamApiConstants — system paths and constants](#icamapipaths--icamapiconstants)
-5. [ICamApiUtilityManager — utilities](#icamapiutilitymanager)
-6. [TResultStatus / TResultStatusCode — error handling](#tresultstatus--tresultstatuscode)
-7. [ICamApiEventHandler — event registration pattern](#icamapieventhandler)
-8. [IListString, IListInteger, IDictionaryStringString — collections](#iliststring-ilistinteger-idictionarystringstring)
-9. [ICAMAPIFilesInStreamStorage — file-in-stream storage](#icamapifilesinstreamstorage)
-10. [TLogEventType / LogItem — logging](#tlogeventtype--logitem)
-11. [ICamApiMacroManager](#icamapimacomanager)
+4. [Plugin hotkeys — global keyboard shortcuts](#plugin-hotkeys)
+5. [ICamApiPaths / ICamApiConstants — system paths and constants](#icamapipaths--icamapiconstants)
+6. [ICamApiUtilityManager — utilities](#icamapiutilitymanager)
+7. [TResultStatus / TResultStatusCode — error handling](#tresultstatus--tresultstatuscode)
+8. [ICamApiEventHandler — event registration pattern](#icamapieventhandler)
+9. [IListString, IListInteger, IDictionaryStringString — collections](#iliststring-ilistinteger-idictionarystringstring)
+10. [ICAMAPIFilesInStreamStorage — file-in-stream storage](#icamapifilesinstreamstorage)
+11. [TLogEventType / LogItem — logging](#tlogeventtype--logitem)
+12. [ICamApiMacroManager](#icamapimacomanager)
 
 ---
 
@@ -41,6 +42,9 @@ This document covers the in-process (same-DLL) Application API used by extension
 | `PLMManager` | `IPLMManager*` | R | PLM integration manager |
 | `AttributesManager` | `ICAMAPICustomAttributesManager*` | R | Custom attributes manager |
 | `UserTechOperationList` | `ICamApiUserTechOperationList*` | R | User-defined tech operations |
+| `Started` | `boolean` | R | `true` once the instance is ready to work; `false` while opening a project or shutting down |
+| `Theme` | `ICamApiTheme*` | R | Snapshot of the active UI theme/palette — see [ui.md](ui.md#icamapitheme) |
+| `HotkeyManager` | `ICamApiHotkeyManager*` | R | Manager for plugin-registered global keyboard shortcuts — see [Plugin hotkeys](#plugin-hotkeys). Available at application level so a global extension can register hotkeys during startup, before the main form exists |
 
 ### Methods
 
@@ -65,6 +69,10 @@ mwmMachining  = 1   // Calculating toolpaths
 mwmSimulating = 2   // Running simulation
 ```
 
+> The `TMainWorkMode` enum now lives in `CAMAPI.ApplicationMainForm` (it is also used by
+> `ICamApiVisibilityManager` — see [ui.md](ui.md#icamapivisibilitymanager)); the
+> `MainWorkMode` property on the application is unchanged.
+
 ### .NET helper usage
 
 The `ApplicationHelper` static class (namespace `CAMAPI.DotnetHelper`) provides extension methods on `ComWrapper<ICamApiApplication>`:
@@ -87,6 +95,14 @@ appCom.SetMainWorkMode(TMainWorkMode.mwmMachining);
 
 // Access sub-managers
 using var utilMgrCom = appCom.Invoke(app => app.UtilityManager);
+
+// Read the active UI theme (null in headless builds)
+using var themeCom = appCom.Theme();
+if (themeCom != null)
+{
+    bool dark = themeCom.IsDark();
+    themeCom.Dispose();
+}
 ```
 
 ---
@@ -164,6 +180,65 @@ public TResultStatus OnSCInitializing()
 ```
 
 > See: [`ExtensionGlobal\ExtensionGlobalNet\project\main\ExtensionGlobal.cs`](../../ExtensionGlobal/ExtensionGlobalNet/project/main/ExtensionGlobal.cs)
+
+**Shortcut helper:** `SystemExtensionFactory.GetApplication()` wraps the singleton lookup — call it from `OnSCInitializing` (where no context is provided) to reach the application in one line:
+
+```csharp
+using var appCom = SystemExtensionFactory.GetApplication();   // throws on error
+```
+
+---
+
+## Plugin hotkeys
+
+Plugins can register **global keyboard shortcuts** through `ICamApiHotkeyManager`, reached from `application.HotkeyManager` (or `mainForm.HotkeyManager`). Because it lives at the application level, a **Global extension** can register hotkeys during startup — before the main form exists.
+
+Plugin hotkeys are dispatched after the viewport but before classic menu/action shortcuts, and only while the main window is active and focus is not in a text editor. The host's own native shortcuts are pre-registered as **reserved** entries, so `FindByShortcut` reports a conflict against them (they cannot be removed).
+
+### Interfaces
+
+| Interface | Purpose |
+|---|---|
+| `ICamApiHotkeyManager` | Create / add / remove / look up hotkeys; enumerate registered ones |
+| `ICamApiHotkey` | One shortcut binding — `Shortcut` (R, identity), `Caption` (RW), `Enabled` (RW), `OnExecute` (RW), `IsReserved` (R) |
+| `ICamApiHotkeyOnExecute` | Callback fired on the UI thread when the shortcut is pressed |
+
+The `Shortcut` is fixed at creation (it identifies the binding); to re-bind, create a new hotkey carrying the same handler and replace the old one.
+
+### .NET helpers
+
+`HotkeyManagerHelper` — `CreateHotkey`, `AddShortcut` (throws if the shortcut is taken), `RemoveShortcut` (throws for a reserved one), `FindByShortcut`, `Count`, `GetHotkey`, `EnumerateShortcuts`.
+`HotkeyHelper` — `Shortcut`, `GetCaption`/`SetCaption`, `GetEnabled`/`SetEnabled`, `SetOnExecute`, `IsReserved`.
+
+Instead of implementing `ICamApiHotkeyOnExecute` by hand, wrap a delegate with the `HotkeyOnExecute` adapter — it casts the raw application pointer to `ICamApiApplication` for you.
+
+```csharp
+using var appCom = SystemExtensionFactory.GetApplication();
+using var managerCom = appCom.HotkeyManager();   // null in headless / kernel-only builds
+if (managerCom == null)
+    return;
+
+// Refuse to clobber an existing (plugin or reserved native) binding
+using (var existing = managerCom.FindByShortcut("Ctrl+Shift+K"))
+{
+    if (!existing.IsNull)
+        return;
+}
+
+var handler = new HotkeyOnExecute(app =>
+{
+    // fires on the UI thread; 'app' is a ComWrapper<ICamApiApplication>
+    using var projectCom = app.GetActiveProject();
+    // ... do work
+});
+
+using var hotkeyCom = managerCom.CreateHotkey("Ctrl+Shift+K");
+hotkeyCom.SetCaption("My plugin action");
+hotkeyCom.SetOnExecute(handler);
+managerCom.AddShortcut(hotkeyCom);
+```
+
+> `HotkeyManager()` returns `ComWrapper<ICamApiHotkeyManager>?` — it is `null` in headless / kernel-only builds where no GUI hotkey registry exists. Always null-check.
 
 ---
 
@@ -459,11 +534,155 @@ loggerCom.Log(new LogItem {
 
 ## ICamApiMacroManager
 
-`ICamApiMacroManager` is the entry point for the macro recording and execution system. The interface is currently minimal (no public methods beyond the interface marker). Access it through:
+`ICamApiMacroManager` is the entry point for the macro system: list and run existing macros, and create new ones. Access it through the application helper:
 
 ```csharp
 using var macroMgrCom = appCom.MacroManager();
 ```
+
+> **Writing the body of a macro** (the generated `.cs` that runs inside ENCY — `ICamApiMacro.Run`, `MacroParams`, `NotifyMacroStep`) is a separate topic: see [docs/macros](../macros/README.md). This section covers managing and building macros from a host plugin.
+
+### Listing and running macros
+
+Helper (`MacroManagerHelper`):
+
+```csharp
+macroMgrCom.Execute(id, paramsJson);   // run a macro by id; paramsJson "" = recorded defaults
+```
+
+`paramsJson` is a JSON dictionary of per-step value overrides: `{"stepIndex": {"key": "value"}}`. Pass `""` to run with the values recorded into the macro.
+
+**Methods (full list):**
+
+| Method | Description |
+|---|---|
+| `Count` (R) | Number of macros registered in the system |
+| `Macro[index]` (R) → `ICamApiMacroInfo*` | Macro metadata by index (0-based) |
+| `GetMacroById(id)` → `ICamApiMacroInfo*` | Macro metadata by unique id |
+| `Execute(id, params, out ret)` | Run a macro; `params` = overrides JSON (may be empty) |
+| `CreateMacroInstance()` → `ICamApiMacroInfo*` | New empty macro metadata (fill its fields, then `AddMacro`) |
+| `AddMacro(macro, out ret)` | Register a prebuilt macro in the system |
+| `RemoveMacro(id, deleteSources, out ret)` | Remove a macro (optionally delete its source files) |
+| `MacroBuilder` (R) → `ICamApiMacroBuilder*` | The builder — create macros programmatically (see below) |
+| `NotifyMacroStep(stepIndex, out ret)` | Report that playback reached a step; called from **inside** a running macro for UI step highlighting (see [docs/macros](../macros/notify-step.md)) |
+| `OpenInEditor(macro, out ret)` | Open the macro source in the editor for its language |
+
+> **Direct call (no helper):** only `Execute` and `NotifyMacroStep` have helper wrappers; for the rest use `macroMgrCom.Invoke(m => m.GetMacroById(id))` / `InvokeAndWrap(...)`.
+
+### ICamApiMacroInfo — macro metadata
+
+`propertyRW`: `Id`, `Caption`, `Description`, `MacroPath` (source), `ExecutablePath` (built), `LanguageId`, `ExecuteExtensionId`.
+`propertyR`: `StepCount`, `Step[index]` → `ICamApiMacroStepInfo*`.
+
+### ICamApiMacroStepInfo / ICamApiMacroStepParam — discover overridable parameters
+
+To learn which keys a macro's step accepts in `Execute`'s `params` JSON, walk the steps:
+
+- `ICamApiMacroStepInfo`: `DisplayText`, `ParamCount`, `Param[index]` → `ICamApiMacroStepParam*`, `GroupCaption`.
+- `ICamApiMacroStepParam` (read-only): `Key` (the JSON key), `LabelText`, `ParamType` (`TMacroCommandParamType`), `Required`, `DefaultValue`, `ValuesString` (semicolon-separated allowed values, empty = free-form).
+
+**`TMacroCommandParamType`:** `mptStr` (0), `mptBol` (1), `mptInt` (2), `mptFlt` (3).
+
+### Creating a macro programmatically — ICamApiMacroBuilder + ICamApiMacroCommandsManager
+
+A macro is built from a sequence of recorded commands, then compiled. This mirrors exactly what the UI recorder does. The commands manager is obtained by QI from the builder.
+
+```csharp
+using var macroMgrCom = appCom.MacroManager();
+using var builderCom  = macroMgrCom.InvokeAndWrap(m => m.MacroBuilder);
+
+// 1. Record commands.
+builderCom.Invoke(b =>
+{
+    var cmds = (ICamApiMacroCommandsManager)b;     // same object, QI
+    cmds.Start(out _);
+
+    // Imitate a "create operation" hook: build a command payload and register it.
+    var cd = cmds.CreateCommandData(TMacroCommandType.mctCreateOperation);
+    cd.SetStr("OperationType", "HoleMachiningOp");
+    cd.SetStr("TypeCaption",   "Hole machining");
+    cd.SetStr("Name",          "Op1");
+    cmds.RegisterCommand(cd);
+
+    cmds.Stop(out _);
+});
+
+// 2. Configure build settings and build.
+string sourcePath = builderCom.Invoke(b =>
+{
+    var main = b.CreateMainSettings(out _);
+    main.Id = "MyMacro";
+    main.Caption = "My macro";
+    main.CreateOperations = true;
+    main.OutputFolder = outputFolder;
+    main.ExecuteExtensionId = "Extension.MacroRunner.Dotnet";
+
+    var lang = b.CreateLanguageSettings("dotnet", out _);
+    if (lang is ICamApiMacroBuilderDotNetSettings dn)
+    {
+        dn.TargetFramework = "net8.0-windows";
+        // CRITICAL: without SDKVersion + References the generated .csproj cannot resolve
+        // CAMAPI types (CS0246 at macro build). Source both from the extension manager.
+        using var emCom = appCom.ExtensionManager();
+        dn.SDKVersion  = emCom.Invoke(x => x.ApiVersion);
+        dn.References   = emCom.Invoke(x => x.ApiDependencies);
+    }
+    return b.CreateMacro(main, lang, out _);        // generates the source project
+});
+
+builderCom.Invoke(b => b.Save(out _));              // compiles the runnable macro
+```
+
+**Alternative content source — capture the current project** instead of authoring commands by hand:
+
+```csharp
+cmds.AddStrategyState(out _);   // or AddMachineState(out _) / AddWorkpieceState(out _) / AddRecognizeFeature(out _)
+```
+
+#### Command field-key schema (authoritative, at runtime)
+
+The keys (and their types/required flags) a command of a given `TMacroCommandType` expects are discoverable at runtime — do not hard-code them. Get the schema provider (`ICamApiMacroCommandSchema`) from the commands manager, then `GetFlatCommand` returns an `ICamApiMacroCommandFieldList` (indexed list of field descriptors):
+
+```csharp
+var schema = cmds.GetCommandSchema();
+var fields = schema.GetFlatCommand(TMacroCommandType.mctCreateOperation);
+for (int i = 0; i < fields.GetCount(); i++)
+{
+    string key      = fields.GetKey(i);
+    var    type     = fields.GetFieldType(i);   // TMacroCommandParamType: mptStr/mptBol/mptInt/mptFlt
+    bool   required = fields.GetRequired(i);
+}
+```
+
+**Variant (model-item) commands** — some commands accept different key sets depending on a *discriminator* field (e.g. `mctSetWorkpiecePrimitive`, whose keys depend on the item class). `GetFlatCommand` returns the common keys (including the discriminator key itself); pass a discriminator value to `GetClassItemCommand` for the variant-specific keys:
+
+```csharp
+var boxFields = schema.GetClassItemCommand(
+    TMacroCommandType.mctSetWorkpiecePrimitive, "TBoxLinkItem");
+// discriminators: "TBoxLinkItem", "TCylLinkItem", "TStockLinkItem", "TAutoLinkItem"
+```
+
+The documented set is filled incrementally; command types / discriminators without a documented schema return an empty list (`GetCount() == 0`).
+
+#### ICamApiMacroCommandData / ICamApiMacroCommandDataBuilder
+
+- `ICamApiMacroCommandData` (read-only view): `CommandType` + `GetStr/GetInt/GetFloat/GetBool(key)`.
+- `ICamApiMacroCommandDataBuilder` (returned by `CreateCommandData`, inherits the read interface): adds `SetStr/SetInt/SetFloat/SetBool(key, value)`. Fill it, then pass to `RegisterCommand`.
+
+#### Builder settings interfaces
+
+- `ICamApiMacroBuilderSettings` (from `CreateMainSettings`): `Id`, `Caption`, `Description`, `OutputFolder`, `ExecuteExtensionId`, `CreateOperations`.
+- `ICamApiMacroBuilderLanguageSettings` (from `CreateLanguageSettings(languageId)`): base; QI to the concrete type:
+  - `"dotnet"` → `ICamApiMacroBuilderDotNetSettings` — `TargetFramework`, `SDKVersion`, `References` (builds a .NET macro DLL).
+  - `"script"` → script-language settings (builds a script macro).
+
+#### Commands that carry lists
+
+A few commands carry a string list, which the scalar command bag cannot hold. They have dedicated typed methods on `ICamApiMacroCommandsManager`: `RegisterSetDriveFaceItemProperties`, `RegisterAddFixture`, `RegisterSetFixtureItemStock`, `RegisterSetFixtureItemColor`, `RegisterSetFixtureItemCaption`.
+
+#### Environment
+
+Before building a .NET macro the builder may need its toolchain checked/prepared: `CheckEnvironment(languageSettings, out ret)` and `SetupEnvironment(languageSettings, out ret)`.
 
 ---
 

@@ -23,10 +23,12 @@ CAMIPC is the inter-process API for standalone .NET/C++ applications that commun
 | Connecting to ENCY | [ipc/connection.md](connection.md) |
 | Project, Technologist, Operations | [ipc/project.md](project.md) |
 | Geometry | [ipc/geometry.md](geometry.md) |
+| Feature finder | [ipc/feature-finder.md](feature-finder.md) |
 | Tools & Machine | [ipc/tools-machine.md](tools-machine.md) |
 | NC Generation & Simulation | [ipc/nc-simulation.md](nc-simulation.md) |
 | Application, Logger, XmlProp | [ipc/application.md](application.md) |
 | UI (viewport, Prime) | [ipc/ui.md](ui.md) |
 | Clouds, Tests, PLM | [ipc/extra.md](extra.md) |
+| Macros — record & save over IPC | [ipc/macros.md](macros.md) |
 | COM lifetime (.NET) | [general/com-lifetime.md](../general/com-lifetime.md) |
 | Error handling | [general/error-handling.md](../general/error-handling.md) |

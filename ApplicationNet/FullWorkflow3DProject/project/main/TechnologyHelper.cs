@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using CAMAPI.Application;
+using CAMAPI.ApplicationMainForm;
 using CAMAPI.DotnetHelper;
 using CAMAPI.ModelFormerTypes;
 using CAMAPI.NCMaker;
@@ -12,7 +13,6 @@ using CAMIPC.Application;
 using CAMIPC.ExecuteContext;
 using CAMIPC.GeomModel;
 using CAMIPC.ModelFormerTypes;
-using CAMIPC.DotnetHelper;
 using CAMIPC.NCMaker;
 using CAMIPC.Project;
 using CAMIPC.Singletons;
@@ -242,7 +242,7 @@ public static class TechnologyHelper
         AddHolesToJobAssignment(operationCom, geometryModelCom, [@"Part\Part1.igs\Face11"]);
         
         // setup properties
-        using var xmlPropsCom = operationCom.InvokeAndWrap(operation => operation.XmlProp);
+        using var xmlPropsCom = operationCom.InvokeAndWrap(operation => operation.XMLProp);
         xmlPropsCom.Invoke(xmlProps =>
         {
             xmlProps.Str["DrillingType"] = "HolePocketing";
@@ -365,7 +365,7 @@ public static class TechnologyHelper
         [@"Part\Part1.igs\Face10", @"Part\Part1.igs\Face2"]);
         
         // setup properties
-        using var xmlPropsCom = operationCom.InvokeAndWrap(operation => operation.XmlProp);
+        using var xmlPropsCom = operationCom.InvokeAndWrap(operation => operation.XMLProp);
         xmlPropsCom.Invoke(xmlProps =>
         {
             xmlProps.Str["DrillingType"] = "ChipRemoving";
@@ -461,7 +461,6 @@ public static class TechnologyHelper
         });
         
         // generate CNC
-        
         using var settingsCom = ncMakerCom.InvokeAndWrap(ncmaker =>{
             var settings = ncmaker.CreateSettings(TCamApiNCMakerSettingsType.ncsSppx, ref executeContext);
             if (executeContext.ResultStatus.Code == TResultStatusCode.rsError)

@@ -29,13 +29,18 @@ This documentation is written for Claude instances helping developers write plug
 - [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
 - [UI patterns](general/ui-patterns.md) — Inspector dialog, modal WPF (STA thread), non-modal WPF + IExtensionLazyUnloadable
+- [Theming plugin windows](general/theming-plugin-windows.md) — applying the host palette to your own window; WinForms visual-styles pitfalls, scrollbars, title bar
+
+### Writing macros
+- [Macros](macros/README.md) — authoring a macro body (`ICamApiMacro.Run`, run context, `MacroParams`, `NotifyMacroStep`). Managing/building/running macros from a host is in [api/application.md](api/application.md#icamapimacomanager) (in-process) and [ipc/application.md](ipc/application.md#icamipcmacromanager) (IPC).
 
 ### CAMAPI domain reference
 - [Application & singletons](api/application.md) — ICamApiApplication, utilities, macros, events, collections
 - [Entry points](api/entry-points.md) — IExtensionManager, IExtensionStorage, IExtensionLogger
 - [Project](api/project.md) — ICamApiProject, technologist, tech operations, parts, stages, snapshots
-- [Geometry](api/geometry.md) — model tree, entities, faces, curves, mesh, coordinate systems, GeomPicker
-- [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup
+- [Geometry](api/geometry.md) — model tree, entities, faces, curves, mesh, coordinate systems, GeomPicker, sketcher, point snapper
+- [Feature finder](api/feature-finder.md) — automatic recognition of holes, pockets, fillets, chamfers, planes, edges
+- [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup, live machine state
 - [NC & simulation](api/nc-simulation.md) — NCMaker, Simulator, CLDReceiver, ModelFormer, TechOperationSolver
 - [UI](api/ui.md) — main form, viewport, view cube, dialogs, SimplePropIterator, CamApiInspectorWindow
 
@@ -44,10 +49,12 @@ This documentation is written for Claude instances helping developers write plug
 - [Application](ipc/application.md) — ICamIpcApplication, paths, extension manager, logger, XmlProp
 - [Project](ipc/project.md) — differences from CAMAPI project domain
 - [Geometry](ipc/geometry.md) — differences from CAMAPI geometry domain
+- [Feature finder](ipc/feature-finder.md) — differences from CAMAPI feature-finder domain
 - [Tools & machine](ipc/tools-machine.md) — differences from CAMAPI tools domain
 - [NC & simulation](ipc/nc-simulation.md) — differences from CAMAPI NC domain
 - [UI](ipc/ui.md) — main form, viewport, view cube, PrimeView, PrimeViewModel
 - [Extra](ipc/extra.md) — CloudsApp, FunctionalTest, Extension.PLM
+- [Macros — record & save over IPC](ipc/macros.md) — MacroManager → builder → commands, recording lifecycle, command schema, guard cases
 
 ## Key patterns (quick reference)
 

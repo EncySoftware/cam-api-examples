@@ -1,0 +1,14 @@
+{
+    "name": "Feature Finder Viewer",
+    "description": "Non-modal viewer for feature recognition results",
+    "module_path": "${extensionJsonFolder}/FeatureFinderViewerNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Feature Finder Viewer",
+                "caption": "Feature Finder Viewer",
+                "id": "Extension.Utility.FeatureFinderViewerNet"
+            }
+        }
+    ]
+}

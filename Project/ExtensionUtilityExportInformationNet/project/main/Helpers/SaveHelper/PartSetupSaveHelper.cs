@@ -37,30 +37,34 @@ namespace ExtensionUtilityExportInformationNet
                 return;
             }
                 
-            using var workpieceSetupCom = partStageCom.WorkpieceSetup();
-            var MachineSideConnectorIndex = workpieceSetupCom.MachineSideConnectorIndex();
-            _jsonBuilder.AddIntPair("WorkpieceConnectorIndex", MachineSideConnectorIndex);
+            using var workpieceSetupCom = PartStageHelper.WorkpieceSetup(partStageCom);
+            var machineSideConnectorIndex = WorkpieceSetupHelper.MachineSideConnectorIndex(workpieceSetupCom);
+            _jsonBuilder.AddIntPair("WorkpieceConnectorIndex", machineSideConnectorIndex);
                     
-            using var workpieceConnectorCom = machineCom.WorkpieceConnector(MachineSideConnectorIndex);
-            var workpieceConnectorName = workpieceConnectorCom.Name();
-            _jsonBuilder.AddStrPair("WorkpieceConnectorName", workpieceConnectorName);
+            if (machineSideConnectorIndex >= 0)
+            {
+                using var workpieceConnectorCom = MachineHelper.WorkpieceConnector(machineCom, machineSideConnectorIndex);
+                var workpieceConnectorName = WorkpieceConnectorHelper.Name(workpieceConnectorCom);
+                _jsonBuilder.AddStrPair("WorkpieceConnectorName", workpieceConnectorName);
 
-            var worldWorkpieceConnectorMatrix = evaluatorCom.GetWorldWorkpieceConnectorMatrix(MachineSideConnectorIndex);
-            GeometrySaveHelper.ShowMatrixData(worldWorkpieceConnectorMatrix, "WorldWorkpieceConnectorMatrix", _jsonBuilder);    
-            
-            var workpieceSetupCS = workpieceSetupCom.Offset();
+                var worldWorkpieceConnectorMatrix =
+                    MachineEvaluatorHelper.GetWorldWorkpieceConnectorMatrix(evaluatorCom, machineSideConnectorIndex);
+                GeometrySaveHelper.ShowMatrixData(worldWorkpieceConnectorMatrix, "WorldWorkpieceConnectorMatrix", _jsonBuilder);
+            }
+
+            var workpieceSetupCS = WorkpieceSetupHelper.Offset(workpieceSetupCom);
             GeometrySaveHelper.ShowMatrixData(workpieceSetupCS, "OffsetCS", _jsonBuilder);     
                 
             _jsonBuilder.BeginArray("WorkpieceCSList");
             
             _jsonBuilder.BeginObject(); // WorkpieceCS
-            var workpieceCSID = evaluatorCom.GetCurrentWorkpieceCSID();
+            var workpieceCSID = MachineEvaluatorHelper.GetCurrentWorkpieceCSID(evaluatorCom);
             _jsonBuilder.AddStrPair("WorkpieceCSID", workpieceCSID);
             
-            var workpieceCS_WorldMatrix = evaluatorCom.GetCurrentWorkpieceCSWorldMatrix();
+            var workpieceCS_WorldMatrix = MachineEvaluatorHelper.GetCurrentWorkpieceCSWorldMatrix(evaluatorCom);
             GeometrySaveHelper.ShowMatrixData(workpieceCS_WorldMatrix, "WorkpieceCS_World", _jsonBuilder);
 
-            var workpieceCS_WorkpieceConnectorMatrix = evaluatorCom.GetCurrentWorkpieceCSMatrix();
+            var workpieceCS_WorkpieceConnectorMatrix = MachineEvaluatorHelper.GetCurrentWorkpieceCSMatrix(evaluatorCom);
             GeometrySaveHelper.ShowMatrixData(workpieceCS_WorkpieceConnectorMatrix, "WorkpieceCS_WorkpieceConnector", _jsonBuilder);
 
             _jsonBuilder.EndObject();

@@ -85,6 +85,9 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Picking selected objects of model** - [**UtilityGeometryEntityReader**](./Geometry/UtilityGeometryEntityReader/project/main/README.md)  
 [**Demo movie**]()
 
+- **Parametric 2D sketch drawing through the CAD API** - [**CadSketchDrawingNet**](./Geometry/CadSketchDrawingNet/project/main/README.md)  
+[**Demo movie**]()
+
 
 ### Attributes examples
 - **Basic attribute management** - [**ExtensionAttributesManageNet**](./Attributes/ExtensionAttributesManageNet/project/main/readme.md)  

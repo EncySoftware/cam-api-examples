@@ -30,10 +30,10 @@ namespace ExtensionUtilityExportInformationNet
             ComWrapper<ICamApiTechnologist> technologistCom,
             ComWrapper<ICamApiMachineEvaluator> evaluatorCom)
         {
-            using var techOpIterCom = technologistCom.GetOperations(TCamApiReorderingMode.rmReordered);
+            using var techOpIterCom = TechnologistHelper.GetOperations(technologistCom, TCamApiReorderingMode.rmReordered);
             SaveOperationListData(techOpIterCom, "ReorderedOperationsList", TCamApiReorderingMode.rmReordered, evaluatorCom);
 
-            using var techOpIterCom2 = technologistCom.GetOperations(TCamApiReorderingMode.rmDesigned);
+            using var techOpIterCom2 = TechnologistHelper.GetOperations(technologistCom, TCamApiReorderingMode.rmDesigned);
             SaveOperationListData(techOpIterCom2, "DesignedOperationsList", TCamApiReorderingMode.rmDesigned, evaluatorCom);
         }
         
@@ -49,7 +49,8 @@ namespace ExtensionUtilityExportInformationNet
                 throw new Exception("Create JSON builder!");
 
             _jsonBuilder.BeginArray(ListName);
-            foreach (var operationCom in techOpIterCom.AsEnumerable())
+            ToolpathSaveHelper.ResetOperationIndex();
+            foreach (var operationCom in TechOperationIteratorHelper.AsEnumerable(techOpIterCom))
                 SaveOperationData(operationCom, mode, evaluatorCom);
             _jsonBuilder.EndArray(); // OperationsList closing
         }
@@ -68,17 +69,17 @@ namespace ExtensionUtilityExportInformationNet
             
             _jsonBuilder.BeginObject(); // operation
             
-            using var parentOpCom = operationCom.GetParentOperation(mode);
-            var parentOpId = parentOpCom.IsNull ? "Null" : parentOpCom.Id();
+            using var parentOpCom = TechOperationHelper.GetParentOperation(operationCom, mode);
+            var parentOpId = parentOpCom.IsNull ? "Null" : TechOperationHelper.Id(parentOpCom);
             _jsonBuilder.AddStrPair("ParentOperationID", parentOpId);
 
-            _jsonBuilder.AddStrPair("OperationID", operationCom.Id());
-            _jsonBuilder.AddStrPair("OperationType", operationCom.OperationType());
-            _jsonBuilder.AddStrPair("OperationName", operationCom.Name());
-            _jsonBuilder.AddIntPair("OperationPartIndex", operationCom.PartIndex());
-            _jsonBuilder.AddIntPair("OperationSetupStageIndex", operationCom.SetupStageIndex());
+            _jsonBuilder.AddStrPair("OperationID", TechOperationHelper.Id(operationCom));
+            _jsonBuilder.AddStrPair("OperationType", TechOperationHelper.OperationType(operationCom));
+            _jsonBuilder.AddStrPair("OperationName", TechOperationHelper.Name(operationCom));
+            _jsonBuilder.AddIntPair("OperationPartIndex", TechOperationHelper.PartIndex(operationCom));
+            _jsonBuilder.AddIntPair("OperationSetupStageIndex", TechOperationHelper.SetupStageIndex(operationCom));
 
-            operationCom.InitMachineEvaluator(evaluatorCom);
+            TechOperationHelper.InitMachineEvaluator(operationCom, evaluatorCom);
             ShowWorkpieceCS(evaluatorCom); 
 
             _jsonBuilder.BeginObject("Toolpath");
@@ -104,10 +105,16 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.BeginObject("Spindle");
             ShowOperationSpindle(operationCom);
             _jsonBuilder.EndObject(); // Spindle closing
+            
+            _jsonBuilder.BeginObject("Stocks");
+            ShowOperationStocks(operationCom);
+            _jsonBuilder.EndObject(); // Stocks closing
 
             _jsonBuilder.BeginArray("CustomAttributes");
             ShowOperationCustomAttributes(operationCom);
             _jsonBuilder.EndArray(); // CustomAttributes closing
+
+            _jsonBuilder.AddStrPair("Notes", TechOperationHelper.Notes(operationCom));
 
             _jsonBuilder.EndObject(); // Operation closing
         }
@@ -120,20 +127,20 @@ namespace ExtensionUtilityExportInformationNet
             if (_jsonBuilder == null)
                 throw new Exception("Create JSON builder!");
 
-            _jsonBuilder.AddBoolPair("Enabled", operationCom.Enabled());
-            _jsonBuilder.AddBoolPair("Calculated", operationCom.Calculated());
-            _jsonBuilder.AddBoolPair("Simulated", operationCom.Simulated());
-            _jsonBuilder.AddBoolPair("IsRapidError", operationCom.IsRapidError());
-            _jsonBuilder.AddBoolPair("IsHolderError", operationCom.IsHolderError());
-            _jsonBuilder.AddBoolPair("IsCompensationError", operationCom.IsCompensationError());
-            _jsonBuilder.AddBoolPair("IsPlungeError", operationCom.IsPlungeError());
-            _jsonBuilder.AddBoolPair("IsTravelError", operationCom.IsTravelError());
-            _jsonBuilder.AddBoolPair("IsCollisionError", operationCom.IsCollisionError());
-            _jsonBuilder.AddBoolPair("IsGougeError", operationCom.IsGougeError());
-            _jsonBuilder.AddBoolPair("IsToolOverloadError", operationCom.IsToolOverloadError());
-            _jsonBuilder.AddBoolPair("IsTurnDirectionError", operationCom.IsTurnDirectionError());
-            _jsonBuilder.AddBoolPair("IsMachiningResultCalculated", operationCom.IsMachiningResultCalculated());
-            _jsonBuilder.AddBoolPair("IsError", operationCom.IsError());
+            _jsonBuilder.AddBoolPair("Enabled", TechOperationHelper.Enabled(operationCom));
+            _jsonBuilder.AddBoolPair("Calculated", TechOperationHelper.Calculated(operationCom));
+            _jsonBuilder.AddBoolPair("Simulated", TechOperationHelper.Simulated(operationCom));
+            _jsonBuilder.AddBoolPair("IsRapidError", TechOperationHelper.IsRapidError(operationCom));
+            _jsonBuilder.AddBoolPair("IsHolderError", TechOperationHelper.IsHolderError(operationCom));
+            _jsonBuilder.AddBoolPair("IsCompensationError", TechOperationHelper.IsCompensationError(operationCom));
+            _jsonBuilder.AddBoolPair("IsPlungeError", TechOperationHelper.IsPlungeError(operationCom));
+            _jsonBuilder.AddBoolPair("IsTravelError", TechOperationHelper.IsTravelError(operationCom));
+            _jsonBuilder.AddBoolPair("IsCollisionError", TechOperationHelper.IsCollisionError(operationCom));
+            _jsonBuilder.AddBoolPair("IsGougeError", TechOperationHelper.IsGougeError(operationCom));
+            _jsonBuilder.AddBoolPair("IsToolOverloadError", TechOperationHelper.IsToolOverloadError(operationCom));
+            _jsonBuilder.AddBoolPair("IsTurnDirectionError", TechOperationHelper.IsTurnDirectionError(operationCom));
+            _jsonBuilder.AddBoolPair("IsMachiningResultCalculated", TechOperationHelper.IsMachiningResultCalculated(operationCom));
+            _jsonBuilder.AddBoolPair("IsError", TechOperationHelper.IsError(operationCom));
         }
         
         /// <summary>
@@ -147,13 +154,13 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.BeginArray("WorkpieceCSList");
             _jsonBuilder.BeginObject(); // WorkpieceCS
 
-            var workpieceCSID = evaluatorCom.GetCurrentWorkpieceCSID();
+            var workpieceCSID = MachineEvaluatorHelper.GetCurrentWorkpieceCSID(evaluatorCom);
             _jsonBuilder.AddStrPair("WorkpieceCSID", workpieceCSID);
 
-            var workpieceCS_WorldMatrix = evaluatorCom.GetCurrentWorkpieceCSWorldMatrix();
+            var workpieceCS_WorldMatrix = MachineEvaluatorHelper.GetCurrentWorkpieceCSWorldMatrix(evaluatorCom);
             GeometrySaveHelper.ShowMatrixData(workpieceCS_WorldMatrix, "workpieceCS_World", _jsonBuilder);
 
-            var workpieceCS_WorkpieceConnectorMatrix = evaluatorCom.GetCurrentWorkpieceCSMatrix();
+            var workpieceCS_WorkpieceConnectorMatrix = MachineEvaluatorHelper.GetCurrentWorkpieceCSMatrix(evaluatorCom);
             GeometrySaveHelper.ShowMatrixData(workpieceCS_WorkpieceConnectorMatrix, "WorkpieceCS_WorkpieceConnector", _jsonBuilder);
 
             _jsonBuilder.EndObject(); // WorkpieceCS
@@ -165,7 +172,7 @@ namespace ExtensionUtilityExportInformationNet
             if (_jsonBuilder == null)
                 throw new Exception("Create JSON builder!");
 
-            var timeStats = operationCom.GetTimeStatistics();
+            var timeStats = TechOperationHelper.GetTimeStatistics(operationCom);
             _jsonBuilder.BeginObject("Time");
             _jsonBuilder.AddStrPair("RapidTime", FormatMinutesToHms(timeStats.RapidTime));
             _jsonBuilder.AddStrPair("IdleWorkTime", FormatMinutesToHms(timeStats.IdleWorkTime));
@@ -175,7 +182,7 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.AddStrPair("TotalTime", FormatMinutesToHms(totalTime));
             _jsonBuilder.EndObject();
 
-            var blocksStats = operationCom.GetBlocksStatistics();
+            var blocksStats = TechOperationHelper.GetBlocksStatistics(operationCom);
             _jsonBuilder.BeginObject("Blocks");
             _jsonBuilder.AddIntPair("Lines", blocksStats.Lines + blocksStats.MultiGoTo);
             _jsonBuilder.AddIntPair("Arcs", blocksStats.Arcs);
@@ -183,7 +190,7 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.AddIntPair("TotalBlocks", blocksStats.TotalBlocks);
             _jsonBuilder.EndObject();
 
-            var lengthStats = operationCom.GetLengthStatistics();
+            var lengthStats = TechOperationHelper.GetLengthStatistics(operationCom);
             _jsonBuilder.BeginObject("Lengths");
             _jsonBuilder.AddFltPair("WorkLength", lengthStats.WorkLength);
             _jsonBuilder.AddFltPair("RapidLength", lengthStats.RapidLength);
@@ -199,6 +206,13 @@ namespace ExtensionUtilityExportInformationNet
             _jsonBuilder.AddFltPair("ReturnToSafeLength", lengthStats.ReturnToSafeLength);
             _jsonBuilder.AddFltPair("TransitionOnSafeLength", lengthStats.TransitionOnSafeLength);
             _jsonBuilder.AddFltPair("LongNextLength", lengthStats.LongNextLength);
+            _jsonBuilder.EndObject();
+
+            var volumeStats = TechOperationHelper.GetVolumeStatistics(operationCom);
+            _jsonBuilder.BeginObject("Volumes");
+            _jsonBuilder.AddFltPair("MachResultVolume", volumeStats.MachResultVolume);
+            _jsonBuilder.AddFltPair("WorkpieceVolume", volumeStats.WorkpieceVolume);
+            _jsonBuilder.AddFltPair("VolumeRemovalRate", volumeStats.VolumeRemovalRate);
             _jsonBuilder.EndObject();
         }
 
@@ -221,10 +235,6 @@ namespace ExtensionUtilityExportInformationNet
             {
                 TCamApiFeedInfo feedInfo = default;
                 TResultStatus rs = default;
-
-                operationCom.Invoke(op => { op.SetFeedValue(TFeedTypeFlag.affWorking, TCamApiFeedMeasurement.cfmPerRevolution, 13.0, out rs); });
-                operationCom.Invoke(op => { op.SetFeedOutputMeasurement(TFeedTypeFlag.affNext, TCamApiFeedMeasurement.cfmPerMinute, out rs); });
-                operationCom.Invoke(op => { op.SetFeedOutputMeasurement(TFeedTypeFlag.affEngage, TCamApiFeedMeasurement.cfmPerTooth, out rs); });
 
                 operationCom.Invoke(op => {feedInfo = op.GetFeedValue(feedType, out rs);});
 
@@ -278,6 +288,7 @@ namespace ExtensionUtilityExportInformationNet
                 TCamApiCoolantTubeInfo  info = default;
                 TResultStatus rsGet = default;
                 var idx = i;
+
                 
                 operationCom.Invoke(op => { info = op.GetCoolantTubeInfo(idx, out rsGet); });
                 if (rsGet.Code == TResultStatusCode.rsError)
@@ -305,14 +316,6 @@ namespace ExtensionUtilityExportInformationNet
                 throw new Exception("Create JSON builder!");
 
             TCamApiSpindleState spindleState = default;
-            
-            // Just set block for tests nothing special
-            // operationCom.Invoke(op=> op.SetSpindleRotationsToCSS(50));
-            operationCom.Invoke(op=> op.SetSpindleRotationsToRPM(123));
-            // operationCom.Invoke(op=> op.SetSpindleRotationByDefault());
-            operationCom.Invoke(op=> op.SetSpindleRotationDirection(TCamApiSpindleRotationDirection.srdReverse));
-            operationCom.Invoke(op=> op.SetSpindleMaxRPMValue(1007));
-            operationCom.Invoke(op=> op.SetSpindleGearBoxRange(7));
 
             operationCom.Invoke(op=>spindleState = op.GetSpindleState());
 
@@ -325,6 +328,20 @@ namespace ExtensionUtilityExportInformationNet
         }
 
         /// <summary>
+        /// Shows the operation stocks (profile / axial / radial machining allowances) in the JSON builder.
+        /// </summary>
+        public static void ShowOperationStocks(ComWrapper<ICamApiTechOperation> operationCom)
+        {
+            if (_jsonBuilder == null)
+                throw new Exception("Create JSON builder!");
+
+            var stocks = TechOperationHelper.GetStocks(operationCom);
+            _jsonBuilder.AddFltPair("Profile", stocks.Profile);
+            _jsonBuilder.AddFltPair("Axial", stocks.Axial);
+            _jsonBuilder.AddFltPair("Radial", stocks.Radial);
+        }
+        
+        /// <summary>
         /// Shows the operation custom attributes in the JSON builder.
         /// </summary>
         public static void ShowOperationCustomAttributes(ComWrapper<ICamApiTechOperation> operationCom)
@@ -332,8 +349,8 @@ namespace ExtensionUtilityExportInformationNet
             using var operationAsAttrCom = operationCom.AsInstanceOf<ICamApiObjectWithAttributes>()
                 ?? throw new Exception("Operation does not support attributes");
             
-            using var attrTree = operationAsAttrCom.Attributes();
-            using var attrTreeIt = attrTree.CreateIterator();   
+            using var attrTree = ObjectWithAttributesHelper.Attributes(operationAsAttrCom);
+            using var attrTreeIt = CustomAttributesTreeHelper.CreateIterator(attrTree);   
             DescribeCustomAttributes(attrTreeIt);
         }
 
@@ -348,32 +365,32 @@ namespace ExtensionUtilityExportInformationNet
             using var node = CustomAttributesTreeIteratorHelper.CurrentNode(it);
             
             _jsonBuilder.BeginObject();
-            _jsonBuilder.AddStrPair("AttributeName", node.Name());
-            switch (node.ValueType())
+            _jsonBuilder.AddStrPair("AttributeName", CustomAttributesTreeNodeHelper.Name(node));
+            switch (CustomAttributesTreeNodeHelper.ValueType(node))
             {
                 case TCustomAttributeValueType.avtString:
-                    _jsonBuilder.AddStrPair("Value", node.ValueAsString());
+                    _jsonBuilder.AddStrPair("Value", CustomAttributesTreeNodeHelper.ValueAsString(node));
                     break;
                 case TCustomAttributeValueType.avtInteger:
-                    _jsonBuilder.AddIntPair("Value", node.ValueAsInteger());
+                    _jsonBuilder.AddIntPair("Value", CustomAttributesTreeNodeHelper.ValueAsInteger(node));
                     break;
                 case TCustomAttributeValueType.avtFloat:
-                    _jsonBuilder.AddFltPair("Value", node.ValueAsDouble());
+                    _jsonBuilder.AddFltPair("Value", CustomAttributesTreeNodeHelper.ValueAsDouble(node));
                     break;
                 case TCustomAttributeValueType.avtBoolean:
-                    _jsonBuilder.AddBoolPair("Value", node.ValueAsBoolean());
+                    _jsonBuilder.AddBoolPair("Value", CustomAttributesTreeNodeHelper.ValueAsBoolean(node));
                     break;
             }
 
             _jsonBuilder.EndObject();
 
-            using var chIt = it.GetCopy();
-            if (chIt.MoveToChild())
+            using var chIt = CustomAttributesTreeIteratorHelper.GetCopy(it);
+            if (CustomAttributesTreeIteratorHelper.MoveToChild(chIt))
             {
                 DescribeCustomAttributes(chIt);
-                chIt.MoveToParent();
+                CustomAttributesTreeIteratorHelper.MoveToParent(chIt);
             }
-            if (chIt.MoveToSibling())
+            if (CustomAttributesTreeIteratorHelper.MoveToSibling(chIt))
                 DescribeCustomAttributes(chIt);
         }        
     }

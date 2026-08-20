@@ -1,0 +1,22 @@
+{
+  "name": "Example of CAD sketch drawing",
+  "description": "Extension shows how to build parametric 2D sketches with the CAD API (rectangle, circle, slot, polygon, arc slot) and publish them into the geometry model",
+  "module_path": "${extensionJsonFolder}\\CadSketchDrawingNet.dll",
+
+  "extensions": [
+    {
+      "utility": {
+        "name": "Draw mounting plate sketch",
+        "caption": "Draw mounting plate sketch",
+        "id": "MountingPlateSketchExample"
+      }
+    },
+    {
+      "utility": {
+        "name": "Draw flange gasket sketch",
+        "caption": "Draw flange gasket sketch",
+        "id": "FlangeGasketSketchExample"
+      }
+    }
+  ]
+}

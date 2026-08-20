@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CAM Project Info</title>
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>🛠️</text></svg>">
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-title">
+            <h1 id="project-name">CAM Project</h1>
+            <span id="project-path" class="path-hint" title=""></span>
+        </div>
+        <div class="header-actions">
+            <span id="file-meta" class="file-meta"></span>
+            <button id="theme-toggle" class="icon-btn" title="Toggle theme">◐</button>
+        </div>
+    </header>
+
+    <nav class="tabs" id="tabs">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="operations">Operations</button>
+        <button class="tab" data-tab="setup">Setup</button>
+        <button class="tab" data-tab="tools">Tools</button>
+        <button class="tab" data-tab="raw">JSON</button>
+    </nav>
+
+    <main>
+        <section id="panel-overview" class="panel active"></section>
+        <section id="panel-operations" class="panel"></section>
+        <section id="panel-setup" class="panel"></section>
+        <section id="panel-tools" class="panel"></section>
+        <section id="panel-raw" class="panel"></section>
+    </main>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

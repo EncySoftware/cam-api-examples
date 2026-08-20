@@ -98,6 +98,7 @@ type
     FTimeStamp: Double;
     FFiles: IPLMFiles;
     FAttributes: IPLMItemAttributes;
+    FConnectionId: WideString;
   public
     destructor Destroy; override;
 
@@ -110,6 +111,7 @@ type
     function Get_TimeStamp: Double; safecall;
     function Get_Files: IPLMFiles; safecall;
     function Get_Attributes: IPLMItemAttributes; safecall;
+    function Get_ConnectionId: WideString; safecall;
 
     property Id: WideString read Get_Id;
     property Name: WideString read Get_Name;
@@ -117,6 +119,7 @@ type
     property TimeStamp: Double read Get_TimeStamp;
     property Files: IPLMFiles read Get_Files;
     property Attributes: IPLMItemAttributes read Get_Attributes;
+    property ConnectionId: WideString read Get_ConnectionId;
   end;
 
 implementation
@@ -305,6 +308,11 @@ end;
 function TTestPLMDataItem.Get_Attributes: IPLMItemAttributes;
 begin
   result := FAttributes;
+end;
+
+function TTestPLMDataItem.Get_ConnectionId: WideString;
+begin
+  Result := FConnectionId;
 end;
 
 function TTestPLMDataItem.Get_Files: IPLMFiles;

@@ -129,6 +129,19 @@ public class MyUtilityExtension : IExtension, IExtensionUtility
 
 > **Direct access (IDL):** `IExtensionUtility.Run(IExtensionUtilityContext* Context, out TResultStatus)`
 
+**Getting the currently selected operation:** `IExtensionUtilityContext` has no `SelectedOperation` — use `technologist.CurrentOperation` instead:
+
+```csharp
+using var appCom = ComWrapper.Create(context.CamApplication);
+using var projectCom = appCom.InvokeAndWrap(app => app.GetActiveProject(out _))
+    ?? throw new Exception("No active project.");
+using var technologistCom = projectCom.InvokeAndWrap(p => p.Technologist);
+using var operationCom = technologistCom.InvokeAndWrap(t => t.CurrentOperation)
+    ?? throw new Exception("No operation is selected.");
+```
+
+Returns `null` if nothing is selected in the technology tree.
+
 **Example:** [`ExtensionEmpty/ExtensionEmptyNet/project/main/ExtensionTest.cs`](../../ExtensionEmpty/ExtensionEmptyNet/project/main/ExtensionTest.cs)
 
 ---
@@ -515,9 +528,39 @@ A single DLL can contain multiple extensions. Each gets its own unique `extensio
 
 ## Extension JSON Registration
 
-Each extension library is described by a JSON config file that is registered in an ENCY storage (see `IExtensionManager.RegisterLibrary`). The JSON specifies:
+Each extension library is described by a JSON config file (`<AssemblyName>.settings.json`) placed next to the DLL. It specifies the DLL path and metadata for every extension inside.
 
-- The path to the DLL (relative or absolute).
-- Metadata for each extension: its unique `id` string, `name`, `version`, `group`, and entry-point-specific fields (e.g. `Caption` and `IconPath` for utilities, `FilterType` for CLData converters).
+### Minimal utility example
 
-The `id` field in the JSON must match exactly the string passed to `IExtensionFactory.Create`. ENCY uses the `group` field to filter which extensions are loaded for a given context (e.g. the utility runner looks for extensions whose group is `Extension.Util.Common`).
+```json
+{
+    "name": "My plugin",
+    "description": "What it does",
+    "module_path": "${extensionJsonFolder}/MyPlugin.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "My plugin",
+                "caption": "My plugin",
+                "id": "Extension.Utility.My.Plugin"
+            }
+        }
+    ]
+}
+```
+
+- `${extensionJsonFolder}` — resolved to the folder containing the JSON file at runtime.
+- `caption` — the label shown in the ENCY utilities menu.
+- `id` — must match **exactly** the string checked in `IExtensionFactory.Create`.
+
+### Copying the JSON to the build output
+
+Add this to the `.csproj` so the file lands next to the DLL on every build:
+
+```xml
+<ItemGroup>
+  <None Update="MyPlugin.settings.json">
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+```

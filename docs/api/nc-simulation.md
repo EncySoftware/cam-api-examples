@@ -63,7 +63,44 @@ Settings for the SPPX postprocessor.
 | Member | Description |
 |--------|-------------|
 | `CreateSettings(type, out status)` | Creates a settings object of the requested type |
-| `Generate(clDataFileName, postProcessorFilePath, settings, out status)` | Runs the postprocessor and returns the list of generated file names |
+| `Generate(clDataFileName, postProcessorFilePath, settings, out status)` | Runs the postprocessor and returns the list of generated file names (`IListString`) |
+| `GenerateNC(clDataInfo, postProcessorFilePath, settings, out status)` | Modern variant — takes an `ICamApiNCMakerCLDataInfo` (from `ICamApiProject.SaveCLDataInfo`) instead of a bare path and returns a rich `ICamApiNCGenerationResults` |
+
+### GenerateNC and result objects
+
+`GenerateNC` is the richer counterpart to `Generate`: it consumes the `ICamApiNCMakerCLDataInfo`
+returned by `ICamApiProject.SaveCLDataInfo` (which pairs the CLData file with the exact list of
+operations that produced it — see [project.md](project.md#icamapiproject)) and returns an
+`ICamApiNCGenerationResults` describing the outcome.
+
+`ICamApiNCGenerationResults` (all read-only):
+
+| Member | Description |
+|---|---|
+| `GeneratedOK` | `true` if generation finished successfully |
+| `NCFileNames` | `IListString` of produced NC files |
+| `Messages` | `IListString` of postprocessor messages |
+| `TranslatedByDotNet` | `true` if a .NET postprocessor was used, `false` for SPPX |
+| `PostProcessorFilePath` / `Settings` | The postprocessor and settings that were used |
+| `CLDataFileName` / `CLDataInfo` | The CLData file and its `ICamApiNCMakerCLDataInfo` |
+
+`ICamApiNCMakerCLDataInfo`: `CLDFileName` (string) + `OperationsList` — an
+`ICamApiNCMakerOperationsList` (`Count`, `OperationInfo[i]`). Each `TCamApiNCMakerOperationInfo`
+record carries `OpID`, `ParentOpID` (GUIDs), `Name`, `TypeName`.
+
+```csharp
+using var clInfoCom = projectCom.SaveCLDataInfo(clDataFile, operationIteratorCom);
+using var resultsCom = ncMakerCom.GenerateNC(clInfoCom, ppPath, settingsCom);
+if (resultsCom.Invoke(r => r.GeneratedOK))
+{
+    using var filesCom = resultsCom.InvokeAndWrap(r => r.NCFileNames);
+    // filesCom lists the generated NC programs
+}
+```
+
+> **NC files exporter.** An extension may implement `IExtensionNCFilesExporter`
+> (`TargetsCount`, `GetTargetCaption(i)`, `ExportToTarget(i, ncGenerationResults)`) to push the
+> `ICamApiNCGenerationResults` to external targets (PLM, network folders, machine controllers).
 
 ### Full SaveClData + NCMaker workflow
 
@@ -147,6 +184,87 @@ Obtained from `ICamApiProject.Simulator`.
 | `SmoothSimulationStop()` | Stop smooth playback |
 | `SmoothSimulationStepForward()` | Execute the next CLData command |
 | `SmoothSimulationStepBackward()` | Step back one CLData command |
+
+### Additional collision level, navigation, and display state
+
+Beyond the three collision flags above, the simulator exposes a deepest-level check and error
+navigation. All members below have `SimulatorHelper` getters/setters (property style) unless
+noted as a method.
+
+| Member (helper) | Type | Description |
+|---|---|---|
+| `CheckHiddenNodesCollisions` | `bool` | Deepest collision level — also toggles `CheckMachineCollisions`+`CheckHolderCollisions` when enabled |
+| `GoToNextError()` / `GoToPrevError()` | method | Activate the next/previous CLData command or operation that has a simulation error |
+| `SimulationCurrentTime` | `double` | Current simulation time in minutes from the start of the process (settable to seek) |
+| `SmoothSimulationEnabled` | `bool` | Paint toolpath continuously (`true`) vs. advance per block (`false`) |
+| `RapidScalePower` | `int` | Rapid-motion scale as a power of two: `0`=×1 … `7`=×128 |
+| `SimulationMethod` | `TCamApiSimulationMethod` | Solid / voxel-3D / voxel-5D engine |
+| `VideoMode` | `TCamApiVideoMode` | Workpiece visualization mode (Model / Rest / Cut-in) |
+| `ResetWorkpiece()` | method | Clear cuts/chips and restore the original stock |
+| `DeleteChips()` | method | Start the asynchronous "delete chips" process |
+| `SwapPhysicMulti()` | method | Toggle PhysicGOTO ↔ MultiGOTO toolpath representation |
+
+### Viewport display toggles
+
+Simple `bool` show/hide toggles (plus two appearance settings), all via `SimulatorHelper`:
+
+`WorkpieceVisible`, `ToolVisible`, `SourceModelVisible`, `ToolPathVisible`,
+`Visualization3DEnabled`, `ChannelsVisible`, `GCodeViewVisible`, `CompensationCurveVisible`,
+`ColoredWorkpiece`, `MetallicWorkpiece`; plus `WorkpieceColor` (`int`, packed `0xRRGGBB`).
+
+### Simulation tolerances
+
+Independent of the simulator, the project carries the tolerance settings the simulation uses.
+Obtain them via `ICamApiProject.SimulationTolerances` (helper `SimulationTolerancesHelper`).
+
+`ICamApiSimulationTolerances`: `ModelTolerance()` / `ToolTolerance()` (each an
+`ICamApiSimulationObjectTolerance`), `UseApproxToolpath`, `UseOneWorkpieceForAllCopies`.
+Each `ICamApiSimulationObjectTolerance` has `UseAbsolute` (absolute vs. equivalent),
+`Absolute` (`double`, linear units), `Equivalent` (`int`, relative).
+
+```csharp
+using var tolCom = projectCom.SimulationTolerances();
+using var modelTolCom = tolCom.ModelTolerance();
+modelTolCom.SetUseAbsolute(true);
+modelTolCom.SetAbsolute(0.01);
+```
+
+### Multi-channel simulation
+
+Multi-channel (mill-turn / multi-turret) machines expose per-channel state:
+
+| Member (helper) | Type | Description |
+|---|---|---|
+| `ChannelCount()` | `int` | Number of execution channels (always ≥ 1) |
+| `Channel(index)` | `ComWrapper<ICamApiMcdChannel>` | Channel `0..ChannelCount-1` |
+| `MultiChannelMode` | `bool` | Whether multi-channel simulation mode is on |
+
+`ICamApiMcdChannel` (helper `McdChannelHelper`) reports where that channel's simulation cursor
+currently sits:
+
+| Member (helper) | Type | Description |
+|---|---|---|
+| `Index()` | `int` | Zero-based channel index |
+| `CurrentOperation()` / `SetCurrentOperation(op)` | `ICamApiTechOperation` | Operation being processed in this channel |
+| `CurrentMcdNode()` / `SetCurrentMcdNode(node)` | `ICamApiMcdNode` | MCD node at the cursor (`Caption()` / `Info()` / `IsError()`) |
+| `MachineEvaluator()` | `ICamApiMachineEvaluator` | Live kinematic state at the cursor — `GetAbsoluteMatrix()` (tool control point in the geometric CS), `GetCurrentWorkpieceCSWorldMatrix()` (WCS) |
+
+The full machine-side CLData tree is read per operation via
+`ICamApiTechOperation.McdTree()` — see [project.md](project.md#mcd-tree-machine-side-cldata).
+
+```csharp
+using var simulatorCom = projectCom.Simulator();
+simulatorCom.FastSimulateAllOperations();
+
+for (int c = 0; c < simulatorCom.ChannelCount(); c++)
+{
+    using var channelCom = simulatorCom.Channel(c);
+    using var opCom = channelCom.CurrentOperation();
+    using var nodeCom = channelCom.CurrentMcdNode();
+    if (!nodeCom.IsNull)
+        Console.WriteLine($"ch{channelCom.Index()}: {nodeCom.Caption()} — {nodeCom.Info()}");
+}
+```
 
 ### Saving the machining result
 
@@ -364,9 +482,9 @@ public void MakeWorkPath(ICamApiCLDReceiver cldFormer,
 
 | Method | Description |
 |---|---|
-| `OpenCommand(commandCode, commandHandle, parentCommandHandle)` | Start a new command in the tree. Commands are identified by opaque integer codes and linked to a parent command by handle. |
+| `OpenCommand(commandCode, commandHandle, parentCommandHandle)` | Start a new command in the tree. `commandCode` is a `TCLDataCommandCode` value (see below); commands are linked to a parent command by handle. |
 | `OpenCommandData()` / `CloseCommandData()` | Delimit the payload section of a command (points, normals, typed sub-commands). |
-| `BeginPoints()` / `AddPoint(point)` / `EndPoints()` | Command-local polyline; optional `SetNormal(vZ)` / `SetOrientation(vZ, vX)` before a point sets orientation for 5D/6D moves. |
+| `BeginPoints(pointsCS)` / `AddPoint(point)` / `EndPoints()` | Command-local polyline; `pointsCS` is a `TST3DMatrix` — the coordinate system of the transferred points relative to the current workpiece CS (G54). Optional `SetNormal(vZ)` / `SetOrientation(vZ, vX)` before a point sets orientation for 5D/6D moves. |
 | `BeginChildren()` / `EndChildren()` | Nested sub-commands (enclosed structural items). |
 | `CloseCommand()` | Close the currently open command. |
 | `GetCommandReceiver(commandCode)` | Returns a typed `ICamApiExportToolpathCommand*` for the payload of the currently open command — cast to one of the sub-interfaces below to write typed data. |
@@ -380,6 +498,14 @@ public void MakeWorkPath(ICamApiCLDReceiver cldFormer,
 | `ICamApiExportToolpathCommand_Comment` | Attach a comment string | `SetComment(comment)` |
 | `ICamApiExportToolpathCommand_Feedrate` | Record a feed change | `SetFeed(feedType, feedUnits, value)` — `feedUnits` is `TCamApiFeedUnits` (`fuMPM`, `fuMPR`, `fuConditionCode`) |
 | `ICamApiExportToolpathCommand_MultiGoto` | Multi-axis position with optional machine-axis values | `SetEndPoint`, `SetEndOrientation(A, B, C, D)`, `SetMachineStateFlags`, `SetTime`, `BeginMachineAxes(axesCount)` / `SetMachineAxisValue(id, value)` / `EndMachineAxes()` |
+
+The `commandCode` passed to `OpenCommand` (and `GetCommandReceiver`) is a `TCLDataCommandCode`
+value from `CAMAPI.MCDFormerTypes`. Common codes: `cmdGoTo`=5005, `cmdRapid`=2005,
+`cmdFrom`=5003, `cmdCircle`=15000, `cmdMultiGoto`=9010, `cmdPhysicGoto`=9013, `cmdMultiArc`=9014,
+`cmdFedrat`=1009, `cmdSpindl`=1031, `cmdCycle`=1054, `cmdExtendedCycle`=1053, `cmdThread`=1036,
+`cmdComment`=1065, `cmdPPrint`=1044, `cmdInsert`=1046, `cmdStop`=2002, `cmdOpStop`=2003,
+`cmdFini`=14000, `cmdLoadTl`=1055, `cmdSelcTl`=1056, `cmdPlane`=99, `cmdCoolnt`=1030,
+`cmdDelay`=1010. Switch on it to decide which typed sub-receiver to return.
 
 ### Implementation skeleton
 
@@ -676,6 +802,51 @@ These are additional specialized model formers — each implemented by a subset 
 | `ICamApiModelFormerWithChamferFaces` | `ModelFormerWithChamferFacesHelper` | `AddChamferFacesSelected()` | (face items) |
 | `ICamApiModelFormerWithAreas` | `ModelFormerWithAreasHelper` | `AddArea(...)` | `ICamApiAreaModelItem` |
 | `ICamApiModelFormerWithReferenceToPrevious` | `ModelFormerWithReferenceToPrevious` | `SetReferenceToPrevious(bool)` | — |
+| `ICamApiModelFormerWithLatheContouringItems` | `ModelFormerWithLatheContouringItemsHelper` | `AddFacingItem()` · `AddTurningItem()` | `ICamApiLatheContourFacingModelItem` · `ICamApiCommonTurningModelItem` (see below) |
+
+### Lathe contouring / grooving / threading items
+
+Turning operations (Facing, OD/ID Turning, OD/ID Finishing, Grooving, Threading, …) assign
+their geometry through `ICamApiModelFormerWithLatheContouringItems`. Obtain it and add items
+with `ModelFormerWithLatheContouringItemsHelper`:
+
+```csharp
+using var mfCom = opCom.ModelFormerJobAssignment();
+using var latheCom = mfCom.AsWithLatheContouringItems(); // throws if the op is not a turning type
+
+using var facingCom  = latheCom.AddFacingItem();   // ICamApiLatheContourFacingModelItem (default cycle: Offset Roughing)
+using var turningCom = latheCom.AddTurningItem();  // ICamApiCommonTurningModelItem (default cycle: Roughing Advanced)
+```
+
+Each contouring item selects its **active cycle** and exposes the cycle's shared property tabs:
+
+| Member | Description |
+|---|---|
+| `ActiveCycleType` (R) | Current cycle — a `TLatheContourCycleType` value |
+| `SetActiveCycle(type)` | Switch the active cycle (fails with `rsError` if the container does not allow that cycle) |
+| `ActiveCycle` (R) | The active cycle object as `IUnknown` — QI to the specific cycle interface |
+| `Common` / `Leads` / `OverrideFeeds` (R) | Shared cycle tabs: `ICamApiLatheCycleCommon` / `ICamApiLatheCycleLeads` / `ICamApiLatheCycleOverrideFeeds` |
+
+Facing accepts only `lcctProfile`, `lcctOffsetLegacy`, `lcctOffsetRoughing`; Turning also
+accepts `lcctRoughingAdvanced`, `lcctRoughing`, `lcctZigzag`. Roughing / Roughing-Advanced
+cycles additionally expose `ICamApiLatheCycleChipBreakingDwell` via QI.
+
+**Active-cycle enums** (each model-item family has its own):
+
+- `TLatheContourCycleType`: `lcctProfile` · `lcctOffsetRoughing` · `lcctRoughingAdvanced` · `lcctRoughing` · `lcctZigzag` · `lcctOffsetLegacy` · `lcct4Axis`
+- `TLatheGrooveCycleType`: `gcctProfile` · `gcctSlotting` · `gcctGrooving` · `gcctZigzag`
+- `TLatheThreadCycleType`: `tcct76` · `tcct92` · `tcctExpanded`
+- `TLatheShapeThreadCycleType`: `sctct92` · `sctctExpanded`
+
+Shared value enums: `TLatheMachiningSide` (`lmsLeft`/`lmsRight`), `TLatheLengthCorrector`
+(`llcFirst`/`llcSecond`), `TLatheCompensationType` (`lctNone`/`lctComputer`/`lctMachine`).
+
+Many cycle sub-blocks have dedicated helpers (call on the QI'd cycle `ComWrapper`):
+`LatheContourFacingModelItemHelper`, `LatheCycleGrooveHelper`, `LatheCycleGrooveBackOffHelper`,
+`LatheCycleZigzagToolpathHelper`, `LatheCycleRoughingStepHelper`, `LatheCycleZigzagGrooveStepHelper`,
+`LatheCycleChipBreakingDwellHelper`, `LatheCycleCommonToolAnglesHelper`, `LatheCycleOverrideFeedsHelper`.
+Many of their properties are tagged unions read/written through `GetXxxIsDistance` /
+`SetXxxIsDistance` / `GetXxxIsPercent` / `SetXxxIsPercent` pairs (distance vs. percent variants).
 
 ### Primitive model formers (boxes, cylinders, casting)
 

@@ -1,0 +1,13 @@
+{
+    "name": "NC Files Exporter by C#",
+    "description": "Example extension exporting NC files to multiple targets",
+    "module_path": "${extensionJsonFolder}\\ExtensionNCFilesExporter.dll",
+    "extensions": [
+        {
+            "nc_files_exporter": {
+                "name": "NCFilesExporter",
+                "id": "Extension.NCFilesExporter.Example.Net"
+            }
+        }
+    ]
+}

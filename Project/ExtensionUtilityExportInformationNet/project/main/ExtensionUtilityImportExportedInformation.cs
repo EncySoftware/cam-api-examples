@@ -19,7 +19,7 @@ namespace ExtensionUtilityExportInformationNet;
 /// <summary>
 /// Extension to demonstrate entry point "utility" 
 /// </summary>
-public class ExtensionUtilityImportExportedInformation : IExtension, IExtensionUtility
+public class ImportExportedInformation : IExtension, IExtensionUtility
 {
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }

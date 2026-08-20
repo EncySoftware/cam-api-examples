@@ -3,7 +3,7 @@
 #include "StarterNativeUtils.h"
 #include "NativeLibLoader.h"
 
-#include <comutil.h> // для SysAllocString и _bstr_t (если нужно)
+#include <comutil.h>
 #include <chrono>
 
 /// <summary>

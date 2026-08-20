@@ -116,6 +116,10 @@ Methods that are **identical** between CAMAPI and CAMIPC: `DeselectAll()`.
 
 Properties `RootNode` and `ActiveNode` have the same semantics. `GetFaceListOfSelected` and `SaveToEtalonReceiver` are **not present** on `ICamIpcGeometryModel`.
 
+### Observing selection changes
+
+`ICamIpcGeometryModel` adds `RegisterHandler(handlerIdent, handler, listener, ref ctx)` / `UnregisterHandler(handlerIdent, ref ctx)`. The handler implements `ICamIpcHandlerSelectionChanged` — `SelectionChanged(handlerIdent, addedNodes, removedNodes)` with the added/removed node full names as `IListString`. This mirrors the CAMAPI selection-change subscription (see [`../api/geometry.md`](../api/geometry.md#observing-selection-changes)); over IPC the callback is delivered through the standard event-listener mechanism (`ICamIpcEventListener`), like other IPC events.
+
 ---
 
 ## 4. ICamIpcGeometryTreeNode and iterator
@@ -163,6 +167,24 @@ All members are identical to the CAMAPI equivalents described in [`../api/geomet
 `ICamIpcSurfaceCurve.SaveToReceiver` takes an `ICamIpcAbstractCurveReceiver` instead of `ICamApiAbstractCurveReceiver`, but the method signature is otherwise the same (no `TExecuteContext`).
 
 `ICamIpcFaceList.GetMesh` has the same four parameters (`i`, `tol`, `holeCappingSize`, `fromThread`) as `ICamApiFaceList.GetMesh`.
+
+### Analytic surface recognition and edges
+
+Mirrors the CAMAPI additions in [`../api/geometry.md`](../api/geometry.md#analytic-surface-recognition):
+
+- `ICamIpcFace` gains `SurfaceKind` (`TCamIpcSurfaceKind`: `skIpcOther`, `skIpcPlanar`, `skIpcCylindrical`, `skIpcConical`, `skIpcSpherical`, `skIpcToroidal`), plus `GetMinCurvatureRadius(tol)`, `GetPlane`, `GetCylinder`, `GetCone` — same out-parameters and boolean returns as CAMAPI.
+- `ICamIpcCoEdge` gains `Edge` → `ICamIpcEdge` (`StartPoint`, `EndPoint`, `Length`).
+
+### Edge adjacency — ICamIpcEdgeAnalyzer
+
+IPC mirror of `ICamApiEdgeAnalyzer` ([`../api/geometry.md`](../api/geometry.md#edge-adjacency-and-convexity--icamapiedgeanalyzer)) — reconstructs which two faces meet at each edge and classifies it. Same singleton lookup (`GetSingletonExtension` on the IPC extension manager, then cast to `ICamIpcEdgeAnalyzer`).
+
+- `ICamIpcFaceListBuilder` — `Add(face)`, `Build()`, `Count`, `Face[i]`.
+- `ICamIpcEdgeAnalyzer` — `CreateFaceList()`, `Build(faces, tolerance)` → `ICamIpcEdgeFaceInfoList`.
+- `ICamIpcEdgeFaceInfoList` — `Count`, `Item[i]`, `GetByEdge(edge)`.
+- `ICamIpcEdgeFaceInfo` — `FaceA`, `FaceB` (nil for a boundary edge), `IsConvex`, `IsConcave`, `IsSmooth`, `IsBoundary`.
+
+All add `GetInstanceId()`.
 
 ---
 

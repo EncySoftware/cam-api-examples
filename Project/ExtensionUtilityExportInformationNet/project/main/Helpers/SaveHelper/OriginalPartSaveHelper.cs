@@ -42,6 +42,9 @@ namespace ExtensionUtilityExportInformationNet
             if (_jsonBuilder == null)
                 throw new Exception("Create JSON builder!");
             
+            if (partStageCom.IsNull)
+                return;
+
             using var partStageAsOpCom = partStageCom.AsInstanceOf<ICamApiTechOperation>();
             if (partStageAsOpCom == null)
                 return;
@@ -145,7 +148,7 @@ namespace ExtensionUtilityExportInformationNet
                     // if link is simple, not to some geometry of prev operations and etc.
                     var isSimpleLink = linkModelItemCom.IsSimpleLink();
                     if (isSimpleLink) {
-                        using var linkModelFormerCom = linkModelItemCom.LinkModelFormer();;
+                        using var linkModelFormerCom = linkModelItemCom.LinkModelFormer();
                         return ShowModelItemData(linkModelFormerCom, applicationCom);
                     }
                 }

@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net8.0-windows/ApplicationSimpleDemoNet.exe",
+            "program": "${workspaceFolder}/bin/Debug/net10.0-windows/ApplicationSimpleDemoNet.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",

@@ -1,0 +1,13 @@
+{
+    "name": "Utility to get project tools info by C#",
+    "description": "Utility to get project tools info by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionUtilityProjectToolsListNet.dll",
+    "extensions": [
+        {
+            "project_report_popup": {
+                "name": "Utility to get project tools info",
+                "id": "Extension.ProjectToolsListPopup.Example.Net"
+            }
+        }
+    ]
+}

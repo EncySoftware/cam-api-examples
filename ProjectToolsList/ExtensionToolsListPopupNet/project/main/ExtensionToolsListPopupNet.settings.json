@@ -1,0 +1,13 @@
+{
+    "name": "Tools list popup utility by C#",
+    "description": "Tools list popup utility by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionToolsListPopupNet.dll",
+    "extensions": [
+        {
+            "tools_list_popup": {
+                "name": "Tools list popup utility",
+                "id": "Extension.ToolsListPopup.Example.Net"
+            }
+        }
+    ]
+}

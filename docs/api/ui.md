@@ -7,11 +7,13 @@ This document covers the in-process UI interfaces: the main application window, 
 ## Table of Contents
 
 1. [ICamApiApplicationMainForm — main window](#icamapiapplicationmainform)
-2. [ICamApiViewPort — 3D viewport](#icamapiviewport)
-3. [ICamApiViewCube — view orientation](#icamapiviewcube)
-4. [ICAMAPI_UIDialogsHelper — dialogs and message boxes](#icamapi_uidialogshelper)
-5. [SimplePropIterator — inspector dialog pattern](#simplepropiiterator)
-6. [CamApiInspectorWindow — the easy dialog pattern](#camapiinspectorwindow)
+2. [ICamApiVisibilityManager — scene object visibility](#icamapivisibilitymanager)
+3. [ICamApiTheme — active UI theme and palette](#icamapitheme)
+4. [ICamApiViewPort — 3D viewport](#icamapiviewport)
+5. [ICamApiViewCube — view orientation](#icamapiviewcube)
+6. [ICAMAPI_UIDialogsHelper — dialogs and message boxes](#icamapi_uidialogshelper)
+7. [SimplePropIterator — inspector dialog pattern](#simplepropiiterator)
+8. [CamApiInspectorWindow — the easy dialog pattern](#camapiinspectorwindow)
 
 ---
 
@@ -25,6 +27,10 @@ Represents the main ENCY application window. Obtained from `ICamApiApplication.M
 |---|---|---|---|
 | `MainViewPort` | `ICamApiViewPort*` | R | The main 3D viewport |
 | `MainWindowHandle` | `int64` | R | Win32 HWND of the main window, suitable for use as a parent for child windows |
+| `ActiveClientRect` | `TCamApiRect` | R | Screen rectangle of the active client area (place child windows relative to it) |
+| `VisibilityManager` | `ICamApiVisibilityManager*` | R | Per-work-mode visibility of 3D scene objects (see below) |
+| `FiltersManager` | `ICamApiFiltersManager*` | R | Per-work-mode geometry display filters |
+| `HotkeyManager` | `ICamApiHotkeyManager*` | R | Manager for plugin-registered global keyboard shortcuts — same instance as `application.HotkeyManager`; see [application.md → Plugin hotkeys](application.md#plugin-hotkeys). Helper: `mainFormCom.GetHotkeyManager()` |
 
 ### Methods — visibility and state
 
@@ -69,6 +75,7 @@ These methods trigger the same actions as the corresponding toolbar buttons, inc
 | `CrashReport()` | Starts the crash report dialog |
 | `OpenDotnetInterpreterInVSCode(fileName)` | Opens a .NET interpreter script in VS Code |
 | `SetCurrentInPrime(value)` | Notifies the form that it is the active instance in the Prime shell |
+| `ProcessMessages()` | Pumps pending UI messages of the main thread (equivalent to Pascal `Application.ProcessMessages`); call between blocks of work that must let the UI repaint. Helper: `mainFormCom.ProcessMessages()` |
 
 ### Methods — PLM and cloud
 
@@ -146,6 +153,74 @@ bool modified = uiInfo.Invoke(i => i.GetProjectIsModified());
 ```
 
 > See also: [`UI/ExtensionManageViewNet/project/main/ExtensionManageView.cs`](../../UI/ExtensionManageViewNet/project/main/ExtensionManageView.cs)
+
+---
+
+## ICamApiVisibilityManager
+
+Controls whether individual 3D scene objects are shown, **per work mode** (the active
+application tab). Obtained from `ICamApiApplicationMainForm.VisibilityManager`; helper class
+`VisibilityManagerHelper`.
+
+| Helper method | Description |
+|---|---|
+| `GetObjectVisibility(mode, objectType)` | Whether `objectType` is visible in the given work mode |
+| `SetObjectVisibility(mode, objectType, isVisible)` | Show/hide `objectType` in a work mode. If `mode` is the active tab the scene repaints immediately; otherwise it applies on the next switch to that tab |
+
+`TMainWorkMode` (work mode / active tab): `mwmModel` (0, geometry model) · `mwmMachining`
+(1, toolpath) · `mwmSimulating` (2, simulation).
+
+`TWorkObject` (scene object): `awoGeomModel` · `awoPart` · `awoWorkpiece` · `awoJobAssignment`
+· `awoMachiningResult` · `awoFixtures` · `awoTool` · `awoHolder` · `awoToolPath` · `awoMachine`.
+
+```csharp
+using var mainFormCom = appCom.MainForm();
+using var visCom = mainFormCom.InvokeAndWrap(f => f.VisibilityManager);
+
+// Hide fixtures while working on the model
+visCom.SetObjectVisibility(TMainWorkMode.mwmModel, TWorkObject.awoFixtures, false);
+bool toolShown = visCom.GetObjectVisibility(TMainWorkMode.mwmMachining, TWorkObject.awoTool);
+```
+
+---
+
+## ICamApiTheme
+
+A read-only snapshot of the **currently active UI theme** — plugins observe the theme the user
+chose (to match their own windows to ENCY's look), they do not switch it. Obtained via
+`appCom.Theme()` (helper `ThemeHelper`); the helper returns `null` in headless / kernel-only
+builds where no theme factory is registered.
+
+| Helper method | Type | Description |
+|---|---|---|
+| `Name()` | `string` | Theme variant name (e.g. `"White"`, `"Outer_Space"`); `"Unknown"` if the host theme index is newer than this SDK |
+| `Kind()` | `TCamApiThemeKind` | UI engine family — `tkTheme1` (classic), `tkTheme2` (quarter), `tkTheme3` (modern) |
+| `IsDark()` | `bool` | `true` for a dark palette (orthogonal to `Kind` — a kind may have both light and dark variants) |
+| `GetColor(colorKind)` | `int` | Palette color as a `TColor` integer in **BGR** layout (low byte = red) |
+
+`TCamApiColorKind` palette slots: `ckColorWindowBackground` (0) · `ckColorPanelBackground` (1)
+· `ckColorText` (2) · `ckColorAccent` (3) · `ckColorTitleBackground` (4) ·
+`ckColorTitleForeground` (5) · `ckColorBtnBackground` (6) · `ckColorBorder` (7).
+
+```csharp
+using var themeCom = appCom.Theme();   // ComWrapper<ICamApiTheme>? — null in headless builds
+if (themeCom != null)
+{
+    using (themeCom)
+    {
+        bool dark = themeCom.IsDark();
+        int bgrBackground = themeCom.GetColor(TCamApiColorKind.ckColorWindowBackground);
+        // convert BGR int → your UI framework's color as needed
+    }
+}
+```
+
+> **Note the BGR layout:** ENCY returns Delphi `TColor` (`0x00BBGGRR`). To build a WPF/WinForms
+> color, extract `R = c & 0xFF`, `G = (c >> 8) & 0xFF`, `B = (c >> 16) & 0xFF`.
+
+Reading the palette is only half the job — see
+[Theming plugin windows](../general/theming-plugin-windows.md) for applying it to your own window
+(WPF resource brushes, WinForms visual-styles pitfalls, scrollbars, title bar).
 
 ---
 
