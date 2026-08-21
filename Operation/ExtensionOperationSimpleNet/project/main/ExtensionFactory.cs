@@ -113,9 +113,10 @@ public class ExtensionFactory : IExtensionFactory
             var assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
                                  ?? throw new Exception("Assembly location is null");
             var pathToOperationXml = Path.Combine(assemblyFolder, NodeOperationXMlName);
-            var pathToUserOperationsList = Path.Combine(context.Paths.TryUnfoldPath(@"$(PROGRAM_COMMON_APPDATA)\Operations"), "UserOperationsList.xml");
+            var operationsFolder = context.Paths.TryUnfoldPath(@"$(PROGRAM_COMMON_APPDATA)\Operations");
+            var pathToUserOperationsList = Path.Combine(operationsFolder, "UserOperationsList.xml");
             
-            // create new one
+            // update existing one
             if (File.Exists(pathToUserOperationsList))
             {
                 var userOperationsListDoc = new XmlDocument();
@@ -136,9 +137,12 @@ public class ExtensionFactory : IExtensionFactory
                 userOperationsListDoc.Save(pathToUserOperationsList);
             }
         
-            // update existing one
+            // create new one
             else
             {
+                // on a clean installation the folder does not exist yet, and Save would fail on it
+                Directory.CreateDirectory(operationsFolder);
+
                 var userOperationsListDoc = new XmlDocument();
                 var xmlDeclaration = userOperationsListDoc.CreateXmlDeclaration("1.0", null, null);
                 userOperationsListDoc.InsertBefore(xmlDeclaration, userOperationsListDoc.DocumentElement);
