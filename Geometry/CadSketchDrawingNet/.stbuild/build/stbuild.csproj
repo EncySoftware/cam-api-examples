@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="8.0.0" />
-    <PackageReference Include="EncySoftware.BuildSystem" Version="2.0.1"/>
+    <PackageReference Include="Nuke.Common" Version="9.0.4" />
+    <PackageReference Include="EncySoftware.BuildSystem" Version="3.2.2"/>
   </ItemGroup>
 </Project>

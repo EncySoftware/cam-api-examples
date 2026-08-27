@@ -1,0 +1,14 @@
+{
+    "name": "Tool orientation from faces",
+    "description": "Builds a project from scratch and orients every operation by the normal of its own planar face",
+    "module_path": "${extensionJsonFolder}/ToolOrientationFromFacesNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Tool orientation from faces",
+                "caption": "Workflow: set tool orientation of operations from face normals",
+                "id": "Extension.FullWorkflow.ToolOrientationFromFaces.Net"
+            }
+        }
+    ]
+}

@@ -165,6 +165,77 @@ managerCom.RemoveExtension(TStorageType.stCurrentUser, libraryPath, extensionTyp
 
 ---
 
+### Extension settings
+
+Named key/value settings that belong to an extension type, stored by the extension manager
+instead of by the extension itself. Use them for the configuration a *deployment* provides —
+a server URL, a license key, a shared folder — where the value has to survive reinstallation
+and may be pinned centrally for all users.
+
+Settings are kept in an `extension_settings.json` per storage tier, next to that tier's
+extension list, and they are resolved as a cascade that is **independent of the
+disabled/inherited machinery** above:
+
+```
+stCurrentUser → stAllUsers → stDealer → stSystem → manifest default
+```
+
+The highest tier that defines the key wins; if no tier does, the default declared by whoever
+shipped the extension is used. A key does not have to be defined anywhere, so every read
+reports a `found` flag.
+
+| Method | Description |
+|---|---|
+| `GetExtensionSetting(extensionTypeId, key, out found, out ret) → string` | Effective value after the whole cascade. `found` is `false` when neither a tier nor a default defines the key |
+| `GetExtensionSettingSourceLevel(extensionTypeId, key, out found, out fromDefault, out ret) → TStorageType` | Where the effective value came from. When `fromDefault` is `true` the value is the manifest default and **the returned tier is meaningless** |
+| `GetExtensionSettingKeys(extensionTypeId, out ret) → IListString*` | Union of all keys defined for the extension across every tier and the defaults — use it to enumerate settings without knowing their names |
+| `SetExtensionSetting(storageType, extensionTypeId, key, value, out ret)` | Write a value into one tier and persist that tier |
+| `RemoveExtensionSetting(storageType, extensionTypeId, key, out ret)` | Drop the key from one tier, so the next tier down (or the default) becomes effective again |
+
+There is no `ExtensionManagerHelper` wrapper for these — call them through `Invoke`:
+
+```csharp
+using var managerCom = ExtensionManagerHelper.GetInstance();
+const string extensionTypeId = "My.Company.MyExtension";
+
+// read the effective value
+var found = false;
+string url = managerCom.Invoke(m =>
+{
+    var value = m.GetExtensionSetting(extensionTypeId, "serverUrl", out var wasFound, out var ret);
+    if (ret.Code == TResultStatusCode.rsError)
+        throw new Exception(ret.Description);
+    found = wasFound;
+    return value;
+});
+
+if (!found)
+    throw new Exception("The 'serverUrl' setting is not configured for this installation");
+
+// remember the user's own choice
+managerCom.Invoke(m =>
+{
+    m.SetExtensionSetting(TStorageType.stCurrentUser, extensionTypeId, "serverUrl", url, out var ret);
+    if (ret.Code == TResultStatusCode.rsError)
+        throw new Exception(ret.Description);
+});
+```
+
+**Which tier to write to.** Write `stCurrentUser` for a choice the user made, `stAllUsers` when
+provisioning a whole machine. Writing to a tier that has no storage in this installation —
+`stDebugMode` outside a debug session — fails with `rsError` rather than silently doing nothing,
+so check the status instead of assuming the write landed.
+
+**Secret values.** A key may be marked secret, and then its value is **kept in memory for the
+session only and never written to any tier's file**. Reading and writing look exactly the same,
+so an extension cannot tell a secret key from a normal one — but a secret value does not survive
+a restart of ENCY, and the user (or the caller) has to supply it again.
+
+> Over IPC the same five calls are available with .NET helper wrappers — see
+> [../ipc/application.md](../ipc/application.md#extension-settings).
+
+---
+
 ### Querying Metadata
 
 #### `GetExtensionTypeInfo`

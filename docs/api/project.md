@@ -62,6 +62,7 @@ var project = application.GetActiveProject(out var status);
 | `projectCom.CoordinateSystems()` | `ComWrapper<ICamApiListCoordinateSystem>` | Coordinate systems |
 | `projectCom.Machine()` | `ComWrapper<ICamApiMachine>` | Machine instance |
 | `projectCom.SetMachine(guid, filePath, typeName)` | `void` | Assign a machine to the project by GUID, file path, and type name |
+| `projectCom.LoadMachineFromXmlProp()` | `void` | Rebuild the machine from its current XML properties — the apply step after editing `Machine().XMLProp()`. Also rebuilds the state derived from the machine |
 | `projectCom.Simulator()` | `ComWrapper<ICamApiSimulator>` | Simulation manager |
 | `projectCom.SimulationTolerances()` | `ComWrapper<ICamApiSimulationTolerances>` | Simulation tolerance settings of the project |
 | `projectCom.FeatureFinder()` | `ComWrapper<ICamApiFeatureFinder>` | Feature-recognition service — see [feature-finder.md](feature-finder.md) |
@@ -140,6 +141,7 @@ using var technologistCom = projectCom.Technologist();
 | `technologistCom.CreateOperationFromUserTemplate(userOpId, afterId)` | `ComWrapper<ICamApiTechOperation>` | Instantiate a user-defined operation template |
 | `technologistCom.Invoke(t => t.GetOperationById(id, out var status))` | `ICamApiTechOperation*` | Find an operation by its GUID-string id |
 | `technologistCom.DeleteOperation(id)` | `void` | Remove an operation |
+| `technologistCom.MoveOperation(id, afterId)` | `void` | Move an operation right after `afterId`. Pass the root operation id to make it the first one, or the id of the last operation inside a group to place it into that group. Throws when the target position is not allowed. |
 | `technologistCom.DeletePart(partIndex)` | `void` | Remove a part from all stages |
 | `technologistCom.DeletePartStage(partIdx, stageIdx, includingNext)` | `void` | Remove a part from one (or more) stages |
 | `technologistCom.DeleteSetupStage(stageIndex)` | `void` | Remove a setup stage (must be empty) |

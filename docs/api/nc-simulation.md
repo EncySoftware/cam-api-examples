@@ -610,11 +610,19 @@ The `ICamApiModelFormer.SupportedItems` property (`ICamApiModelFormerSupportedIt
 Assigns selected face geometry to the model former.
 
 ```csharp
-// Helper syntax
-using var itemsCom = modelFormerWithFacesCom.AddFacesSelected();
+using var mfCom = operationCom.ModelFormerJobAssignment();
+using var withFacesCom = mfCom.AsWithFaces();      // null wrapper if unsupported
+if (withFacesCom.IsNull)
+    throw new Exception("The operation does not accept faces");
+
+using var itemsCom = withFacesCom.AddFacesSelected();
 ```
 
-Returns `ICamApiListModelItem` — the list of model items that were added.
+`AsWithFaces()` is the narrowing helper — it wraps the QI so the caller stays outside
+`Invoke`, unlike the `mf is ICamApiModelFormerWithFaces` form shown above. Check `IsNull`
+instead of catching: an operation that does not accept faces simply yields a null wrapper.
+
+`AddFacesSelected` returns `ICamApiListModelItem` — the list of model items that were added.
 
 ### ICamApiModelFormerWithLevels
 
@@ -971,6 +979,49 @@ is reached as a child *of the body*, not as a second node of the component. Each
 |---|---|
 | `AddFacesSelected()` | Add the currently selected geometry faces to the fixtures tree, like the **Add faces** button — uses the current fixture selection or auto-creates a node. Returns the added items |
 | `DeleteItemByCaption(caption)` | Delete the **first** fixture item whose `Caption` matches, like the **Delete** button. Returns `true` if one was found and removed |
+
+#### Ready-made fixtures from the library
+
+Instead of assembling a clamp node by node, take a whole package (`.mcp`) from the fixtures
+library: it carries the bodies, the movable axis nodes, their travel limits and the geometry.
+
+| Member | Description |
+|---|---|
+| `LibraryComponentCount` | Number of packages in the fixtures library |
+| `LibraryComponentFile[index]` | Full file path of a library package (`.mcp`). The **caption inside the package may be localized**, so match packages by file name, not by caption |
+| `ImportComponentFromFile(fileName)` | Import the package — a full path, or a bare file name resolved against the fixtures library folder. Returns the new `ICamApiFixtureConnectorItem`, or a null wrapper when the package was not found |
+
+`ImportComponentFromFile` builds the whole sub-tree in one call — connector, component, and the
+body and jaw axes with their captions, axis directions and travel limits — and loads the
+geometry into a hidden "Fixture model" folder of the geometry tree. Nothing is assembled by hand.
+
+```csharp
+using var modelFormerCom = rootOperationCom.ModelFormerFixtures();
+using var withFixturesCom = modelFormerCom.AsWithFixtures();
+
+var viseFile = "";
+for (var i = 0; i < withFixturesCom.LibraryComponentCount(); i++)
+{
+    var file = withFixturesCom.LibraryComponentFile(i);
+    if (Path.GetFileNameWithoutExtension(file) == "Vise 66x82")
+        viseFile = file;
+}
+
+using var viseCom = withFixturesCom.ImportComponentFromFile(viseFile);
+if (viseCom.IsNull)
+    throw new Exception("Cannot import the vise from the fixtures library");
+
+viseCom.SetConnectorIndex(baseTableConnectorIndex);
+
+// an imported component sits at the connector origin — move it into place
+using var componentCom = viseCom.GetComponent();
+componentCom.SetSetupLCS(viseLcs);
+
+// nested chain: the jaw is a child of the body
+using var bodyCom = componentCom.GetNode(0);
+using var jawCom = bodyCom.GetNode(0);
+jawCom.SetPosition(63.25);
+```
 
 ---
 

@@ -80,6 +80,14 @@ so the call sites look identical to CAMAPI.
    [`feature-finder.md`](feature-finder.md). `SetMachine(guid, filePath, typeName, ctx)`
    assigns a machine to the project.
 
+   `LoadMachineFromXmlProp(ctx)` rebuilds the machine from its current XML properties — the
+   apply step after editing `Machine.XMLProp`, for example flipping an `ActiveNode` selector
+   to add or remove a turn table or a tail stock. **Until it is called, the XML and the machine
+   in memory disagree.** Unlike `Machine.LoadFromOperationXml`, which reloads the machine object
+   alone, it also rebuilds everything derived from the machine: the initial machine state, the
+   operation enability, the toolpath and the simulation. See
+   [`../api/tools-machine.md`](../api/tools-machine.md#icamapimachine) for the walkthrough.
+
 3. **`SaveClData`** takes `ICamIpcTechOperationIterator*` (the IPC variant) instead of
    `ICamApiTechOperationIterator*`.
 
@@ -125,6 +133,7 @@ Two save event handler interfaces exist in CAMIPC, mirroring CAMAPI:
    | `DeleteSetupStage(stageIdx, out status)` | `DeleteSetupStage(stageIdx, ctx)` |
    | `CreateOperationFromUserTemplate(userOpId, afterId, out status)` | `CreateOperationFromUserTemplate(userOpId, afterId, ctx)` |
    | `GetOperationById(opId, out status)` | `GetOperationById(opId, ctx)` |
+   | `MoveOperation(opId, afterId, out status)` | `MoveOperation(opId, afterId, ctx)` |
 
 2. **`CurrentOperation` is read-only** in CAMIPC (`propertyR`).  To change the
    current operation use the separate procedure:

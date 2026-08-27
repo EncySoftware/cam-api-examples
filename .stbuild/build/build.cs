@@ -16,10 +16,10 @@ using BuildSystem.ManagerObject.Interfaces;
 using BuildSystem.ManagerObject.Interfaces.Package;
 using BuildSystem.ManagerObject.Interfaces.Variants;
 using BuildSystem.ProjectList;
-using BuildSystem.ProjectList.Restorer;
+using BuildSystem.ProjectList.Model;
 using System.Linq;    
 using Nuke.Common.Utilities.Collections;
-using Loggers;
+using Utils;
 using Logging;
 
 // ReSharper disable AllUnderscoreLocalParameterName
@@ -79,130 +79,9 @@ public class Build : NukeBuild
     private IBuildSpace InitBuildSpace()
     {
         BuildInfo.RunParams[RunInfo.Variant] = Variant;
+        BuildInfo.RunParams[RunInfo.Local] = "local";
         
-        var settings = new SettingsObject
-        {
-            ProjectListProps = new ProjectListCommonProps(Logger)
-            {
-                SetStorageInfo = (_, _, _) => []
-            },
-            Projects =
-            [
-                // Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyCpp\project\main\.stbuild\ExtensionEmptyCppProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyDelphi\project\main\.stbuild\ExtensionEmptyDelphiProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionEmpty\ExtensionEmptyNet\project\main\.stbuild\ExtensionEmptyNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionGlobal\ExtensionGlobalNet\project\main\.stbuild\ExtensionGlobalNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionOperationPopup\ExtensionOperationPopupNet\project\main\.stbuild\ExtensionOperationPopupNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionOperationPopup\ExtensionOperationPopupOnChangeNet\project\main\.stbuild\ExtensionOperationPopupOnChangeNetProject.json"),
-                // Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityCpp\project\main\.stbuild\ExtensionUtilityCppProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityDelphi\project\main\.stbuild\ExtensionUtilityDelphiProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ExtensionUtility\ExtensionUtilityNet\project\main\.stbuild\ExtensionUtilityNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Full\FullWorkflow3DProject\project\main\.stbuild\FullWorkflow3DProject.json"),
-                Path.Combine(RootDirectory.Parent, @"GCodeGeneration\ExtensionUtilityNCMakerNet\project\main\.stbuild\ExtensionUtilityNCMakerNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\AddinImportSvgNet\project\main\.stbuild\AddinImportSvgNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\AddinImportObjNet\project\main\.stbuild\AddinImportObjNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeomCustomImportNet\project\main\.stbuild\ExtensionUtilityGeomCustomImportNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeometryImporterNet\project\main\.stbuild\ExtensionUtilityGeometryImporterNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeometryModelNet\project\main\.stbuild\ExtensionUtilityGeometryModelNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityGeometryPickerNet\project\main\.stbuild\ExtensionUtilityGeometryPickerNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Geometry\ExtensionUtilityImportSvgNet\project\main\.stbuild\ExtensionUtilityImportSvgNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"PLMIntegration\PLMExtensionDelphi\project\main\.stbuild\PLMExtensionDelphiProject.json"),
-                Path.Combine(RootDirectory.Parent, @"PLMIntegration\PLMExtensionNet\project\main\.stbuild\PLMExtensionNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ProjectMachine\ExtensionUtilityProjectMachineInfoNet\project\main\.stbuild\ExtensionUtilityProjectMachineInfoNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"ProjectToolsList\ExtensionUtilityProjectToolsListNet\project\main\.stbuild\ExtensionUtilityProjectToolsListNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"UI\ExtensionUtilityDialogWindowNet\project\main\.stbuild\ExtensionUtilityDialogWindowNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"UI\ExtensionUtilityMessageBoxNet\project\main\.stbuild\ExtensionUtilityMessageBoxNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"UI\ExtensionUtilityNotifyNet\project\main\.stbuild\ExtensionUtilityNotifyNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"MachiningTools\MachiningToolsCreateExampleNet\.stbuild\MachiningToolsCreateExampleNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"MachiningTools\DIN4000ImportPluginNet\.stbuild\DIN4000ImportPluginNetProject.json"),
-                Path.Combine(RootDirectory.Parent, @"Attributes\ExtensionAttributesManageNet\project\main\.stbuild\ExtensionAttributesManageNet.json"),
-            ],
-            Variants =
-            [
-                new Variant
-                {
-                    Name = "Debug",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodeConfig] = "Debug"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform] = "Win64",
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_csharp"] = "x64",
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_cpp"] = "x64"
-                    }
-                },
-
-                new Variant
-                {
-                    Name = "Release",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodeConfig] = "Release"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform] = "Win64",
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_csharp"] = "x64",
-                        [BuildSystem.ManagerObject.Interfaces.Variants.Variant.NodePlatform + "_cpp"] = "x64"
-                    }
-                }
-            ],
-            ManagerProps =
-            [
-                new BuilderDotnetProps
-                {
-                    Name = "BuilderDotnet"
-                },
-                new BuilderMsDelphiProps
-                {
-                    Name = "BuilderDelphi",
-                    MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe",
-                    EnvBdsPath = "c:/program files (x86)/embarcadero/studio/23.0",
-                    RsVarsPath = "c:/program files (x86)/embarcadero/studio/23.0/bin/rsvars.bat",
-                },
-                new BuilderMsCppProps
-                {
-                    Name = "BuilderCpp",
-                    MsBuilderPath = "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
-                },
-                new RestorerNugetProps
-                {
-                    Name = "RestorerNuget"
-                },
-                new CleanerCommonProps
-                {
-                    Name = "CleanerCommon"
-                },
-                new ProjectCacheCommonProps
-                {
-                    Name = "ProjectCacheCommon",
-                    TempDir = RootDirectory / "cache"
-                },
-                new HashGeneratorCommonProps
-                {
-                    Name = "HashGeneratorCommon",
-                    HashAlgorithmType = HashAlgorithmType.Sha256
-                }
-            ]
-        };
-        settings.ManagerNames.Add("builder_delphi", "Debug", "BuilderDelphi");
-        settings.ManagerNames.Add("builder_delphi", "Release", "BuilderDelphi");
-        settings.ManagerNames.Add("builder_csharp", "Debug", "BuilderDotnet");
-        settings.ManagerNames.Add("builder_csharp", "Release", "BuilderDotnet");
-        settings.ManagerNames.Add("builder_cpp", "Debug", "BuilderCpp");
-        settings.ManagerNames.Add("builder_cpp", "Release", "BuilderCpp");
-        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
-        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
-        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
-        settings.ManagerNames.Add("project_cache", "Debug", "ProjectCacheCommon");
-        settings.ManagerNames.Add("project_cache", "Release", "ProjectCacheCommon");
-        settings.ManagerNames.Add("hash_generator", "Debug", "HashGeneratorCommon");
-        settings.ManagerNames.Add("hash_generator", "Release", "HashGeneratorCommon");
-        settings.ReaderLocalVars["package_namespace"] = "ENCY";
-        
+        var settings = new BuildSpaceSettings(Logger, RootDirectory.Parent);
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
     }
@@ -218,7 +97,7 @@ public class Build : NukeBuild
             BuildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 var mainProjectFilePath = project.MainFilePath;
                 if (mainProjectFilePath == null)
@@ -251,7 +130,7 @@ public class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 // path to dll (to be included in dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")
@@ -286,7 +165,7 @@ public class Build : NukeBuild
         .DependsOn(Pack)
         .Executes(() =>
         {
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 // path to dll (to be included in dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")

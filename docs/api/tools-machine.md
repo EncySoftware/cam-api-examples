@@ -338,6 +338,35 @@ xmlPropCom.Invoke(xmlProp =>
 });
 ```
 
+**Structural edits — switching optional nodes off:**
+
+Simple dimension edits take effect immediately. Structural edits — enabling or disabling an
+optional machine node such as a turn table or a tail stock — change what the machine *consists
+of*, so the machine has to be rebuilt from the edited XML afterwards:
+
+```csharp
+using var machineCom = activeProjectCom.Machine();
+using var xmlPropCom = machineCom.XMLProp();
+xmlPropCom.SetStr("Schema.AxisY.AxisX.TurnTable.ActiveNode", "Base0");   // "Base0" = the empty variant
+xmlPropCom.SetStr("Schema.AxisY.AxisX.TailStock.ActiveNode", "Base0");
+
+activeProjectCom.LoadMachineFromXmlProp();   // rebuild the machine and everything derived from it
+```
+
+The selector path mirrors the node chain of the schema file, and the shared `.xml` schema on
+disk is never modified — the edit lives in the project.
+
+**Until `LoadMachineFromXmlProp` is called, the XML and the machine in memory disagree.** It
+differs from `LoadFromOperationXml`, which reloads the machine object alone: it also rebuilds
+the initial machine state, the operation enability, the toolpath and the simulation. That is
+what makes it the right call for structural changes and the wrong one for a tight loop.
+
+> **Removing a node also removes its connectors**, which shifts the whole connector list. Locate
+> connectors by `Name` *after* the structural edit, never by a hard-coded index.
+
+`LoadMachineFromXmlProp` lives on the project, not on the machine — see
+[project.md](project.md#icamapiproject).
+
 **Iterating connectors:**
 
 ```csharp

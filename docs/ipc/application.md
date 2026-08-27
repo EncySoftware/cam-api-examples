@@ -207,9 +207,77 @@ The IPC proxy for the ENCY extension manager. All methods take a `TExecuteContex
 | `GetSingletonExtension(extensionTypeId, ctx) → IIpcExtension*` | Returns the single shared instance of a singleton extension by its type id; narrow to a concrete interface with `AsInstanceOf` on the client |
 | `FreeExtension(extensionInstanceId, ctx)` | Unloads an extension instance |
 
+### Extension settings
+
+Named key/value settings owned by an extension type and stored by the extension manager, for
+deployment-provided configuration (server URL, license key, shared folder). Resolution is a
+cascade, independent of the disabled/inherited machinery above:
+
+```
+stCurrentUser → stAllUsers → stDealer → stSystem → manifest default
+```
+
+| Method | Description |
+|---|---|
+| `GetExtensionSetting(extensionTypeId, key, out found, ctx) → string` | Effective value after the whole cascade; `found` is `false` when nothing defines the key |
+| `GetExtensionSettingSourceLevel(extensionTypeId, key, out found, out fromDefault, ctx) → TStorageType` | Where the effective value came from. When `fromDefault` is `true` the value is the manifest default and the returned tier is meaningless |
+| `GetExtensionSettingKeys(extensionTypeId, ctx) → IListString*` | Union of all keys defined across every tier and the defaults |
+| `SetExtensionSetting(storageType, extensionTypeId, key, value, ctx)` | Write a value into one tier and persist it |
+| `RemoveExtensionSetting(storageType, extensionTypeId, key, ctx)` | Drop the key from one tier so the next tier down (or the default) becomes effective again |
+
+`ExtensionManagerHelper` wraps all five and throws on `rsError`, so no `TExecuteContext` is
+passed by the caller. `GetExtensionSetting` folds the `found` flag into the return value —
+it returns **`null`** when nothing defines the key:
+
+```csharp
+using var emCom = appCom.ExtensionManager();
+const string extensionTypeId = "My.Company.MyExtension";
+
+var url = emCom.GetExtensionSetting(extensionTypeId, "serverUrl");
+if (url == null)
+    throw new Exception("The 'serverUrl' setting is not configured for this installation");
+
+var level = emCom.GetExtensionSettingSourceLevel(
+    extensionTypeId, "serverUrl", out var found, out var fromDefault);
+
+if (found && !fromDefault && level == TStorageType.stAllUsers)
+{
+    // machine-wide value — override it for this user only
+    emCom.SetExtensionSetting(TStorageType.stCurrentUser, extensionTypeId, "serverUrl", url);
+}
+
+// back to the inherited value
+emCom.RemoveExtensionSetting(TStorageType.stCurrentUser, extensionTypeId, "serverUrl");
+
+// enumerate everything this extension is configured with
+using var keysCom = emCom.GetExtensionSettingKeys(extensionTypeId);
+```
+
+Writing to a tier that has no storage in this installation (`stDebugMode` outside a debug
+session) fails instead of silently doing nothing. A key marked secret is **kept in memory for
+the session only and never written to disk** — the calls look identical, but the value is gone
+after a restart.
+
+Settings are keyed by extension type id alone, so they can be written and read for an id that
+is not registered — handy for provisioning an extension before it is installed. `TStorageType`
+comes from the `CAMAPI.Extensions` namespace even in IPC clients.
+
+The in-process equivalents live on `IExtensionManager` and have no helper wrappers — see
+[../api/entry-points.md](../api/entry-points.md#extension-settings).
+
 ### Storage type enum — TStorageType
 
-Values: `stSystem`, `stUser` (and potentially project-level). Defines which configuration layer a library or enable/disable flag belongs to.
+The configuration tier a library, flag, or setting belongs to. Tiers are merged in priority
+order — the highest-priority tier carrying a value wins.
+
+| Value | Priority | Scope | Writable |
+|---|---|---|---|
+| `stSystem` | Lowest | Machine-wide, shipped with the installation | No |
+| `stDealer` | 2 | Machine-wide, provisioned by the distributor | No |
+| `stAllUsers` | 3 | Machine-wide | Yes |
+| `stCurrentUser` | 4 | Current user | Yes |
+| `stDebugMode` | 5 | Current user, only while a debug session provides the folder | Yes |
+| `stTestMode` | Highest | Automated test runs | Yes |
 
 ### Macro build support
 

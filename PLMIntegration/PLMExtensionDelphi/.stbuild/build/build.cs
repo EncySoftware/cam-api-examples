@@ -3,21 +3,17 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.MsDelphi;  
-using BuildSystem.Cleaner.Common;
-using BuildSystem.BuildSpace;
-using BuildSystem.BuildSpace.Common;
+using BuildSystem;
 using BuildSystem.Info;
-using BuildSystem.Loggers;
-using BuildSystem.Logging;
-using BuildSystem.ManagerObject.Interfaces;
-using BuildSystem.Restorer.Nuget;
-using BuildSystem.SettingsReader;
-using BuildSystem.SettingsReader.Object;
-using BuildSystem.Variants;
+using BuildSystem.ProjectList.Model;
+using Logging;
+using Utils;
+
+using BuildSystem.Info;
+
 using System.Linq;
 using Nuke.Common.Utilities.Collections;
-using LoggingLevel = BuildSystem.Logging.LogLevel;
+using LoggingLevel = Logging.LogLevel;
 
 // ReSharper disable AllUnderscoreLocalParameterName
 
@@ -35,7 +31,7 @@ public class Build : NukeBuild
             .First(x => x.GetDirectories(".stbuild").Any())
             .FullName;
         Environment.SetEnvironmentVariable("root", Path.Combine(parentDirectory, ".stbuild"));
-        return Execute<Build>(x => x.Pack);
+        return Execute<Build>(x => x.Compile);
     }
 
     /// <summary>
@@ -75,70 +71,9 @@ public class Build : NukeBuild
     private IBuildSpace InitBuildSpace()
     {
         BuildInfo.RunParams[RunInfo.Variant] = Variant;
+        BuildInfo.RunParams[RunInfo.Local] = "local";
         
-        var settings = new SettingsObject
-        {
-            Projects =
-            [
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "PLMExtensionDelphiProject.json")
-            ],
-            Variants =
-            [
-                new Variant
-                {
-                    Name = "Debug",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Debug"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64"
-                    }
-                },
-
-                new Variant
-                {
-                    Name = "Release",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Release"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "Win64"
-                    }
-                }
-            ],
-            ManagerProps =
-            [
-                new BuilderMsDelphiProps
-                {
-                    Name = "BuilderDelphi",
-                    MsBuilderPath = "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe",
-                    EnvBdsPath = "c:/program files (x86)/embarcadero/studio/23.0",
-                    RsVarsPath = "c:/program files (x86)/embarcadero/studio/23.0/bin/rsvars.bat",
-                },
-
-                new CleanerCommonProps
-                {
-                    Name = "CleanerCommon",
-                    AllBuildResults = true
-                },
-
-                new RestorerNugetProps
-                {
-                    Name = "RestorerNuget"
-                }
-            ]
-        };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderDelphi");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDelphi");  
-        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
-        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
-        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
-        
+        var settings = new BuildSpaceSettings(Logger, RootDirectory.Parent);
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
     }
@@ -154,7 +89,7 @@ public class Build : NukeBuild
             BuildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 var mainProjectFilePath = project.MainFilePath;
                 if (mainProjectFilePath == null)
@@ -230,7 +165,7 @@ public class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 // path to dll (to be included into dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")

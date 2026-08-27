@@ -221,6 +221,23 @@ applicable. The enum is imported from `CAMAPI.ModelFormerTypes`.
 is a **chain, not a flat list**: a vise is component → Body → Jaw, so the jaw is a child *of
 the body*, not a second node of the component.
 
+`ICamIpcModelFormerWithFixtures` also mirrors the fixtures library, so a ready-made clamp can be
+taken whole instead of being assembled node by node:
+
+| Member | Description |
+|---|---|
+| `LibraryComponentCount` | Number of packages in the fixtures library |
+| `LibraryComponentFile[index]` | Full path of a library package (`.mcp`). Match packages by **file name** — the caption inside a package may be localized |
+| `ImportComponentFromFile(fileName)` | Import the package (full path, or a bare name resolved against the library folder). Returns `ICamIpcFixtureConnectorItem*`, or nil when not found |
+| `FindConnector(caption)` | Find a connector item by caption; nil if there is none |
+| `AddVise()` / `AddClamp()` / `AddNode()` | Build a fixture by hand instead |
+
+One `ImportComponentFromFile` call builds the whole sub-tree — connector, component, body and
+jaw axes with their captions, directions and travel limits — and loads the geometry into a
+hidden "Fixture model" folder of the geometry tree. See
+[`../api/nc-simulation.md`](../api/nc-simulation.md#ready-made-fixtures-from-the-library) for
+the in-process walkthrough.
+
 ### ICamIpcModelFormerWithProbingItems — probing cycles (IPC)
 
 Mirrors `ICamApiModelFormerWithProbingItems`. Exposes the same factory methods but each returns the IPC-typed cycle interface and takes `ctx` on mutations.

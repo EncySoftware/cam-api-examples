@@ -1,21 +1,18 @@
+using System;
 using System.IO;
 using System.Collections.Generic;
 using Nuke.Common;
-using BuildSystem.Builder.Dotnet;
-using BuildSystem.Builder.MsCpp;
-using BuildSystem.BuildSpace;
-using BuildSystem.BuildSpace.Common;
-using BuildSystem.Cleaner.Common;
+using BuildSystem;
 using BuildSystem.Info;
-using BuildSystem.Loggers;
-using BuildSystem.Logging;
-using BuildSystem.Restorer.Nuget;
-using BuildSystem.SettingsReader;
-using BuildSystem.SettingsReader.Object;
-using BuildSystem.Variants;   
+using BuildSystem.ProjectList.Model;
+using Logging;
+using Utils;
+
+using BuildSystem.Info;
+
 using System.Linq;
 using Nuke.Common.Utilities.Collections;
-using LoggingLevel = BuildSystem.Logging.LogLevel;
+using LoggingLevel = Logging.LogLevel;
 
 // ReSharper disable AllUnderscoreLocalParameterName
 
@@ -33,7 +30,7 @@ public class Build : NukeBuild
             .First(x => x.GetDirectories(".stbuild").Any())
             .FullName;
         Environment.SetEnvironmentVariable("root", Path.Combine(parentDirectory, ".stbuild"));
-        return Execute<Build>(x => x.Pack);
+        return Execute<Build>(x => x.Compile);
     }
 
     /// <summary>
@@ -73,68 +70,9 @@ public class Build : NukeBuild
     private IBuildSpace InitBuildSpace()
     {
         BuildInfo.RunParams[RunInfo.Variant] = Variant;
+        BuildInfo.RunParams[RunInfo.Local] = "local";
         
-        var settings = new SettingsObject
-        {
-            Projects = new HashSet<string>
-            {
-                Path.Combine(RootDirectory.Parent, "main", ".stbuild", "SimpleDemoProject.json")
-            },
-            Variants =
-            [
-                new Variant
-                {
-                    Name = "Debug",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Debug"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
-                    }
-                },
-
-                new Variant
-                {
-                    Name = "Release",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Release"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "x64"
-                    }
-                }
-            ],
-            ManagerProps =
-            [
-                new BuilderMsCppProps
-                {
-                    Name = "BuilderCpp",
-                    MsBuilderPath =
-                        "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe"
-                },
-
-                new RestorerNugetProps
-                {
-                    Name = "RestorerNuget"
-                },
-
-                new CleanerCommonProps
-                {
-                    Name = "CleanerCommon"
-                }
-            ]
-        };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderCpp");
-        settings.ManagerNames.Add("builder", "Release", "BuilderCpp"); 
-        settings.ManagerNames.Add("restorer", "Debug", "RestorerNuget");
-        settings.ManagerNames.Add("restorer", "Release", "RestorerNuget");
-        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
-        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
-        
+        var settings = new BuildSpaceSettings(Logger, RootDirectory.Parent);
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
     }
