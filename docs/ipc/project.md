@@ -133,6 +133,7 @@ Two save event handler interfaces exist in CAMIPC, mirroring CAMAPI:
    | `DeleteSetupStage(stageIdx, out status)` | `DeleteSetupStage(stageIdx, ctx)` |
    | `CreateOperationFromUserTemplate(userOpId, afterId, out status)` | `CreateOperationFromUserTemplate(userOpId, afterId, ctx)` |
    | `GetOperationById(opId, out status)` | `GetOperationById(opId, ctx)` |
+   | `MoveOperation(opId, afterId, out status)` | `MoveOperation(opId, afterId, ctx)` |
 
 2. **`CurrentOperation` is read-only** in CAMIPC (`propertyR`).  To change the
    current operation use the separate procedure:

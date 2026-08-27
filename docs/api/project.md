@@ -141,6 +141,7 @@ using var technologistCom = projectCom.Technologist();
 | `technologistCom.CreateOperationFromUserTemplate(userOpId, afterId)` | `ComWrapper<ICamApiTechOperation>` | Instantiate a user-defined operation template |
 | `technologistCom.Invoke(t => t.GetOperationById(id, out var status))` | `ICamApiTechOperation*` | Find an operation by its GUID-string id |
 | `technologistCom.DeleteOperation(id)` | `void` | Remove an operation |
+| `technologistCom.MoveOperation(id, afterId)` | `void` | Move an operation right after `afterId`. Pass the root operation id to make it the first one, or the id of the last operation inside a group to place it into that group. Throws when the target position is not allowed. |
 | `technologistCom.DeletePart(partIndex)` | `void` | Remove a part from all stages |
 | `technologistCom.DeletePartStage(partIdx, stageIdx, includingNext)` | `void` | Remove a part from one (or more) stages |
 | `technologistCom.DeleteSetupStage(stageIndex)` | `void` | Remove a setup stage (must be empty) |
