@@ -2,6 +2,28 @@
 #include "oaidl.h"
 #include "ocidl.h"
 #include <Unknwn.h>
+
+// The generated SDK headers reference each other in cycles, so no include order alone resolves them.
+interface ICadApiBody;
+interface ICadApiExtrudeFeature;
+interface ICadApiFeature;
+interface ICadApiModel;
+interface ICAMAPIGeometryEntity;
+interface ICAMAPIProjectEtalonReceiver;
+interface ICamApiFeature;
+interface ICamApiFeatureFinder;
+interface ICamApiMachineConfiguration;
+interface ICamApiMacroBuilderLanguageSettings;
+interface ICamApiMacroBuilderSettings;
+interface ICamApiMacroCommandData;
+interface ICamApiMacroManager;
+interface ICamApiModelFormer;
+interface ICamApiTechOperation;
+interface ICamApiUserTechOperationList;
+interface ICamApiViewCube;
+interface ICamApiViewPort;
+interface ICamApiWorkpieceSetup;
+
 #include "CAMAPI.ResultStatus.h"
 #include <CAMAPI.EventHandler.h>
 #include <CAMAPI.Generic.List.h>

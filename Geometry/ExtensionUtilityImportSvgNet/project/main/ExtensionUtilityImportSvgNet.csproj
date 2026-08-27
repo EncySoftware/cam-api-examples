@@ -12,6 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Svg" Version="3.4.7" />
-    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="3.0.6" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="3.0.9" />
   </ItemGroup>
 </Project>

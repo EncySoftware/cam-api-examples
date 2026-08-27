@@ -11,7 +11,7 @@
 		{
 			"PackageDependency": {
 				"id": "EncySoftware.CAMAPI.SDK.bpl.x64",
-				"version": "3.0.6",
+				"version": "3.0.9",
 				"out_dir": "../../../../../SDK"
 			}
 		}

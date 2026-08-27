@@ -5,8 +5,6 @@
 	},
 
 	"projects": [
-		"../ApiApplicationCpp/FullWorkflow3DProject/main/.stbuild/FullWorkflow3DProjectProject.json",
-		"../ApiApplicationCpp/SimpleDemo/main/.stbuild/SimpleDemoProject.json",
 		"../ApiApplicationNet/FullWorkflow3DProject/project/main/.stbuild/ApplicationFullWorkflow3DProject.json",
 		"../ApiApplicationNet/SimpleDemo/project/main/.stbuild/ApplicationSimpleDemoProject.json",
 		"../ApplicationNet/CreateOperations/project/main/.stbuild/ApplicationCreateOperationsProject.json",
