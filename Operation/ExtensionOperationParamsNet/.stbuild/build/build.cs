@@ -3,19 +3,17 @@ using System.IO;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Nuke.Common;
-using BuildSystem.Builder.Dotnet;
-using BuildSystem.BuildSpace;
-using BuildSystem.BuildSpace.Common;
-using BuildSystem.Cleaner.Common;
+using BuildSystem;
 using BuildSystem.Info;
-using BuildSystem.Loggers;
-using BuildSystem.Logging;
-using BuildSystem.SettingsReader;
-using BuildSystem.SettingsReader.Object;
-using BuildSystem.Variants;
+using BuildSystem.ProjectList.Model;
+using Logging;
+using Utils;
+
+using BuildSystem.Info;
+
 using System.Linq;
 using Nuke.Common.Utilities.Collections;
-using LoggingLevel = BuildSystem.Logging.LogLevel;
+using LoggingLevel = Logging.LogLevel;
 
 // ReSharper disable AllUnderscoreLocalParameterName
 
@@ -73,62 +71,9 @@ public class Build : NukeBuild
     private IBuildSpace InitBuildSpace()
     {
         BuildInfo.RunParams[RunInfo.Variant] = Variant;
+        BuildInfo.RunParams[RunInfo.Local] = "local";
         
-        var settings = new SettingsObject
-        {
-            Projects =
-            [
-                Path.Combine(RootDirectory.Parent, "project", "main", ".stbuild", "ExtensionOperationParamsNetProject.json")
-            ],
-            Variants =
-            [
-                new Variant
-                {
-                    Name = "Debug",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Debug"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
-                    }
-                },
-
-                new Variant
-                {
-                    Name = "Release",
-                    Configurations = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodeConfig] = "Release"
-                    },
-                    Platforms = new Dictionary<string, string>
-                    {
-                        [BuildSystem.Variants.Variant.NodePlatform] = "AnyCPU"
-                    }
-                }
-            ],
-            ManagerProps =
-            [
-                new BuilderDotnetProps
-                {
-                    Name = "BuilderDotnet"
-                },
-                new CleanerCommonProps
-                {
-                    Name = "CleanerCommon"
-                },
-                new CleanerCommonProps
-                {
-                    Name = "CleanerCommon"
-                }
-            ]
-        };
-        settings.ManagerNames.Add("builder", "Debug", "BuilderDotnet");
-        settings.ManagerNames.Add("builder", "Release", "BuilderDotnet");
-        settings.ManagerNames.Add("cleaner", "Debug", "CleanerCommon");
-        settings.ManagerNames.Add("cleaner", "Release", "CleanerCommon");
-        
+        var settings = new BuildSpaceSettings(Logger, RootDirectory.Parent);
         var tempDir = Path.Combine(RootDirectory, "temp");
         return new BuildSpaceCommon(Logger, tempDir, SettingsReaderType.Object, settings);
     }
@@ -143,7 +88,7 @@ public class Build : NukeBuild
             BuildSpace.Projects.Compile(Variant, true);
 
             // copy settings file, if we want to debug
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 var mainProjectFilePath = project.MainFilePath;
                 if (mainProjectFilePath == null)
@@ -230,7 +175,7 @@ public class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            foreach (var project in BuildSpace.Projects)
+            foreach (var project in BuildSpace.Projects.List.All())
             {
                 // path to dll (to be included into dext)
                 var dllPath = project.GetBuildResultPath(Variant, "dll")

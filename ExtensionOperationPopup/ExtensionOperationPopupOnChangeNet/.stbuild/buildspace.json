@@ -1,0 +1,10 @@
+{
+	"vars": {
+		"package_namespace": "EncySoftware",
+		"default_namespace": "EncySoftware"
+	},
+
+	"projects": [
+		"../project/main/.stbuild/ExtensionOperationPopupOnChangeNetProject.json"
+	]
+}
