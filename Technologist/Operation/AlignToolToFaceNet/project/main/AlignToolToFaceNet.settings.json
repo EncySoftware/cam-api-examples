@@ -1,0 +1,14 @@
+{
+    "name": "Align tool to face",
+    "description": "Sets the tool orientation of operations from the normals of the selected planar faces",
+    "module_path": "${extensionJsonFolder}/AlignToolToFaceNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "Align tool to face",
+                "caption": "Tool: align tool axis to selected faces",
+                "id": "Extension.Operation.AlignToolToFace.Net"
+            }
+        }
+    ]
+}

@@ -42,6 +42,9 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Milling workflow with programmatic stock and fixtures** - [**WorkpieceMillingWorkflowNet**](./FullWorkflow/WorkpieceMillingWorkflowNet/project/main/README.md)
 [**Demo movie**]()
 
+- **Tool orientation of operations from face normals** - [**ToolOrientationFromFacesNet**](./FullWorkflow/ToolOrientationFromFacesNet/project/main/README.md)
+[**Demo movie**]()
+
 
 ### CAMIPC examples
 - **Create operations workflow** - [**ApplicationCreateOperations**](./ApplicationNet/CreateOperations/project/main/README.md)  
@@ -103,6 +106,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Flipping tool operations** - [**FlippingToolNet**](./Technologist/Operation/FlippingToolNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionflippingtool.mp4)
 - **Machine properties(dimensions) changing** - [**MachinePropsChangeNet**](./ProjectMachine/MachinePropsChangeNet/project/main/README.md)  
+[**Demo movie**]()
+- **Tool orientation from selected faces** - [**AlignToolToFaceNet**](./Technologist/Operation/AlignToolToFaceNet/project/main/README.md)  
 [**Demo movie**]()
 
 

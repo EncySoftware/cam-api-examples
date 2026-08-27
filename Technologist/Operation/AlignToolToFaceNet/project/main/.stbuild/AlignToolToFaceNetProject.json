@@ -1,0 +1,9 @@
+{
+	"type": "CSharp",
+	"project_path": "../AlignToolToFaceNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"*.json"
+	]
+}
