@@ -7,6 +7,13 @@ Lessons: https://docs.encycam.com/CAMAPI/2/en/src/Lessons/Main.html
 
 AI generated docs: https://deepwiki.com/EncySoftware/cam-api-examples/2-overview
 
+In-repo API guide: [**docs/**](./docs/README.md) — entry points, COM lifetime, error handling, UI patterns, macros, CAMAPI and CAMIPC reference.
+
+> **Before you write your first plugin, read [COM lifetime management](./docs/general/com-lifetime.md).**
+> Every COM object the API returns must be wrapped in a `ComWrapper<T>` and disposed with `using`.
+> There is no garbage-collector safety net: a forgotten `using` is a permanent leak that surfaces as an
+> error dialog or a crash **when the user closes ENCY**, far from the code that caused it.
+
 To be possible **to build examples** from this repository you should first add our server to the nuget package sources list.
 To do this just **run addNugetSources.cmd** script from the root of this repository.
 

@@ -11,6 +11,7 @@ This documentation is written for Claude instances helping developers write plug
 | In-process plugin (DLL loaded by ENCY) | [CAMAPI overview](api/overview.md) → [Entry points guide](general/extension-entry-points.md) |
 | Standalone external app communicating with ENCY | [CAMIPC overview](ipc/overview.md) → [IPC connection guide](ipc/connection.md) |
 | Not sure which API to use | See comparison below |
+| **ENCY shows an error or crashes when closing** after my plugin ran — undestroyed-objects dialog, `LostObjects_*.txt`, AV on exit | [COM lifetime → Symptoms](general/com-lifetime.md#symptoms-what-a-missing-using-looks-like) — almost always a missing `using` |
 
 ## CAMAPI vs CAMIPC
 
@@ -26,7 +27,7 @@ This documentation is written for Claude instances helping developers write plug
 
 ### Concepts (read these first)
 - [Extension entry points](general/extension-entry-points.md) — all 7 plugin types, when to use each, full C# boilerplate
-- [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA
+- [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA, and what a forgotten `using` looks like at ENCY shutdown
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
 - [UI patterns](general/ui-patterns.md) — Inspector dialog, modal WPF (STA thread), non-modal WPF + IExtensionLazyUnloadable
 - [Theming plugin windows](general/theming-plugin-windows.md) — applying the host palette to your own window; WinForms visual-styles pitfalls, scrollbars, title bar
@@ -94,3 +95,4 @@ using var appCom = helper.ConnectToRunningInstance(context);
 using var projectCom = appCom.GetActiveProject();   // correct
 var project = appCom.GetActiveProject();             // WRONG — leaks COM reference
 ```
+`ComWrapper<T>` has no finalizer: an undisposed wrapper is never released, and the host reports it (or crashes) when ENCY closes — see [Symptoms](general/com-lifetime.md#symptoms-what-a-missing-using-looks-like).

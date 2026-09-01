@@ -208,6 +208,16 @@ This means the `Description` field is user-visible. Write it in a language your 
 
 ---
 
+## Errors That Appear After Your Plugin Has Returned
+
+`TResultStatus` covers failures *inside* your call. A whole class of failures shows up later — most often when the user closes ENCY: a dialog reporting objects that were not destroyed, a `LostObjects_*.txt` file next to the exe, or an access violation on exit. None of these are error-handling bugs; they are COM lifetime bugs, and the cause is nearly always a COM object obtained without a `using`.
+
+See [COM lifetime → Symptoms](com-lifetime.md#symptoms-what-a-missing-using-looks-like) for the exact messages and how to map a report back to the call that leaked.
+
+Note also that `try/catch` alone does not protect lifetime: an exception thrown between acquiring a COM object and disposing it leaks that object unless the wrapper is held by a `using` (or disposed in a `finally`). This is one more reason the `using var` form is mandatory rather than stylistic.
+
+---
+
 ## Helper: Centralised Status Check
 
 For projects with many API calls, a small helper method reduces repetition:

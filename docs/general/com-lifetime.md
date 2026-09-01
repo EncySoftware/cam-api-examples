@@ -2,6 +2,85 @@
 
 This document is critical reading for all .NET developers working with the ENCY CAM API. Mishandling COM lifetime is the most common source of crashes and subtle memory corruption in plugin and application code.
 
+**The one rule:** every COM object the API hands you is a resource. Wrap it in a `ComWrapper<T>` and dispose it — `using` — before the method that received it returns. There is no garbage-collector safety net: see [Symptoms](#symptoms-what-a-missing-using-looks-like) for what happens when you skip it.
+
+---
+
+## Symptoms: what a missing `using` looks like
+
+A leaked COM object almost never fails where the bug is. Your plugin runs fine, does its job, returns — and ENCY breaks minutes later, **when the user closes it**. If you arrived here from one of the symptoms below, a missing `using` is the first thing to check.
+
+### 1. Undestroyed-objects dialog on exit
+
+An error dialog with OK/Cancel buttons appears while ENCY shuts down. It reports:
+
+- the name of the running executable;
+- the module being unloaded at that moment, e.g. `CAMAPI.ExtensionManager.dll`;
+- how many objects of that module were still alive;
+- the full path of the report file — `LostObjects_<module>.txt`, described below;
+- the first 1000 characters of that report.
+
+Pressing OK opens the report in Notepad. Every Delphi module counts its own objects, so one shutdown can produce several dialogs and several report files.
+
+**This dialog only exists in a Debug build of ENCY.** The object counter is compiled out of Release entirely — no dialog, no file, no overhead. A release ENCY does not mean your plugin is clean; it means nobody is counting. The same leak then surfaces as symptom 4, or not at all until a user hits it.
+
+### 2. `LostObjects_<module>.txt`
+
+- **Where:** the folder of the running `.exe` (`…\EXE\Bin64\`) — *not* your plugin folder and not `%TEMP%`.
+- **Name:** one file per Delphi module — `LostObjects_SCKernel.txt`, `LostObjects_CAMAPI.ExtensionManager.txt`, …
+- Written only when something leaked; the previous file is deleted first.
+
+```
+Application Name: <full path to the exe>
+Instance Name:    <full path to the module that reported>
+File write date: <timestamp>
+Lost objects count: 5
+
+TExtensionInfo       ID:1043    Thread:29104
+TInstanceInfo        ID:1044    Thread:29104
+...
+```
+
+`ID` is the object's creation sequence number, `Thread` is the thread it was created on. There are **no reference counts and no creation stacks** in the file — stack capture exists in the host but is disabled in shipped builds.
+
+**How to read it:** the names are the Delphi classes implementing the interfaces you obtained — `TExtensionInfo` is the object behind `IExtensionInfo`, and so on. Take each class name, find every call in your plugin that returns the matching interface, and check that each one is `using`-wrapped or explicitly disposed. Repeated identical names mean a leak inside a loop.
+
+### 3. "Destroy called while references remain" dialog
+
+Another Debug-only dialog, raised the moment the host destroys an object whose reference count is still non-zero. It names the Delphi class of the object and the number of references left on it, and blames a wrong destruction order of related objects.
+
+For a plugin author the meaning is narrower: the host destroyed the object while **your** code still held a reference to it. In a Release build the same situation is silent, and the next call made through that now-dangling reference is an access violation.
+
+### 4. Access violation when closing ENCY (any build)
+
+Three ways a lifetime bug turns into a crash instead of a message:
+
+- **GC-timed release.** `ComWrapper<T>` has **no finalizer**. The pointer it takes with `Marshal.GetIUnknownForObject` is released by `Dispose()` and by nothing else — an undisposed wrapper is a permanent leak, not a delayed one. What the GC *does* eventually collect is the per-thread RCW the wrapper holds, and the CLR then calls `Release` on it late, from the finalizer thread. If that lands after the Delphi module has finalized, the call goes into unloaded code → AV.
+- **Over-releasing a host singleton.** Disposing a wrapper around a long-lived host object (`IExtensionManager` and friends) from an assembly-unload or finalizer path can drop its last reference while ENCY is still using it; every subsequent access then AVs. Dispose where you acquired, at the end of the method — not from teardown hooks.
+- **Reverse order.** The host frees an object, your code then calls through the reference it kept. In Debug you get dialog 3 first; in Release you get the AV directly.
+
+### 5. "ENCY did not close correctly" on the next start
+
+Unrelated mechanism, worth knowing so you do not chase it: ENCY flags an unclean shutdown from pid files it deletes on a normal exit. A leak alone does **not** set that flag — a normal exit stays a normal exit even with objects left over. If you see this report, the process actually died, i.e. you are in symptom 4.
+
+### Checking your own plugin
+
+Symptoms 1–3 require a Debug build of ENCY. If you have one, close it after exercising your plugin and look in the exe folder for `LostObjects_*.txt` — that is the whole test. With a release build the host reports nothing, so the check has to be the code review below.
+
+For an unattended run, a debug ENCY started in job mode (`/JOB_MODE`) does not show the dialog: it sets process exit code 1 instead. That makes "did my plugin leak?" a usable CI check — non-zero exit plus a `LostObjects_*.txt` next to the exe.
+
+**Leak checklist:**
+
+| Pattern | Verdict |
+|---|---|
+| `using var xCom = ...InvokeAndWrap(...)` | correct |
+| `var xCom = ...InvokeAndWrap(...)` without `using` | leak |
+| `Invoke(x => x.SomeComProperty)` assigned to a plain variable | leak — use `InvokeAndWrap` |
+| `AsInstanceOf<T>()` / `As*()` helper inside a loop without `using` | leak on every iteration |
+| `break` out of a `foreach` over a COM iterator | leaks the iteration variable — `Dispose()` it before `break` |
+| wrapper stored in a field | must be disposed in the owner's `Dispose()` |
+| wrapper disposed from an unload hook / finalizer | over-release — dispose it where you took it |
+
 ---
 
 ## Why ComWrapper\<T\> Exists
@@ -13,6 +92,8 @@ The ENCY host application is written in Delphi and implements a classic COM refe
 1. Taking explicit ownership of a COM object at construction time via `Marshal.GetIUnknownForObject` (incrementing the ref count).
 2. Implementing `IDisposable` — calling `Dispose()` deterministically releases all held pointers in the correct order.
 3. Providing cross-thread access: ENCY's COM objects live on MTA threads. `ComWrapper<T>` marshals the pointer safely so that code on any thread (including a WPF STA thread) can call COM methods without COM apartment violations.
+
+`ComWrapper<T>` deliberately has **no finalizer**. The reference it takes is released by `Dispose()` and by nothing else, so a wrapper you forget to dispose is not released late — it is never released at all. Disposal is not an optimisation you can leave to the runtime; it is the only thing that ends the object's life.
 
 **The rule is simple:** every COM object you receive from the API must be wrapped in a `ComWrapper<T>` and disposed — either with `using` or an explicit `Dispose()` call — before the method that received it returns.
 
