@@ -1,0 +1,14 @@
+{
+    "name": "APT Arcs Example",
+    "description": "Loads a sample APT program whose arcs are written as CIRCLE records into a G-code based operation and lists the resulting toolpath, showing that the milling APT interpreter keeps arcs as arcs instead of flattening them into chains of points",
+    "module_path": "${extensionJsonFolder}/AptArcsNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "APT Arcs Example",
+                "caption": "APT Arcs Example",
+                "id": "Extension.Utility.AptArcsNet"
+            }
+        }
+    ]
+}
