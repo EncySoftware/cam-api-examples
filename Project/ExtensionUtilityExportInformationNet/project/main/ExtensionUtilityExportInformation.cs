@@ -133,6 +133,8 @@ public class ExtensionUtilityExportInformation : IExtension, IExtensionUtility
 
                     //using var anotherPartStageCom = PartAndStageListHelper.GetPartStage(pslCom, partIdx, setupStageIdx);
                     PartSetupSaveHelper.SavePartSetupData(partStageCom, machineCom, evaluatorCom);
+                    FixtureSaveHelper.SaveFixtures(jsonBuilder, projectCom, applicationCom, partStageCom,
+                        machineCom, evaluatorCom, listCoordinateSystemCom, converterCom, setupStageIdx, partIdx);
                                         
                     jsonBuilder.EndObject(); // PartStage item closing    
                 }

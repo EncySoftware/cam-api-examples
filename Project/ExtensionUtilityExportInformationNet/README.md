@@ -41,3 +41,24 @@ How to check these examples.
 4. In the utilities menu, select the "**Export project information**" item. The file **test.json** with the full project description will be created in the working directory of the CAM system. Toolpaths of the operations will be saved as separate JSON files in the **project/main/OperationToolpathsJSON** folder (subfolder **Designed** — operations in the project tree order, **Reordered** — in the execution order). If the **Viewer** folder is deployed next to the extension dll, the exported JSON will be opened in the web viewer with the Overview, Operations, Setup, Tools and JSON tabs.
 5. In the utilities menu, select the "**Import exported project information for test**" item. The utility reads **test.json** back and imports the part geometry with its matrices into the current project. It is intended for checking that the exported data is complete and correct.
 6. In the utilities menu, select the "**Import exported toolpath information for test**" item. The utility parses the JSON files from **project/main/OperationToolpathsJSON/Designed** and creates the toolpath points as a geometry file **toolpath_points.sgf** in the working directory of the CAM system.
+
+## Fixtures
+
+Each MachineSetup.SetupStagesList[].PartStageList[] contains a Fixtures array.
+It includes assigned fixtures inherited from the machine root or setup, with one entry
+per geometry-bearing fixture node. WorldPlacementMatrix places source geometry in
+the machine world coordinate system. NodeMatrix is the API's relative matrix;
+it must not be applied to WorldPlacementMatrix a second time.
+
+ModelItems[].Sources records the original CAD source, PLMGUID, and the PLM object's
+ID/connection when available. Opening a project locally may leave the PLM object
+unresolved; this does not prevent JSON export. Geometry without a technology
+assignment is not exported. Hidden fixtures are listed as disabled.
+
+The viewer's Setup tab shows fixture sources, inheritance, placement and a download
+link to an STL in source coordinates. Multiplied nodes report MultiplyCount and a
+warning: individual copies are not expanded. Older JSON files remain supported.
+
+This requires a CAM kernel whose fixture FaceCount / GetFaceItem resolve inherited
+geometry, and whose fixture node/component adapters provide ICamApiModelItem.
+An older kernel reports an explicit error instead of silently exporting empty fixtures.
