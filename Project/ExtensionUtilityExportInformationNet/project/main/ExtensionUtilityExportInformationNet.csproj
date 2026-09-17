@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5" />
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.25-dev.6" ExcludeAssets="build" />
      <!-- <Reference Include="$(CAMPath)\STTypes.dll" />
     <Reference Include="$(CAMPath)\STCustomPropTypes.dll" />
     <Reference Include="$(CAMPath)\STXMLPropTypes.dll" />
@@ -64,6 +64,17 @@
     <Compile Include="..\..\FilesInStreamApi\*.cs" LinkBase="FilesInStreamApi" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ExtensionUtilityExportInformationNet.settings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- SDK build fingerprints are internal build metadata, not extension content. -->
+  <Target Name="RemoveSdkBuildMetadata" AfterTargets="Build" BeforeTargets="PublishViewer">
+    <ItemGroup>
+      <SdkBuildMetadata Include="$(TargetDir)*.stbuildresult.json" />
+    </ItemGroup>
+    <Delete Files="@(SdkBuildMetadata)" />
+  </Target>
   <Target Name="PublishViewer" AfterTargets="Build">
     <Exec Command="dotnet publish &quot;$(MSBuildProjectDirectory)\..\..\viewer\main\ProjectInfoViewer.csproj&quot; -c Release -o &quot;$(TargetDir)Viewer&quot; --nologo -v q" />
   </Target>
