@@ -195,7 +195,11 @@ public class MyHandler : ICamApiEventHandler, ICamApiHandlerApplicationAfterLoad
     // ICamApiHandlerApplicationAfterLoadProject
     public void ApplicationAfterLoadProject(string handlerIdent, ICamApiProject project)
     {
-        // react to project load
+        if (_stopped)
+            return;
+
+        using var projectCom = ComWrapper.Create(project);
+        // react to project load through projectCom
     }
 }
 
@@ -206,6 +210,13 @@ var events = new ListString();
 events.Add(typeof(ICamApiHandlerApplicationAfterLoadProject).GUID.ToString("B"));
 appCom.Invoke(app => app.RegisterHandler("my-handler-id", handler, events, out _));
 ```
+
+> **Unregister before the application closes.** `ApplicationBeforeClose` does **not** remove your
+> handler — further events can still arrive after it, and by then the host may already be
+> destroying the objects they carry. Call `UnregisterHandler` there and gate every handler method
+> on a "stopped" flag. The arguments themselves follow the ordinary rule: wrap them, `using` them
+> for the duration of the call, never keep one in a field. See
+> [com-lifetime.md — Event-Handler Arguments](../general/com-lifetime.md#event-handler-arguments).
 
 ---
 

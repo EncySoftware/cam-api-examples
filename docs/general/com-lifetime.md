@@ -80,6 +80,7 @@ For an unattended run, a debug ENCY started in job mode (`/JOB_MODE`) does not s
 | `break` out of a `foreach` over a COM iterator | leaks the iteration variable — `Dispose()` it before `break` |
 | wrapper stored in a field | must be disposed in the owner's `Dispose()` |
 | wrapper disposed from an unload hook / finalizer | over-release — dispose it where you took it |
+| handler still registered when the application closes | later events reach objects already being destroyed — [unregister first](#event-handler-arguments) |
 
 ---
 
@@ -204,6 +205,32 @@ public void Run(IExtensionUtilityContext context, out TResultStatus resultStatus
 ```
 
 For long-lived wrappers (fields), call `Dispose()` explicitly in the owning object's `Dispose()` method.
+
+### Event-Handler Arguments
+
+A handler method receives its COM objects from the host instead of from a getter you called, but
+they follow the same rule as everything else: wrap them, `using` them for the duration of the
+call, and never keep one in a field.
+
+```csharp
+public void ToolChanged(string handlerIdent, ICamApiMachiningTool tool)
+{
+    if (_stopped)
+        return;
+
+    using var toolCom = ComWrapper.Create(tool);
+    // work through toolCom; released when the method returns
+}
+```
+
+What `using` cannot do is unsubscribe you. The application close event does **not** remove your
+handler, so later events — active project changed, operation added and the rest — can still
+arrive after it, and by then the host may already be destroying the objects they carry. A
+handler that re-attaches at that point is attaching to a dying project.
+
+So unregister in the close handler: call `UnregisterHandler`, set a "stopped" flag, and have
+every handler method return immediately while that flag is set. Stopping timers and detaching
+the current project is not enough on its own — a controller that stays subscribed is still live.
 
 ### Checking for Null
 

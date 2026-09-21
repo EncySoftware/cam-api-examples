@@ -27,7 +27,7 @@ This documentation is written for Claude instances helping developers write plug
 
 ### Concepts (read these first)
 - [Extension entry points](general/extension-entry-points.md) — all 7 plugin types, when to use each, full C# boilerplate
-- [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA, and what a forgotten `using` looks like at ENCY shutdown
+- [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA, event-handler arguments, and what a forgotten `using` looks like at application shutdown
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
 - [UI patterns](general/ui-patterns.md) — Inspector dialog, modal WPF (STA thread), non-modal WPF + IExtensionLazyUnloadable
 - [Theming plugin windows](general/theming-plugin-windows.md) — applying the host palette to your own window; WinForms visual-styles pitfalls, scrollbars, title bar
