@@ -1,0 +1,23 @@
+﻿{
+  "name": "Project order card",
+  "description": "Save and load an extension-owned JSON document inside a project",
+  "module_path": "${extensionJsonFolder}/ExtensionProjectSaveLoadNet.dll",
+  "unload_mode": "umBeforeProgramFinalization",
+  "extensions": [
+    {
+      "utility": {
+        "id": "Examples.ProjectSaveLoad.EditOrderCard",
+        "name": "Edit project order card",
+        "caption": "Edit project order card",
+        "unload_mode": "umBeforeProgramFinalization"
+      }
+    },
+    {
+      "project_save_load": {
+        "id": "Examples.ProjectSaveLoad.OrderCard",
+        "name": "Order card project serializer",
+        "unload_mode": "umBeforeProgramFinalization"
+      }
+    }
+  ]
+}

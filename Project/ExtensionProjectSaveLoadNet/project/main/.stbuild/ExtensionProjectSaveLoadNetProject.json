@@ -1,0 +1,5 @@
+﻿{
+  "type": "CSharp",
+  "project_path": "../ExtensionProjectSaveLoadNet.csproj",
+  "sources": ["../*.cs", "../*.csproj", "../*.settings.json", "*.json"]
+}

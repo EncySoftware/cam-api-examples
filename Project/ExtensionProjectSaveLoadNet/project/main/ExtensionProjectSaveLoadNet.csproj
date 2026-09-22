@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutDir>bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="EncySoftware.CAMAPI.SDK.Net" Version="3.0.15-c-1328.1" />
+    <None Update="ExtensionProjectSaveLoadNet.settings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

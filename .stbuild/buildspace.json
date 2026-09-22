@@ -44,6 +44,7 @@
 		"../Operation/ExtensionOperationSimpleNet/project/main/.stbuild/ExtensionOperationSimpleNetProject.json",
 		"../PLMIntegration/PLMExtensionDelphi/project/main/.stbuild/PLMExtensionDelphiProject.json",
 		"../PLMIntegration/PLMExtensionNet/project/main/.stbuild/PLMExtensionNetProject.json",
+		"../Project/ExtensionProjectSaveLoadNet/project/main/.stbuild/ExtensionProjectSaveLoadNetProject.json",
 		"../Project/ExtensionUtilityExportInformationNet/project/main/.stbuild/ExtensionUtilityExportInformationNetProject.json",
 		"../ProjectMachine/ExtensionUtilityProjectMachineInfoNet/project/main/.stbuild/ExtensionUtilityProjectMachineInfoNetProject.json",
 		"../ProjectMachine/MachinePropsChangeNet/project/main/.stbuild/ExtensionMachinePropsChangeNetProject.json",

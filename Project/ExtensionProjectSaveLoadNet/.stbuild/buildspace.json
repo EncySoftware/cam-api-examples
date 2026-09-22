@@ -1,0 +1,10 @@
+﻿{
+	"vars": {
+		"package_namespace": "CAMAPI.Examples",
+		"default_namespace": "CAMAPI.Examples"
+	},
+
+	"projects": [
+		"../project/main/.stbuild/ExtensionProjectSaveLoadNetProject.json"
+	]
+}

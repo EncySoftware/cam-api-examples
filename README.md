@@ -26,6 +26,10 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 - [**CustomIdlCppDotnet**](./CustomIdlCppDotnet/README.md): standalone geometry library with IDL interfaces, a C++ COM object, and a C# client; built and run by STBuild.
 
+### Project data
+
+- [**Project order card**](./Project/ExtensionProjectSaveLoadNet/README.md): save/load an extension-owned JSON document with CopyOnWrite.
+
 ### Quick-start examples
 - **Empty extension template** - [**ExtensionEmptyNet**](./ExtensionEmpty/ExtensionEmptyNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionempty.mp4)
