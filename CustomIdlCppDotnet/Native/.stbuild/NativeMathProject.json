@@ -1,0 +1,5 @@
+{
+  "type": "Cpp",
+  "project_path": "../NativeMath.vcxproj",
+  "sources": ["../*.cpp", "../*.vcxproj", "../../Generated/DemoMath.h", "*.json"]
+}
