@@ -1,5 +1,11 @@
 {
   "idl": {
+    "CADAPI/Interfaces/Body/main/src/CADAPI.Body.idl": "d1192dde51fadfa00339373b776fe8346dc5326f",
+    "CADAPI/Interfaces/Feature/main/src/CADAPI.Feature.idl": "03c6d8433f8c2c693303b561b365962a2ceb4630",
+    "CADAPI/Interfaces/Model/main/src/CADAPI.Model.idl": "59108b1f44fe0a7544272b021b673c5426603741",
+    "CADIPC/Interfaces/Body/main/src/CADIPC.Body.idl": "92e5e0bd484a18be325642bdba65b27139cd9758",
+    "CADIPC/Interfaces/Feature/main/src/CADIPC.Feature.idl": "d0730fc29c9aba4d1db179380934b6478356d4e7",
+    "CADIPC/Interfaces/Model/main/src/CADIPC.Model.idl": "68ebae3bc8d5b056f513f19ba9ba9d78a4deb2f3",
     "CAMAPI/Interfaces/Application/main/src/CAMAPI.Application.idl": "b0c7b05bf0a0f24396df9d114c5190d9171f3997",
     "CAMAPI/Interfaces/ApplicationMainForm/main/src/CAMAPI.ApplicationMainForm.idl": "c2fe23d58184fa2941340d084a280391fa4d8442",
     "CAMAPI/Interfaces/CoordinateSystem/main/src/CAMAPI.CoordinateSystem.idl": "bb7e69f52894629d4b58fa3594bcdd51f4c9bcfa",
@@ -96,6 +102,20 @@
     "CAMIPC/Interfaces/XmlProp/main/src/CAMIPC.XmlProp.idl": "e14cbd257f367a6438845f3b6c855f6a12652218"
   },
   "helpers": {
+    "CADAPI/DotnetHelper/ArcHelper.cs": "80474029f9db783e7bb2fd42e09259b79eca0133",
+    "CADAPI/DotnetHelper/BodyHelper.cs": "8793696254c0641bad74d55eb5d56950e028a66f",
+    "CADAPI/DotnetHelper/ChamferFeatureHelper.cs": "d098943d86bf889bee4e9a04cf275c4a97efa63d",
+    "CADAPI/DotnetHelper/DraftFeatureHelper.cs": "506a45eeb2cc94708191d040a2e9994c8f6b5cd4",
+    "CADAPI/DotnetHelper/ExtrudeFeatureHelper.cs": "24332ccac0bfb8bbba40df2821462fec300ac6ad",
+    "CADAPI/DotnetHelper/FeatureHelper.cs": "9d2ea5ec96409cbcea950b96520ed7a230858e3c",
+    "CADAPI/DotnetHelper/FilletFeatureHelper.cs": "f7e3ac0164575ff1a91eb43efa2c4a5262274662",
+    "CADAPI/DotnetHelper/GeometryTreeNodeCadExtensions.cs": "170a902b49e013ca4b46490dc86cf070b7d818b4",
+    "CADAPI/DotnetHelper/LineHelper.cs": "8dc8e0924e0c7334a0ac74808796607298153f90",
+    "CADAPI/DotnetHelper/ModelHelper.cs": "e9b7d979f09d1de6c27491808ad3fbcef23e02a6",
+    "CADAPI/DotnetHelper/PointHelper.cs": "3530f11c2995a1a7f0dae346363a5c7541eaa474",
+    "CADAPI/DotnetHelper/RevolveFeatureHelper.cs": "e2d6c529b707543734ba6a9be3f57aa4da168577",
+    "CADAPI/DotnetHelper/SegmentHelper.cs": "c2370037f17d325da7dcc294c7e5c89d898a40cf",
+    "CADAPI/DotnetHelper/SketchHelper.cs": "52234e696a002cc83c14a5d67d52fe5d0e56e26c",
     "CAMAPI/DotnetHelper/main/ApplicationHelper.cs": "0f3b938bcaa6e766b9e06c8aaf054496f9348a34",
     "CAMAPI/DotnetHelper/main/ApplicationMainFormHelper.cs": "8e35362803d090f16083b04c88bc68b696a3ebd8",
     "CAMAPI/DotnetHelper/main/AreaModelItemHelper.cs": "8efa50d01454c97c2291c43783bf5533cd47c65d",

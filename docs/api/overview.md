@@ -15,6 +15,7 @@ CAMAPI is the in-process plugin API. Your plugin (DLL) is loaded by ENCY and cal
 | Extension system (IExtensionManager) | [api/entry-points.md](entry-points.md) |
 | Project, Technologist, Operations | [api/project.md](project.md) |
 | Geometry (model, import, B-rep, sketcher) | [api/geometry.md](geometry.md) |
+| CAD modelling (sketch, extrude, revolve, cut, fillet) | [api/cad.md](cad.md) |
 | Feature recognition (holes, pockets, …) | [api/feature-finder.md](feature-finder.md) |
 | Tools & Machine | [api/tools-machine.md](tools-machine.md) |
 | NC Generation & Simulation | [api/nc-simulation.md](nc-simulation.md) |

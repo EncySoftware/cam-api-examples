@@ -40,6 +40,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Entry points](api/entry-points.md) — IExtensionManager, IExtensionStorage, IExtensionLogger
 - [Project](api/project.md) — ICamApiProject, technologist, tech operations, parts, stages, snapshots
 - [Geometry](api/geometry.md) — model tree, entities, faces, curves, mesh, coordinate systems, GeomPicker, sketcher, point snapper
+- [CAD](api/cad.md) — CAD modelling: sketches, extrude, revolve, cut / union / intersect, fillet, chamfer, draft, bodies
 - [Feature finder](api/feature-finder.md) — automatic recognition of holes, pockets, fillets, chamfers, planes, edges
 - [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup, live machine state
 - [NC & simulation](api/nc-simulation.md) — NCMaker, Simulator, CLDReceiver, ModelFormer, TechOperationSolver
@@ -50,6 +51,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Application](ipc/application.md) — ICamIpcApplication, paths, extension manager, logger, XmlProp
 - [Project](ipc/project.md) — differences from CAMAPI project domain
 - [Geometry](ipc/geometry.md) — differences from CAMAPI geometry domain
+- [CAD](ipc/cad.md) — differences from CAMAPI CAD domain
 - [Feature finder](ipc/feature-finder.md) — differences from CAMAPI feature-finder domain
 - [Tools & machine](ipc/tools-machine.md) — differences from CAMAPI tools domain
 - [NC & simulation](ipc/nc-simulation.md) — differences from CAMAPI NC domain

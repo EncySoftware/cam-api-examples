@@ -234,11 +234,10 @@ for (int i = 0; i < nodeCom.ParamsCount(); i++)
 
 ### CAD content of a node
 
-For a CAD-typed node (its geometry is a GeCAD model), `Invoke(node => node.AsCadModel(out var st))`
-returns an `ICadApiModel` for inspecting or mutating the CAD content; it is `nil` for non-CAD
-nodes (mesh, body, plain folders). This is the same CAD axis reached by
-`ICAMAPIGeometryModel.AddCadGroup`. See `.claude/docs/cadapi-bridge.md` in the CAM repo for the
-CADAPI/CADIPC layer.
+For a CAD-typed node, `nodeCom.AsCadModel()` (CADAPI.DotnetHelper) returns an `ICadApiModel`
+for inspecting or mutating the CAD content; it is null for non-CAD nodes (mesh, body, plain
+folders). This is the same CAD axis reached by `ICAMAPIGeometryModel.AddCadGroup`. Sketches,
+extrude, cuts, fillets: [cad.md](cad.md).
 
 ---
 
