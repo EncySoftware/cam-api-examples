@@ -20,6 +20,10 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 ## Projects information
 
+### Custom interface between C++ and C#
+
+- [**CustomIdlCppDotnet**](./CustomIdlCppDotnet/README.md): standalone geometry library with IDL interfaces, a C++ COM object, and a C# client; built and run by STBuild.
+
 ### Quick-start examples
 - **Empty extension template** - [**ExtensionEmptyNet**](./ExtensionEmpty/ExtensionEmptyNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionempty.mp4)

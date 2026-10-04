@@ -1,0 +1,47 @@
+#include "IDLDefines.h"
+[
+  uuid(678285B9-355E-42A0-B2D2-96B285FD058A),
+  version(1.0),
+  helpstring("Standalone geometry interfaces for C++ and C#")
+]
+library DemoMath
+begin
+  importlib("stdole2.tlb");
+
+  record tagTPoint3D begin
+    field(X, double);
+    field(Y, double);
+    field(Z, double);
+  end TPoint3D;
+
+  record tagTVector3D begin
+    field(X, double);
+    field(Y, double);
+    field(Z, double);
+  end TVector3D;
+
+  // Affine transform: columns are basis vectors, Origin is translation.
+  record tagTMatrix3D begin
+    field(AxisX, TVector3D);
+    field(AxisY, TVector3D);
+    field(AxisZ, TVector3D);
+    field(Origin, TPoint3D);
+  end TMatrix3D;
+
+  interface (IGeomCalculator, CE742B7E-4894-49CE-83A9-698FC4620DB8): IUnknown
+  begin
+    propertyRW(Name, string);
+    function Distance(in(A, TPoint3D), in(B, TPoint3D), return(double));
+    function Translate(in(Point, TPoint3D), in(Offset, TVector3D), return(TPoint3D));
+    function Transform(in(Point, TPoint3D), in(Matrix, TMatrix3D), return(TPoint3D));
+    procedure Normalize(in(Vector, TVector3D), out(UnitVector, TVector3D), out(Length, double));
+    function DescribePoint(in(Point, TPoint3D), return(string));
+  end;
+
+  // A single library object creates independently owned calculators.
+  interface (IGeomLibrary, 0245E715-1902-487D-89B8-CED5AB44B858): IUnknown
+  begin
+    propertyR(Name, string);
+    function CreateGeomCalculator(in(Name, string), return(IGeomCalculator*));
+  end;
+end;

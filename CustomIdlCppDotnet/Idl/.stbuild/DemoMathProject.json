@@ -1,0 +1,8 @@
+{
+  "type": "Idl",
+  "project_path": "../main/src/DemoMath.idl",
+  "sources": [
+    "../main/src/*.idl",
+    "*.json"
+  ]
+}

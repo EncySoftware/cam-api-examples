@@ -1,0 +1,8 @@
+{
+  "type": "CSharp",
+  "project_path": "../Client.csproj",
+  "sources": ["../*.cs", "../*.csproj", "../../Generated/DemoMath.dll", "*.json"],
+  "dependencies": [
+    { "ProjectDependency": { "path": "../../Native/.stbuild/NativeMathProject.json" } }
+  ]
+}
