@@ -1,0 +1,14 @@
+{
+    "name": "BTLx import by C#",
+    "description": "Imports a BTLx file of timber construction: the parts become beams in the geometry tree",
+    "module_path": "${extensionJsonFolder}/ExtensionUtilityImportBtlxNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "BTLx import by C#",
+                "caption": "Import BTLx by C#",
+                "id": "Extension.Utility.Geometry.ImportBtlx.Net"
+            }
+        }
+    ]
+}

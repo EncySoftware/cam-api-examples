@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BTLx xmlns="https://www.design2machine.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="2.1.0" Language="en" xsi:schemaLocation="https://www.design2machine.com https://www.design2machine.com/btlx/BTLx_2_1_0.xsd">
+   <FileHistory>
+      <InitialExportProgram CompanyName="ENCY Software" ProgramName="cam-api-examples" ProgramVersion="1.0" ComputerName="" UserName="" FileName="sample.btlx" Date="2026-10-04" Time="12:00:00" Comment="Hand-written sample for the BTLx import example"/>
+   </FileHistory>
+   <Project Name="BTLx import sample">
+      <Parts>
+         <Part SingleMemberNumber="1" AssemblyNumber="" OrderNumber="1" Designation="Rafter" Annotation="" Storey="" Group="" Package="" Material="" TimberGrade="" QualityGrade="" Count="1" Length="1200.000" Height="160.000" Width="80.000" Weight="0" ProcessingQuality="automatic" StoreyType="" ElementNumber="1" Layer="0" ModuleNumber="">
+            <Processings>
+               <JackRafterCut Name="Cut at the start" Process="yes" Priority="0" ProcessID="1" ReferencePlaneID="3">
+                  <Orientation>start</Orientation>
+                  <StartX>60.000</StartX>
+                  <StartY>0.000</StartY>
+                  <StartDepth>0.000</StartDepth>
+                  <Angle>60.000</Angle>
+                  <Inclination>90.000</Inclination>
+               </JackRafterCut>
+               <JackRafterCut Name="Cut at the end" Process="yes" Priority="0" ProcessID="2" ReferencePlaneID="3">
+                  <Orientation>end</Orientation>
+                  <StartX>1150.000</StartX>
+                  <StartY>0.000</StartY>
+                  <StartDepth>0.000</StartDepth>
+                  <Angle>90.000</Angle>
+                  <Inclination>90.000</Inclination>
+               </JackRafterCut>
+               <JackRafterCut Name="Bevel cut" Process="yes" Priority="0" ProcessID="3" ReferencePlaneID="3">
+                  <Orientation>end</Orientation>
+                  <StartX>1100.000</StartX>
+                  <StartY>0.000</StartY>
+                  <StartDepth>0.000</StartDepth>
+                  <Angle>90.000</Angle>
+                  <Inclination>60.000</Inclination>
+               </JackRafterCut>
+               <Drilling Name="Blind hole" Process="yes" Priority="0" ProcessID="4" ReferencePlaneID="3">
+                  <StartX>300.000</StartX>
+                  <StartY>40.000</StartY>
+                  <Angle>0.000</Angle>
+                  <Inclination>90.000</Inclination>
+                  <DepthLimited>yes</DepthLimited>
+                  <Depth>60.000</Depth>
+                  <Diameter>16.000</Diameter>
+               </Drilling>
+               <Drilling Name="Through hole" Process="yes" Priority="0" ProcessID="5" ReferencePlaneID="3">
+                  <StartX>500.000</StartX>
+                  <StartY>40.000</StartY>
+                  <Angle>0.000</Angle>
+                  <Inclination>90.000</Inclination>
+                  <DepthLimited>no</DepthLimited>
+                  <Depth>0.000</Depth>
+                  <Diameter>16.000</Diameter>
+               </Drilling>
+               <Drilling Name="Inclined hole" Process="yes" Priority="0" ProcessID="6" ReferencePlaneID="3">
+                  <StartX>700.000</StartX>
+                  <StartY>40.000</StartY>
+                  <Angle>0.000</Angle>
+                  <Inclination>60.000</Inclination>
+                  <DepthLimited>yes</DepthLimited>
+                  <Depth>80.000</Depth>
+                  <Diameter>12.000</Diameter>
+               </Drilling>
+               <Drilling Name="Side hole" Process="yes" Priority="0" ProcessID="7" ReferencePlaneID="4">
+                  <StartX>900.000</StartX>
+                  <StartY>80.000</StartY>
+                  <Angle>0.000</Angle>
+                  <Inclination>90.000</Inclination>
+                  <DepthLimited>no</DepthLimited>
+                  <Depth>0.000</Depth>
+                  <Diameter>16.000</Diameter>
+               </Drilling>
+            </Processings>
+         </Part>
+         <Part SingleMemberNumber="2" AssemblyNumber="" OrderNumber="2" Designation="Post" Annotation="" Storey="" Group="" Package="" Material="" TimberGrade="" QualityGrade="" Count="1" Length="800.000" Height="100.000" Width="100.000" Weight="0" ProcessingQuality="automatic" StoreyType="" ElementNumber="2" Layer="0" ModuleNumber="">
+            <Processings>
+               <Drilling Name="Through hole" Process="yes" Priority="0" ProcessID="1" ReferencePlaneID="3">
+                  <StartX>100.000</StartX>
+                  <StartY>50.000</StartY>
+                  <Angle>0.000</Angle>
+                  <Inclination>90.000</Inclination>
+                  <DepthLimited>no</DepthLimited>
+                  <Depth>0.000</Depth>
+                  <Diameter>16.000</Diameter>
+               </Drilling>
+               <Lap Name="Lap" Process="yes" Priority="0" ProcessID="2" ReferencePlaneID="3">
+                  <Orientation>start</Orientation>
+                  <StartX>400.000</StartX>
+                  <StartY>0.000</StartY>
+                  <Angle>90.000</Angle>
+                  <Inclination>90.000</Inclination>
+                  <Slope>0.000</Slope>
+                  <Length>100.000</Length>
+                  <Width>100.000</Width>
+                  <Depth>40.000</Depth>
+                  <LeadAngleParallel>yes</LeadAngleParallel>
+                  <LeadAngle>90.000</LeadAngle>
+                  <LeadInclinationParallel>yes</LeadInclinationParallel>
+                  <LeadInclination>90.000</LeadInclination>
+                  <MachiningLimits FaceLimitedStart="yes" FaceLimitedEnd="yes" FaceLimitedFront="no" FaceLimitedBack="no" FaceLimitedTop="no" FaceLimitedBottom="yes"/>
+               </Lap>
+            </Processings>
+         </Part>
+      </Parts>
+   </Project>
+</BTLx>

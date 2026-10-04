@@ -82,6 +82,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **SVG import utility** - [**ExtensionUtilityImportSvgNet**](./Geometry/ExtensionUtilityImportSvgNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionutilityimportsvg.mp4)
 
+- **BTLx import utility** - [**ExtensionUtilityImportBtlxNet**](./Geometry/ExtensionUtilityImportBtlxNet/project/main/README.md)  
+
 - **LCS coordinate creator** - [**ExtensionUtilityLCSCreatorNet**](./Geometry/ExtensionUtilityLCSCreatorNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionutilitylcscreator.mp4)
 

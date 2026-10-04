@@ -33,6 +33,7 @@
 		"../Geometry/ExtensionUtilityGeometryImporterNet/project/main/.stbuild/ExtensionUtilityGeometryImporterNetProject.json",
 		"../Geometry/ExtensionUtilityGeometryModelNet/project/main/.stbuild/ExtensionUtilityGeometryModelNetProject.json",
 		"../Geometry/ExtensionUtilityGeometryPickerNet/project/main/.stbuild/ExtensionUtilityGeometryPickerNetProject.json",
+		"../Geometry/ExtensionUtilityImportBtlxNet/project/main/.stbuild/ExtensionUtilityImportBtlxNetProject.json",
 		"../Geometry/ExtensionUtilityImportSvgNet/project/main/.stbuild/ExtensionUtilityImportSvgNetProject.json",
 		"../Geometry/ExtensionUtilityLCSCreatorNet/project/main/.stbuild/ExtensionUtilityLCSCreatorNetProject.json",
 		"../Geometry/UtilityGeometryEntityReader/project/main/.stbuild/UtilityGeometryEntityReaderProject.json",
