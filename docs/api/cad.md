@@ -79,6 +79,14 @@ All helpers throw on `rsError`.
 
 Coordinates are sketch-local 2D (x, y on the sketch plane). Angles in degrees.
 
+| `normalAxis` | Plane | Sketch x | Sketch y | Positive extrude depth |
+|---|---|---|---|---|
+| `1` | YZ | +Y | +Z | +X |
+| `2` | XZ | +X | +Z | **−Y** |
+| `3` | XY | +X | +Y | +Z |
+
+A positive depth goes along x × y of the sketch, so on XZ it points to −Y.
+
 | Helper | Draws |
 |---|---|
 | `AddLine(x1, y1, x2, y2, id?)` | Line → `ICadApiLine` |
@@ -151,7 +159,10 @@ cadCom.Save();
 | `bo_Int` | Keep only the common volume |
 | `bo_Auto` | Engine picks the operation |
 
-**A boolean feature needs a target body.** Without `SetBodyId` it behaves as `bo_New`.
+**Set the target body explicitly.** Without `SetBodyId` the feature works on the body of the face its
+sketch lies on; for a sketch on a base plane, on the body made by the last `bo_New` feature before
+it. The body found is written into `BodyId`. Only the first feature that makes a body always works
+as `bo_New`.
 Body ids exist only after `Save()`, so the order is: build the base → `Save` → read body id →
 set target → `Save`.
 
@@ -254,7 +265,8 @@ foreach (var featCom in cadCom.Features())
 ## 11. Pitfalls
 
 - **No `Save()` — no geometry.** `BodyCount` is 0 and the viewport is empty until `Save()`.
-- **`bo_Sub` without `SetBodyId` adds material.** It falls back to `bo_New`.
+- **`bo_Sub` without `SetBodyId` cuts only the last body.** With several bodies the cut lands on the
+  body made by the last `bo_New` feature; the others stay whole, with no error.
 - **Cut goes nowhere.** The swept volume must overlap the body: put the cutter sketch on or inside
   the body (`AddSketch(axis, offset)`) and pick the `depth` sign towards the material.
 - Dispose every wrapper (`using`) — see [COM lifetime](../general/com-lifetime.md).
