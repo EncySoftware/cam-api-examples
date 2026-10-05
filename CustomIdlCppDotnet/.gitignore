@@ -1,0 +1,12 @@
+/Generated/
+/.stbuild/build/bin/
+/.stbuild/build/obj/
+/.stbuild/cache/
+/.stbuild/hash/
+/.stbuild/.nuke/
+/.stbuild/logs/
+/.stbuild/temp/
+/Native/bin/
+/Native/obj/
+/Client/bin/
+/Client/obj/

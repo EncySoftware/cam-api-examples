@@ -1,0 +1,7 @@
+{
+  "projects": [
+    "../Idl/.stbuild/DemoMathProject.json",
+    "../Native/.stbuild/NativeMathProject.json",
+    "../Client/.stbuild/ClientProject.json"
+  ]
+}
