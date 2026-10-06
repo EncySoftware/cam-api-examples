@@ -31,6 +31,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
 - [UI patterns](general/ui-patterns.md) — Inspector dialog, modal WPF (STA thread), non-modal WPF + IExtensionLazyUnloadable
 - [Theming plugin windows](general/theming-plugin-windows.md) — applying the host palette to your own window; WinForms visual-styles pitfalls, scrollbars, title bar
+- [Design rules](general/design-rules.md) — how an extension inside ENCY 3 should look and behave: layout, colours, type, components, wording, checklist
 
 ### Writing macros
 - [Macros](macros/README.md) — authoring a macro body (`ICamApiMacro.Run`, run context, `MacroParams`, `NotifyMacroStep`). Managing/building/running macros from a host is in [api/application.md](api/application.md#icamapimacromanager) (in-process) and [ipc/application.md](ipc/application.md#icamipcmacromanager) (IPC).

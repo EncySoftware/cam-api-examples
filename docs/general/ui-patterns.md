@@ -4,6 +4,8 @@ ENCY plugins run inside a Delphi host that uses VCL for its own UI and COM for t
 
 > **Patterns 2 and 3 open a window you own, and ENCY does not paint it.** To match the active host theme, see [theming-plugin-windows.md](theming-plugin-windows.md). Pattern 1 needs nothing — the inspector dialog is rendered by the host.
 
+> See also: [Design rules](design-rules.md) — what the window should look like.
+
 ---
 
 ## Pattern 1: Inspector Dialog (Recommended for Parameter Input)

@@ -8,6 +8,8 @@ This page is about **applying** the palette. For **reading** it — `Name` / `Ki
 `GetColor` and the `TCamApiColorKind` slot list — see
 [api/ui.md § ICamApiTheme](../api/ui.md#icamapitheme).
 
+> See also: [Design rules](design-rules.md) — what the window should look like, and why a page that stays open re-reads the palette every 2 s ([§10](design-rules.md#10-notes-for-developers)).
+
 ## Rules
 
 1. Read the palette **once**, when the window opens, and treat it as best-effort: if the host does
