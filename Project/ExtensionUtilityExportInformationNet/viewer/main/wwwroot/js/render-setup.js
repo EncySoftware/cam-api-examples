@@ -2,11 +2,12 @@
 // Full coverage: known keys get labels + remainingFields for the rest.
 
 import { esc, get, nn, orDash } from "./format.js";
+import { renderFixtures } from "./render-fixtures.js";
 import { kvTable, kvText, kvMono, matrixDetails, badge, remainingFields } from "./components.js";
 
 const PART_HANDLED_KEYS = [
     "PartIndex", "IsCopy", "PrototypePartIndex", "PartExternalID",
-    "PartStageName", "PartGeometry", "PartSetup",
+    "PartStageName", "PartGeometry", "PartSetup", "Fixtures",
 ];
 
 const GEOMETRY_HANDLED_KEYS = [
@@ -53,6 +54,7 @@ function renderPart(part) {
         ${remainingFields(part, PART_HANDLED_KEYS)}
         ${renderGeometry(part.PartGeometry)}
         ${renderPartSetup(part.PartSetup)}
+        ${renderFixtures(part.Fixtures)}
     </div>`;
 }
 

@@ -19,6 +19,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 
 ## Projects information
+### Custom interface between C++ and C#
+- **Geometry library with IDL interfaces, a C++ object and a C# client, built and run through STBuild** - [**CustomIdlCppDotnet**](./CustomIdlCppDotnet/README.md)
 
 ### Custom interface between C++ and C#
 

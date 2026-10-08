@@ -64,8 +64,10 @@ namespace ExtensionUtilityExportInformationNet
             var convertedFileName = $"{partStageName}.osd"; 
             _jsonBuilder.AddStrPair("FileName", convertedFileName);
 
-            // .osd files would stored in project/main/Output
-            var convertedFilePath = Path.Combine(Directory.GetCurrentDirectory(), "project", "main", "Output", convertedFileName); 
+            // Keep model files beside the JSON so the viewer can resolve them.
+            var outputDirectory = Path.Combine(ExportOutputPaths.Root, "Output");
+            Directory.CreateDirectory(outputDirectory);
+            var convertedFilePath = Path.Combine(outputDirectory, convertedFileName);
             FacesConverter.ConvertingFromFacesToFiles(converterCom, modelFormerPartCom, convertedFilePath);
             _jsonBuilder.AddStrPair("SourceCADModelFileID", convertedFilePath);
 
@@ -195,14 +197,16 @@ namespace ExtensionUtilityExportInformationNet
                     continue;
                 }
 
-                plmAppCom.Invoke(plm => {
-                    var plmObj = plm.FindObjectByID(plmObjectId);
-                    _jsonBuilder.AddStrPair("IdInPLM", plmObj.IdInPLM);
-                    _jsonBuilder.AddStrPair("NameInPLM", plmObj.Name);
-                    _jsonBuilder.AddStrPair("ItemType", plmObj.ItemType.ToString());
-                    _jsonBuilder.AddFltPair("TimeStamp", plmObj.TimeStamp);
-                    _jsonBuilder.AddStrPair("ConnectionId", plmObj.ConnectionId);
-                });
+                using var plmObject = plmAppCom.InvokeAndWrap(plm => plm.FindObjectByID(plmObjectId));
+                _jsonBuilder.AddBoolPair("PLMObjectResolved", !plmObject.IsNull);
+                if (!plmObject.IsNull)
+                {
+                    _jsonBuilder.AddStrPair("IdInPLM", plmObject.Invoke(p => p.IdInPLM));
+                    _jsonBuilder.AddStrPair("NameInPLM", plmObject.Invoke(p => p.Name));
+                    _jsonBuilder.AddStrPair("ItemType", plmObject.Invoke(p => p.ItemType.ToString()));
+                    _jsonBuilder.AddFltPair("TimeStamp", plmObject.Invoke(p => p.TimeStamp));
+                    _jsonBuilder.AddStrPair("ConnectionId", plmObject.Invoke(p => p.ConnectionId));
+                }
                 
                 _jsonBuilder.EndObject();
             }
