@@ -1,0 +1,9 @@
+{
+	"type": "CSharp",
+	"project_path": "../ExtensionNCOpenInWebEditorNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.csproj",
+		"*.json"
+	]
+}

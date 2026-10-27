@@ -135,6 +135,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **APT program interpreted into a toolpath, arcs staying arcs** - [**AptArcsNet**](./GCodeGeneration/AptArcsNet/project/main/README.md)  
 [**Demo movie**]()
 
+- **Generated NC program opened in a web editor** - [**ExtensionNCOpenInWebEditorNet**](./GCodeGeneration/ExtensionNCOpenInWebEditorNet/project/main/README.md)  
+
 - **Operation parameters** - [**ExtensionOperationParamsNet**](./Operation/ExtensionOperationParamsNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionoperationparams.mp4)
 
