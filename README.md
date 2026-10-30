@@ -1,9 +1,9 @@
 # cam-api-examples
-Examples of using API of ENCY 2
+Examples of using API of ENCY 3
 
-Documentation: https://docs.encycam.com/CAMAPI/2/en/
+Documentation: https://docs.encycam.com/technical/CAMAPI/3/en/
 
-Lessons: https://docs.encycam.com/CAMAPI/2/en/src/Lessons/Main.html
+Lessons: https://docs.encycam.com/technical/CAMAPI/3/en/src/Lessons/Main.html
 
 AI generated docs: https://deepwiki.com/EncySoftware/cam-api-examples/2-overview
 

@@ -12,7 +12,7 @@ This page says **what** the result should be. **How** to build it: [UI patterns]
 
 ## 1. Ten rules
 
-The numbers exist so a rule can be named in a discussion ("by rule 3"). Under each rule is the remark it grew from, translated from the Russian review notes.
+The numbers exist so a rule can be named in a discussion ("by rule 3"). Under each rule is the remark it grew from.
 
 ### Rule 1. A native part of ENCY, not a separate program
 
