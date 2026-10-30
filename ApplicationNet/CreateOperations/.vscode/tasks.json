@@ -14,18 +14,6 @@
             }
         },
         {
-            "label": "pack",
-            "command": ".stbuild/build.cmd --Target Pack --Variant Release",
-            "type": "shell",
-            "args": [
-            ],
-            "problemMatcher": "$msCompile",
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            }
-        },
-        {
             "label": "clean",
             "command": ".stbuild/build.cmd --Target Clean",
             "type": "shell",
