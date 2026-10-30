@@ -1,0 +1,13 @@
+{
+    "name": "Open NC program in web editor by C#",
+    "description": "Copies the generated NC program to the clipboard and opens a web editor in the browser",
+    "module_path": "${extensionJsonFolder}\\ExtensionNCOpenInWebEditorNet.dll",
+    "extensions": [
+        {
+            "nc_files_exporter": {
+                "name": "OpenInWebEditor",
+                "id": "Extension.NCFilesExporter.OpenInWebEditor.Net"
+            }
+        }
+    ]
+}

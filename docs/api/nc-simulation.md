@@ -101,6 +101,11 @@ if (resultsCom.Invoke(r => r.GeneratedOK))
 > **NC files exporter.** An extension may implement `IExtensionNCFilesExporter`
 > (`TargetsCount`, `GetTargetCaption(i)`, `ExportToTarget(i, ncGenerationResults)`) to push the
 > `ICamApiNCGenerationResults` to external targets (PLM, network folders, machine controllers).
+>
+> **Reference examples:** `GCodeGeneration/ExtensionNCFilesExporter/project/main/ExtensionNCFilesExporter.cs`
+> (demo targets that list the results in Notepad),
+> `GCodeGeneration/ExtensionNCOpenInWebEditorNet/project/main/ExtensionOpenInWebEditor.cs` (puts the
+> program on the clipboard from an STA thread and opens a web editor).
 
 ### Full SaveClData + NCMaker workflow
 

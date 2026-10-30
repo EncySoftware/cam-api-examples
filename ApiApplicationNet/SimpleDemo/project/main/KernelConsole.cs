@@ -112,16 +112,17 @@ public class KernelConsole
     /// </summary>
     public static void FreeLibrary()
     {
+        // Must precede CloseApplication: it destroys the native application object behind this RCW
+        if (fNativeLib != null)
+        {
+            Marshal.ReleaseComObject(fNativeLib);
+            fNativeLib = null;
+        }
         if (hModule != IntPtr.Zero)
         {
             var closeApplication =
                 NativeLibLoader.GetProc<CloseApplicationDelegate>(hModule, "CloseApplication");
             closeApplication();
-        }
-        if (fNativeLib != null)
-        {
-            Marshal.ReleaseComObject(fNativeLib);
-            fNativeLib = null;
         }
         if (hModule != IntPtr.Zero)
         {

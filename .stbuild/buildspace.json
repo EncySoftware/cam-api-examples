@@ -25,6 +25,7 @@
 		"../FullWorkflow/PartCalibrationWorkflowNet/project/main/.stbuild/PartCalibrationWorkflowNetProject.json",
 		"../FullWorkflow/ToolOrientationFromFacesNet/project/main/.stbuild/ToolOrientationFromFacesNetProject.json",
 		"../GCodeGeneration/ExtensionNCFilesExporter/project/main/.stbuild/ExtensionNCFilesExporter.json",
+		"../GCodeGeneration/ExtensionNCOpenInWebEditorNet/project/main/.stbuild/ExtensionNCOpenInWebEditorNetProject.json",
 		"../GCodeGeneration/ExtensionPostprocessorPopupNet/project/main/.stbuild/ExtensionPostprocessorPopupProject.json",
 		"../Geometry/AddinImportObjNet/project/main/.stbuild/AddinImportObjNetProject.json",
 		"../Geometry/AddinImportSvgNet/project/main/.stbuild/AddinImportSvgNetProject.json",

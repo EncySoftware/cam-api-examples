@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include "PathAliases.h"
+// #include "PathAliases.h"
 #include "CamApplication.h"
 #include "Helpers/ModelHelper.h"
 #include "Helpers/ProjectHelper.h"
@@ -118,8 +118,9 @@ int main(int argc, char* argv[]) {
     IST_Logger* logger = nullptr;
     ICamApiApplication* application = nullptr;
     try {
-        // init paths
-        auto list = PathAliases::InitFolders(L"SCConsole.exe", false);
+        // PathAliases.dll is no longer shipped; re-enable once a native path resolver is available
+        // // init paths
+        // auto list = PathAliases::InitFolders(L"SCConsole.exe", false);
 
         // init logger
         logger = StarterNativeUtils::InitLogs(false);
@@ -158,7 +159,7 @@ int main(int argc, char* argv[]) {
     }
     CamApplication::FreeLibrary();
     StarterNativeUtils::FreeLibrary();
-    PathAliases::FreeLibrary();
+    // PathAliases::FreeLibrary();
     CoUninitialize();
     return 0;
 }

@@ -105,6 +105,27 @@ public static class StarterNativeUtils
     }
 
     /// <summary>
+    /// Passes the .NET assembly loader factory to the native code.
+    /// Call after <see cref="InitLogs"/> and before the kernel is started.
+    /// </summary>
+    /// <param name="appStarter">Factory the native code uses to load .NET assemblies.</param>
+    public static void SetAppStarter(ICAMAppStarter appStarter)
+    {
+        fNativeLib?.SetAppStarter(appStarter);
+    }
+
+    /// <summary>
+    /// Detaches the assembly loader factory and the loggers, then stops logging.
+    /// Call after SCKernelConsole.dll is unloaded and before <see cref="FreeLibrary"/>.
+    /// </summary>
+    public static void DetachAndStop()
+    {
+        fNativeLib?.SetAppStarter(null!);
+        fNativeLib?.DetachLoggers();
+        fNativeLib?.StopLog(true);
+    }
+
+    /// <summary>
     /// Releases the cached COM interface and unloads the native SCStarterNativeUtils.dll
     /// Should be called during application shutdown to free native resources.
     /// </summary>

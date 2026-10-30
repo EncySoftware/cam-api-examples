@@ -17,6 +17,7 @@ interface ICamApiMacroBuilderLanguageSettings;
 interface ICamApiMacroBuilderSettings;
 interface ICamApiMacroCommandData;
 interface ICamApiMacroManager;
+interface ICamApiMaterialRegistry;
 interface ICamApiModelFormer;
 interface ICamApiTechOperation;
 interface ICamApiUserTechOperationList;
