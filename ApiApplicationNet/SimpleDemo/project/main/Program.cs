@@ -6,6 +6,7 @@ using CAMAPI.Application;
 using CAMAPI.DotnetHelper;
 using CAMAPI.ResultStatus;
 using CAMHelper.NativeLibUtils;
+using PathAliases;
 using STLoggingInterface;
 
 namespace ApplicationSimpleDemoNet;
@@ -17,17 +18,15 @@ internal static class Program
         IST_Logger? logger = null;
         try
         {
-            var list = PathAliases.InitFolders("SCConsole.exe", includePrIdInPath: false);
-            if (list != null)
-            {
-                var companyName = list.CompanyName;
-                if (!string.IsNullOrEmpty(companyName))
-                    Console.WriteLine($"CompanyName: {companyName}");
-            }
+            var aliases = PathAliasesFacade.InitFolders();
+            var companyName = aliases.CompanyName;
+            if (!string.IsNullOrEmpty(companyName))
+                Console.WriteLine($"CompanyName: {companyName}");
 
 
             logger = StarterNativeUtils.InitLogs(aprocDependentFileName: false) 
                 ?? throw new Exception("Logger initialization failed.");
+            StarterNativeUtils.SetAppStarter(new SCAppStarterShell());
         
 
             string @params = string.Join(' ', args);
@@ -62,8 +61,8 @@ internal static class Program
             }
 
             KernelConsole.FreeLibrary();
+            StarterNativeUtils.DetachAndStop();
             StarterNativeUtils.FreeLibrary();
-            PathAliases.FreeLibrary();
         }
 
         return 0;

@@ -10,8 +10,6 @@ include_directories("${CMAKE_SOURCE_DIR}/../../../SDK/tlb")
 add_executable(CamRunner main.cpp
         NativeLibLoader.cpp
         NativeLibLoader.h
-        PathAliases.cpp
-        PathAliases.h
         StarterNativeUtils.cpp
         StarterNativeUtils.h
         CamApplication.cpp

@@ -12,8 +12,6 @@ add_executable(FullWorkflow3DProject main.cpp
         pch.h
         NativeLibLoader.cpp
         NativeLibLoader.h
-        PathAliases.cpp
-        PathAliases.h
         StarterNativeUtils.cpp
         StarterNativeUtils.h
         CamApplication.cpp

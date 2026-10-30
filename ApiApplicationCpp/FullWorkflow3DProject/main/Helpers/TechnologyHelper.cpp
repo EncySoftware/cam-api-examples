@@ -272,7 +272,7 @@ HRESULT GenerateGCode(ICamApiProject* project,
         // generate CNC
         hr = ncMaker->Generate(_bstr_t(clDataFile.c_str()),
                                _bstr_t(postProcessorFilePath.c_str()),
-                               settingsSppx,
+                               settings,
                                &resultStatus,
                                &generateResult);
         if (resultStatus.Code == rsError)

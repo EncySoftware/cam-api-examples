@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using CAMAPI.DotnetHelper;
 using CAMAPI.ResultStatus;
 using CAMAPI.Singletons;
+using PathAliases;
 using STLoggingInterface;
 
 namespace ApplicationFullWorkflow3DProjectNet;
@@ -23,26 +24,23 @@ internal static class Program
         finally
         {
             KernelConsole.FreeLibrary();
+            StarterNativeUtils.DetachAndStop();
             StarterNativeUtils.FreeLibrary();
-            PathAliases.FreeLibrary();
         }
 
         return 0;
     }
 
     private static void RunInternal(IST_Logger? logger, string[] args){
-        var list = PathAliases.InitFolders("SCConsole.exe", includePrIdInPath: false);
-        
-        if (list != null)
-        {
-            var companyName = list.CompanyName;
-            if (!string.IsNullOrEmpty(companyName))
-                Console.WriteLine($"CompanyName: {companyName}");
-        }
+        var aliases = PathAliasesFacade.InitFolders();
+        var companyName = aliases.CompanyName;
+        if (!string.IsNullOrEmpty(companyName))
+            Console.WriteLine($"CompanyName: {companyName}");
 
 
         logger = StarterNativeUtils.InitLogs(aprocDependentFileName: false) 
             ?? throw new Exception("Logger initialization failed.");
+        StarterNativeUtils.SetAppStarter(new SCAppStarterShell());
     
 
         string @params = string.Join(' ', args);

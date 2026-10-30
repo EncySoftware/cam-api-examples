@@ -78,11 +78,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>../../../SDK/tlb;$(IncludePath)</IncludePath>
-    <OutDir>C:\Program Files\ENCY Software\ENCY 2\Bin64\</OutDir>
+    <OutDir>C:\Program Files\ENCY Software\ENCY 3\Bin64\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>../../../SDK/tlb;$(IncludePath)</IncludePath>
-    <OutDir>C:\Program Files\ENCY Software\ENCY 2\Bin64\</OutDir>
+    <OutDir>C:\Program Files\ENCY Software\ENCY 3\Bin64\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -144,7 +144,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -161,7 +161,6 @@
     <ClInclude Include="CamApplication.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="NativeLibLoader.h" />
-    <ClInclude Include="PathAliases.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="StarterNativeUtils.h" />
   </ItemGroup>
@@ -169,8 +168,10 @@
     <ClCompile Include="CamApplication.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NativeLibLoader.cpp" />
-    <ClCompile Include="PathAliases.cpp" />
-    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="StarterNativeUtils.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <iostream>
 
-#include "PathAliases.h"
+// #include "PathAliases.h"
 #include "CamApplication.h"
 #include "StarterNativeUtils.h"
 
@@ -31,17 +31,18 @@ int main(int argc, char* argv[]) {
     ICamApiApplication* application;
     TResultStatus resultStatus = {};
     try {
-        // init paths
-        auto list = PathAliases::InitFolders(L"SCConsole.exe", false);
-        if (list) {
-            BSTR companyName = nullptr;
-            hr = list->get_CompanyName(&companyName);
-            if (SUCCEEDED(hr) && companyName) {
-                std::wcout << L"CompanyName: " << companyName << std::endl;
-                SysFreeString(companyName);
-            }
-            list->Release();
-        }
+        // PathAliases.dll is no longer shipped; re-enable once a native path resolver is available
+        // // init paths
+        // auto list = PathAliases::InitFolders(L"SCConsole.exe", false);
+        // if (list) {
+        //     BSTR companyName = nullptr;
+        //     hr = list->get_CompanyName(&companyName);
+        //     if (SUCCEEDED(hr) && companyName) {
+        //         std::wcout << L"CompanyName: " << companyName << std::endl;
+        //         SysFreeString(companyName);
+        //     }
+        //     list->Release();
+        // }
 
         // init logger
         logger = StarterNativeUtils::InitLogs(false);
@@ -97,7 +98,7 @@ int main(int argc, char* argv[]) {
     }
     CamApplication::FreeLibrary();
     StarterNativeUtils::FreeLibrary();
-    PathAliases::FreeLibrary();
+    // PathAliases::FreeLibrary();
     CoUninitialize();
     return 0;
 }
