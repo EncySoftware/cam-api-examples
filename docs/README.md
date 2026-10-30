@@ -41,7 +41,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Entry points](api/entry-points.md) — IExtensionManager, IExtensionStorage, IExtensionLogger
 - [Project](api/project.md) — ICamApiProject, technologist, tech operations, parts, stages, snapshots
 - [Geometry](api/geometry.md) — model tree, entities, faces, curves, mesh, coordinate systems, GeomPicker, sketcher, point snapper
-- [CAD](api/cad.md) — CAD modelling: sketches, extrude, revolve, cut / union / intersect, fillet, chamfer, draft, bodies
+- [CAD](api/cad.md) — CAD modelling: sketches, DXF / GSF import, extrude, revolve, cut / union / intersect, fillet, chamfer, draft, bodies, sketch on a body face
 - [Feature finder](api/feature-finder.md) — automatic recognition of holes, pockets, fillets, chamfers, planes, edges
 - [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup, live machine state
 - [NC & simulation](api/nc-simulation.md) — NCMaker, Simulator, CLDReceiver, ModelFormer, TechOperationSolver
