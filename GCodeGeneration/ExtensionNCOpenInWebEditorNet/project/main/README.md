@@ -14,7 +14,7 @@ In the editor press **Read from clipboard** to load the program. The editor need
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionNCOpenInWebEditorNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionNCOpenInWebEditorNet.settings.json**.
 3. Restart ENCY.
 4. Generate an NC program. ENCY shows the targets of installed NC files exporters by their captions (`GetTargetCaption`). Choose **Open in CNC-Technik KUKA editor**.
 

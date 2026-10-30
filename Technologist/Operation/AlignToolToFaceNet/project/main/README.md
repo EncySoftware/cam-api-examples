@@ -55,7 +55,8 @@ exactly on their normal.
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab, by specifying the file
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top,
+   click **Install from file** on the right and select the file
    **bin/Debug/AlignToolToFaceNet.settings.json**.
 3. Restart ENCY.
 4. Select one or more planar faces in the geometry model, then run the

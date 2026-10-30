@@ -9,9 +9,9 @@ The file is parsed with `System.Xml` only, the example has no third-party depend
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityImportBtlxNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionUtilityImportBtlxNet.settings.json**.
 3. Restart ENCY.
-4. In the utilities menu, select the "**Import BTLx by C#**" item and pick a `.btlx` file. A small file made for this example lies next to the extension: **bin/Debug/assets/sample.btlx**.
+4. In the utilities list (the **Utilities** button on the top panel or **Ctrl+Shift+E**), select the "**Import BTLx by C#**" item and pick a `.btlx` file. A small file made for this example lies next to the extension: **bin/Debug/assets/sample.btlx**.
 
 `sample.btlx` holds two beams and is valid against the BTLx 2.1.0 schema. The expected summary is:
 

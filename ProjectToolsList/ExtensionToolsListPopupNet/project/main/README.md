@@ -1,10 +1,10 @@
-# ExtensionUtilityPostprocessorNet usage example
+# ExtensionToolsListPopupNet usage example
 
-This example demonstrates how to create an extension for the `postprocessor_popup` entry point — the extension adds its own items to the drop-down menu of the **Postprocessor** button in the CAM main toolbar.
+This example demonstrates how to create an extension for the `tools_list_popup` entry point — the extension adds its own items to the popup menu of the project tools list.
 
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityPostprocessorNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionToolsListPopupNet.settings.json**.
 3. Restart ENCY.
-4. Click the drop-down arrow next to the Postprocessor button on the main toolbar — select one of the "**Show postprocessor info**" items. A temporary notepad file with current project info will be opened.
+4. Open the popup menu of the project tools list and select one of the "**Show tools list info**" items. A temporary file will be opened in Windows Notepad with every tool of the current project (caption, type, GUID, ID, number, first corrector number, connector ID, magazine number) and the operations that use it.

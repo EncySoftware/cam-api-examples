@@ -5,6 +5,6 @@ This example demonstrates how to create an extension that will show some informa
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityMessageBoxNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionUtilityMessageBoxNet.settings.json**.
 3. Restart ENCY.
-4. In the utilities menu, select the "**Utility to show message by C#**" item. The message will appear in the CAM system.
+4. In the utilities list (the **Utilities** button on the top panel or **Ctrl+Shift+E**), select the "**Utility to show message by C#**" item. The message will appear in the CAM system.

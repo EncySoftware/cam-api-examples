@@ -12,8 +12,8 @@ This example demonstrates how to implement an extension to integrate with an ext
 
 To add this extension to the application:
 
-1. Open the **Settings** window on **Extensions** tab in the CAM application.
-2. Install the extension using the latest version of the DEXT file from the Assets section (https://github.com/EncySoftware/cam-api-examples/releases).
+1. Open the CAM start page, then **Extensions**, and switch to **Manage** at the top.
+2. Click **Install from file** on the right and select the latest version of the DEXT file from the Assets section (https://github.com/EncySoftware/cam-api-examples/releases).
 3. Open the **Connection** tab and configure the extension:
    - Required: set a **PLMFolder** parameter — a local or network folder where all items will be stored.
 

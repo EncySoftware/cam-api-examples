@@ -91,8 +91,8 @@ Two things are worth knowing about this:
 ## How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab, by specifying the file
-   **bin/Debug/AptArcsNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top,
+   click **Install from file** on the right and select the file **bin/Debug/AptArcsNet.settings.json**.
 3. Restart ENCY.
 4. Open a project with a milling machine, then find **APT Arcs Example** among the utilities and
    click **Load APT and calculate**.
