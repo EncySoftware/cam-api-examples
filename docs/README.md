@@ -26,6 +26,7 @@ This documentation is written for Claude instances helping developers write plug
 ## Documentation map
 
 ### Concepts (read these first)
+- [Essentials](general/essentials.md) — the rules every extension follows, one line each, with links to the details; read before writing code
 - [Extension entry points](general/extension-entry-points.md) — all 7 plugin types, when to use each, full C# boilerplate
 - [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA, event-handler arguments, and what a forgotten `using` looks like at application shutdown
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
