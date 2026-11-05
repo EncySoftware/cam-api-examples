@@ -1,0 +1,11 @@
+{
+	"type": "CSharp",
+	"project_path": "../ExtensionEmbeddedInspectorNet.csproj",
+	"sources": [
+		"../*.cs",
+		"../*.xaml",
+		"../*.csproj",
+		"../json.cs",
+		"*.json"
+	]
+}

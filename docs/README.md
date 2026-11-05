@@ -46,7 +46,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Feature finder](api/feature-finder.md) — automatic recognition of holes, pockets, fillets, chamfers, planes, edges
 - [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup, live machine state
 - [NC & simulation](api/nc-simulation.md) — NCMaker, Simulator, CLDReceiver, ModelFormer, TechOperationSolver
-- [UI](api/ui.md) — main form, viewport, view cube, dialogs, SimplePropIterator, CamApiInspectorWindow
+- [UI](api/ui.md) — main form, viewport, view cube, dialogs, SimplePropIterator, CamApiInspectorWindow, the inspector inside your own window
 
 ### CAMIPC domain reference
 - [Connection](ipc/connection.md) — DLL loading, IIpcHelper, TExecuteContext, IAsyncResult, event listeners

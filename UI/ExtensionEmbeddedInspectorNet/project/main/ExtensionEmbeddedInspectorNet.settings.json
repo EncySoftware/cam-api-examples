@@ -1,0 +1,14 @@
+{
+    "name": "Utility with the ENCY inspector inside its own window by C#",
+    "description": "Utility with the ENCY inspector inside its own window by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionEmbeddedInspectorNet.dll",
+    "unload_mode": "umBeforeProgramFinalization",
+    "extensions": [
+        {
+            "Utility": {
+                "name": "Utility with the ENCY inspector inside its own window by C#",
+                "id": "Extension.Utility.EmbeddedInspector.Net"
+            }
+        }
+    ]
+}

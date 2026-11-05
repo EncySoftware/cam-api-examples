@@ -187,6 +187,7 @@ public static void ShowStaWindow<TWindow>(
 - **Returning `CanUnload = true` before the window is closed** — same outcome.
 - **Calling COM from the UI thread without `Invoke`** — the COM objects were created in MTA; direct access from the STA thread is unsafe. Always go through `ComWrapper.Invoke` / extension methods, never through `.Instance` / `.It`.
 - **Disposing `viewPortCom` both in `Run()` (with `using`) and in the window's `Dispose()`** — double-release. Keep disposal in the window only.
+- **Keeping "the window is open" or the last values in instance fields** — ENCY creates a new extension instance for every run, so a second run opens a second window and starts from defaults. Keep that state in static fields; to keep it after the window closes, set `"unload_mode": "umBeforeProgramFinalization"` in the settings file, or the library is unloaded with the last instance. See [`UI/ExtensionEmbeddedInspectorNet`](../../UI/ExtensionEmbeddedInspectorNet/project/main/ExtensionEmbeddedInspector.cs).
 
 ---
 
