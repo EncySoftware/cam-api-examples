@@ -41,7 +41,7 @@ Represents the main ENCY application window. Obtained from `ICamApiApplication.M
 
 | Method | Description |
 |---|---|
-| `GetVisible() → boolean` | Whether the main window is currently visible |
+| `GetVisible() → boolean` | Whether the main window is visible: `false` before it is shown, after it is closed and while the tab of this instance is in the background |
 | `GetUiInfo() → ICamApiMainFormUiInfo*` | Returns a snapshot of the current UI state (see below) |
 | `BeginFreeze(freezeType)` | Prevents user interaction. `TFreezeInterfaceType`: `afiiGeneral`, `afiiGraphicWindow`, `afiiAllowChangeSelection` |
 | `EndFreeze()` | Restores user interaction |
@@ -102,13 +102,19 @@ Register these via `ICamApiApplicationMainForm.RegisterHandler` (same pattern as
 
 | Interface | Method | Fires when |
 |---|---|---|
-| `ICamApiHandlerApplicationMainFormIsVisibleChanged` | `ApplicationMainFormIsVisibleChanged(handlerIdent, visible)` | Main window shown or hidden |
+| `ICamApiHandlerApplicationMainFormIsVisibleChanged` | `ApplicationMainFormIsVisibleChanged(handlerIdent, visible)` | Comes when `GetVisible` changes, `visible` is its new value: the main window is shown or closed, or the tab of this application instance becomes current or goes to the background |
 | `ICamApiHandlerApplicationMainFormMinimizeChanged` | `ApplicationMainFormMinimizeChanged(handlerIdent, minimized)` | Main window minimized or restored |
 | `ICamApiHandlerApplicationMainFormUiInfoChanged` | `ApplicationMainFormUiInfoChanged(handlerIdent, uiInfo)` | Any UI state change (title, modification flag, cloud state, etc.) |
 | `ICamApiHandlerApplicationMainFormSaveInCloudClicked` | `ApplicationMainFormSaveInCloudClicked(handlerIdent)` | Cloud save button clicked |
 | `ICamApiHandlerApplicationMainFormShareClicked` | `ApplicationMainFormShareClicked(handlerIdent)` | Share button clicked |
 | `ICamApiHandlerApplicationMainFormCloudChatClicked` | `ApplicationMainFormCloudChatClicked(handlerIdent)` | Cloud chat icon clicked |
 | `ICamApiHandlerApplicationMainFormReloadCloudProjectClicked` | `ApplicationMainFormReloadCloudProjectClicked(handlerIdent)` | Reload cloud project clicked |
+
+> **Tabs of the main window.** Each tab of the main window is a separate application process
+> with its own project and its own extension instances. An extension learns about tab switching
+> from `ApplicationMainFormIsVisibleChanged`. The event comes after the tab has switched.
+> [`ApplicationActiveProjectChanged`](application.md#applicationactiveprojectchanged) does not
+> come on a tab switch.
 
 ### ICamApiMainFormUiInfo — UI state snapshot
 
