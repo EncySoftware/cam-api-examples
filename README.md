@@ -45,6 +45,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Custom dialog windows** - [**ExtensionUtilityDialogWindowNet**](./UI/ExtensionUtilityDialogWindowNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionutilitydialogwindow.mp4)
 
+- **ENCY inspector inside your own window** - [**ExtensionEmbeddedInspectorNet**](./UI/ExtensionEmbeddedInspectorNet/project/main/README.md)
+
 - **Message box examples** - [**ExtensionUtilityMessageBoxNet**](./UI/ExtensionUtilityMessageBoxNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionutilitymessagebox.mp4)
 

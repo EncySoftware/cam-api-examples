@@ -104,8 +104,17 @@ if (resultsCom.Invoke(r => r.GeneratedOK))
 >
 > **Reference examples:** `GCodeGeneration/ExtensionNCFilesExporter/project/main/ExtensionNCFilesExporter.cs`
 > (demo targets that list the results in Notepad),
-> `GCodeGeneration/ExtensionNCOpenInWebEditorNet/project/main/ExtensionOpenInWebEditor.cs` (puts the
-> program on the clipboard from an STA thread and opens a web editor).
+> `GCodeGeneration/ExtensionNCOpenInWebEditorNet/project/main/ExtensionOpenInWebEditor.cs` (opens a
+> web editor with the program in the link).
+>
+> **Program in a link.** The web editor example sends all files of one program (`.src` and `.dat`
+> for KUKA, `.mod`, `.prg` and `.sys` for ABB) in the fragment of the editor link:
+> `https://cnc-technik.de/kuka/#name=PROG1&src=<data>&dat=<data>&z=1`. Each `<data>` is the file
+> bytes as written by the postprocessor, compressed with raw deflate (`DeflateStream`) and encoded
+> in base64url without padding; the editor detects UTF-8 or Windows-1252 itself. The browser does
+> not send the fragment to the server, so the program stays on the user's computer. A link longer
+> than about 32 000 characters does not fit `Process.Start`: the example writes a local HTML page
+> that calls `location.replace(url)` and opens that page instead.
 
 ### Full SaveClData + NCMaker workflow
 

@@ -16,5 +16,5 @@ Two utilities are provided:
 # How to build
 
 1. Compile this project with **"dotnet build"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/CadSketchDrawingNet.settings.json**.
-3. Open or create a project, then in the utilities menu select **"Draw mounting plate sketch"** or **"Draw flange gasket sketch"**. A new CAD group with the sketch appears in the geometry model.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/CadSketchDrawingNet.settings.json**.
+3. Open or create a project, then in the utilities list (the **Utilities** button on the top panel or **Ctrl+Shift+E**) select **"Draw mounting plate sketch"** or **"Draw flange gasket sketch"**. A new CAD group with the sketch appears in the geometry model.

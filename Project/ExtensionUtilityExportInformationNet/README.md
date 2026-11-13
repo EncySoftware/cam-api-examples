@@ -3,7 +3,7 @@
 This set of examples demonstrates how to read information about the current project through CAMAPI and export it into a single JSON file.
 The export collects project details, machine information, setup stages with parts (geometry, workpiece setup, coordinate systems), operations with their parameters (feeds, spindle, coolants, statistics, stocks), the tools list and project screenshots.
 Toolpaths of the operations are exported into separate JSON files, and the resulting project JSON is automatically opened in a bundled web viewer.
-After installing this extension, several items are added to the Utilities menu of the application:
+After installing this extension, several items are added to the utilities list of the application:
 
 - Export project information
 - Import exported project information for test
@@ -36,11 +36,11 @@ dotnet publish "viewer/main/ProjectInfoViewer.csproj" -c Release -o "project/mai
 How to check these examples.
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityExportInformationNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionUtilityExportInformationNet.settings.json**.
 3. Open or create a project with a machine, several parts and calculated machining operations.
-4. In the utilities menu, select the "**Export project information**" item. The file **test.json** with the full project description will be created in the working directory of the CAM system. Toolpaths of the operations will be saved as separate JSON files in the **project/main/OperationToolpathsJSON** folder (subfolder **Designed** — operations in the project tree order, **Reordered** — in the execution order). If the **Viewer** folder is deployed next to the extension dll, the exported JSON will be opened in the web viewer with the Overview, Operations, Setup, Tools and JSON tabs.
-5. In the utilities menu, select the "**Import exported project information for test**" item. The utility reads **test.json** back and imports the part geometry with its matrices into the current project. It is intended for checking that the exported data is complete and correct.
-6. In the utilities menu, select the "**Import exported toolpath information for test**" item. The utility parses the JSON files from **project/main/OperationToolpathsJSON/Designed** and creates the toolpath points as a geometry file **toolpath_points.sgf** in the working directory of the CAM system.
+4. In the utilities list (the **Utilities** button on the top panel or **Ctrl+Shift+E**), select the "**Export project information**" item. The file **test.json** with the full project description will be created in the working directory of the CAM system. Toolpaths of the operations will be saved as separate JSON files in the **project/main/OperationToolpathsJSON** folder (subfolder **Designed** — operations in the project tree order, **Reordered** — in the execution order). If the **Viewer** folder is deployed next to the extension dll, the exported JSON will be opened in the web viewer with the Overview, Operations, Setup, Tools and JSON tabs.
+5. In the utilities list, select the "**Import exported project information for test**" item. The utility reads **test.json** back and imports the part geometry with its matrices into the current project. It is intended for checking that the exported data is complete and correct.
+6. In the utilities list, select the "**Import exported toolpath information for test**" item. The utility parses the JSON files from **project/main/OperationToolpathsJSON/Designed** and creates the toolpath points as a geometry file **toolpath_points.sgf** in the working directory of the CAM system.
 
 ## Fixtures
 

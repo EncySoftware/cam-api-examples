@@ -30,7 +30,8 @@ currently selected, so you can keep the window open and switch operations in the
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab, by specifying the file
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top,
+   click **Install from file** on the right and select the file
    **bin/Debug/OperationUserParametersNet.settings.json**.
 3. Restart ENCY.
 4. Run the **Operation user params** utility to open the window, select an operation in the technology

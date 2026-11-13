@@ -5,6 +5,6 @@ This example demonstrates how to create an extension that will convert geometry 
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionGeomCLDataConverterNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionGeomCLDataConverterNet.settings.json**.
 3. Restart ENCY.
-4. In the utilities menu, select **Extension to convert geometry CLData on C#**. 
+4. Create a 2D contouring operation (`TST2DContouringOp`) and calculate it. The extension lifts the working moves of the toolpath by 20 along the Z axis.

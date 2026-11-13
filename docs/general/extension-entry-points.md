@@ -11,7 +11,7 @@ Every plugin class must implement **`IExtension`** (to carry metadata) plus exac
 | Goal | Entry point |
 |---|---|
 | Run code on CAM startup / shutdown | `IExtensionGlobal` |
-| Add a button to the toolbar / utilities menu | `IExtensionUtility` |
+| Add a button to the toolbar / utilities list | `IExtensionUtility` |
 | Intercept or customise how a utility is executed | `IExtensionUtilityRunner` |
 | Add items to the right-click menu on a tech operation | `IExtensionOperationPopup` |
 | Add items to the right-click menu on a geometry tree node | `IExtensionGeomModelNodePopup` |
@@ -82,7 +82,7 @@ public class MyGlobalExtension : IExtension, IExtensionGlobal
 
 ### IExtensionTypeInfoUtility → IExtensionUtility
 
-**Use when:** you want to add a button to the ENCY utilities menu. When the user clicks the button, `Run` is called with the full application context.
+**Use when:** you want to add a button to the ENCY utilities list. When the user clicks the button, `Run` is called with the full application context.
 
 **Context received:** `IExtensionUtilityContext` — contains `CamApplication` (`ICamApiApplication`).
 
@@ -550,7 +550,7 @@ Each extension library is described by a JSON config file (`<AssemblyName>.setti
 ```
 
 - `${extensionJsonFolder}` — resolved to the folder containing the JSON file at runtime.
-- `caption` — the label shown in the ENCY utilities menu.
+- `caption` — the label shown in the ENCY utilities list.
 - `id` — must match **exactly** the string checked in `IExtensionFactory.Create`.
 
 ### Copying the JSON to the build output

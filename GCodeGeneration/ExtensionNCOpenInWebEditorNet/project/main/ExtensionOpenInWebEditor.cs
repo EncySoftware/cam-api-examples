@@ -9,8 +9,8 @@ using CAMAPI.UIDialogs.DotnetHelper;
 namespace ExtensionNCOpenInWebEditorNet;
 
 /// <summary>
-/// NC files exporter with one target: it puts the generated program on the clipboard and opens
-/// the web editor in the default browser
+/// NC files exporter with one target: it opens the web editor in the default browser with the generated
+/// program in the link
 /// </summary>
 public class ExtensionOpenInWebEditor : IExtension, IExtensionNCFilesExporter
 {
@@ -31,7 +31,7 @@ public class ExtensionOpenInWebEditor : IExtension, IExtensionNCFilesExporter
     }
 
     /// <summary>
-    /// Put the main file of the generated program on the clipboard and open the editor page
+    /// Put the files of the generated program into the editor link and open it in the browser
     /// </summary>
     public void ExportToTarget(int targetIndex, ICamApiNCGenerationResults ncGenerationResults, out TResultStatus ret)
     {
@@ -39,17 +39,17 @@ public class ExtensionOpenInWebEditor : IExtension, IExtensionNCFilesExporter
         try
         {
             var ncFiles = ReadNcFileNames(ncGenerationResults);
-            var programFile = MainProgramFile.Pick(ncFiles, WebEditorSettings.MainFileExtension)
-                              ?? throw new Exception("The postprocessor produced no NC files");
+            var program = ProgramFiles.Pick(ncFiles, WebEditorSettings.FileKeys, WebEditorSettings.MainFileKey)
+                          ?? throw new Exception(NoProgramMessage(ncFiles));
 
-            var text = NcFileReader.ReadText(programFile);
-            if (text.Length == 0)
-                throw new Exception("The NC file is empty: " + programFile);
+            var parts = program.Sent.Select(file => new EditorLinkPart(file.Key, File.ReadAllBytes(file.Path))).ToList();
+            if (parts[0].Content.Length == 0)
+                throw new Exception("The NC file is empty: " + program.Sent[0].Path);
 
-            ClipboardText.Set(text);
-            OpenInBrowser(WebEditorSettings.Url);
+            var link = EditorLink.Build(WebEditorSettings.Url, program.Name, parts);
+            OpenInBrowser(BrowserTarget.For(link, program.Name));
 
-            UIDialogs.Notify(TLogEventType.leInfo, WebEditorSettings.Caption, BuildHint(programFile, ncFiles));
+            UIDialogs.Notify(TLogEventType.leInfo, WebEditorSettings.Caption, BuildHint(program));
         }
         catch (Exception e)
         {
@@ -69,18 +69,24 @@ public class ExtensionOpenInWebEditor : IExtension, IExtensionNCFilesExporter
             .ToList();
     }
 
-    private static void OpenInBrowser(string url)
+    private static string NoProgramMessage(IReadOnlyList<string> ncFiles)
     {
-        using var browser = Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        if (ncFiles.Count == 0)
+            return "The postprocessor produced no NC files";
+        return $"The editor opens files with the extensions {string.Join(", ", WebEditorSettings.FileKeys)}. " +
+               $"The postprocessor produced: {string.Join(", ", ncFiles.Select(Path.GetFileName))}";
     }
 
-    private static string BuildHint(string programFile, IReadOnlyList<string> ncFiles)
+    private static void OpenInBrowser(string target)
     {
-        var hint = $"{Path.GetFileName(programFile)} is on the clipboard. {WebEditorSettings.PasteHint}";
+        using var browser = Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
+    }
 
-        var notSent = ncFiles.Where(file => file != programFile).Select(Path.GetFileName).ToList();
-        if (notSent.Count > 0)
-            hint += $" Not sent: {string.Join(", ", notSent)}.";
+    private static string BuildHint(ProgramFiles program)
+    {
+        var hint = $"Opened in the editor: {string.Join(", ", program.Sent.Select(file => Path.GetFileName(file.Path)))}.";
+        if (program.NotSent.Count > 0)
+            hint += $" Not sent: {string.Join(", ", program.NotSent.Select(Path.GetFileName))}.";
         return hint;
     }
 }

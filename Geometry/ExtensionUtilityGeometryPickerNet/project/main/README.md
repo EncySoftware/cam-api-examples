@@ -5,6 +5,6 @@ This example demonstrates how to create an extension that will pick the selected
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ExtensionUtilityGeometryPickerNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ExtensionUtilityGeometryPickerNet.settings.json**.
 3. Restart ENCY.
-4. In the utilities menu, select the "**Utility to show selected geometry model objects by C#**" item. A window **"Geometry items model picker"** will appear. You must select the geometric model objects. After clicking the **OK** button, Windows Notepad will appear with a list of the selected objects.
+4. In the utilities list (the **Utilities** button on the top panel or **Ctrl+Shift+E**), select the "**Utility to show selected geometry model objects by C#**" item. A window **"Geometry items model picker"** will appear. You must select the geometric model objects. After clicking the **OK** button, Windows Notepad will appear with a list of the selected objects.

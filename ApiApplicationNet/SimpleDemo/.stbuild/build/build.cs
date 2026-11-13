@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.IO.Compression;
 using Nuke.Common;
 using BuildSystem;
 using BuildSystem.Info;
@@ -31,7 +30,7 @@ public class Build : NukeBuild
             .First(x => x.GetDirectories(".stbuild").Any())
             .FullName;
         Environment.SetEnvironmentVariable("root", Path.Combine(parentDirectory, ".stbuild"));
-        return Execute<Build>(x => x.Pack);
+        return Execute<Build>(x => x.Compile);
     }
 
     /// <summary>
@@ -137,40 +136,6 @@ public class Build : NukeBuild
                         Logger.head($"⚠️  Could not delete {dir}: {ex.Message}");
                     }
                 }
-            }
-        });
-
-    /// <summary>
-    /// Create .dext file, which can be injected
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
-    private Target Pack => _ => _
-        .DependsOn(Compile)
-        .Executes(() =>
-        {
-            foreach (var project in BuildSpace.Projects.List.All())
-            {
-                // path to dll (to be included into dext)
-                var dllPath = project.GetBuildResultPath(Variant, "dll")
-                              ?? throw new Exception("Build results with dll type not found");
-
-                // path to json, describing extension (to be included into dext)
-                var projectFolder = Path.GetDirectoryName(project.MainFilePath)
-                                    ?? throw new Exception("Main file path is null");
-                var jsonPath = Path.Combine(projectFolder, Path.GetFileNameWithoutExtension(dllPath) + ".settings.json");
-
-                // make new dext
-                var outputFolder = Path.GetDirectoryName(dllPath)
-                                   ?? throw new Exception("Parent folder of dll path is null");
-                var dextPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(dllPath) + ".dext");
-                if (File.Exists(dextPath))
-                    File.Delete(dextPath);
-
-                using var zipToOpen = new FileStream(dextPath, FileMode.Create);
-                using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
-                archive.CreateEntryFromFile(dllPath, Path.GetFileName(dllPath));
-                archive.CreateEntryFromFile(jsonPath, Path.GetFileName(jsonPath));
-                Logger.head($"Created dext file: {dextPath}");
             }
         });
 }

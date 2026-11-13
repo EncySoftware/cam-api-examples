@@ -41,7 +41,7 @@ Represents the main ENCY application window. Obtained from `ICamApiApplication.M
 
 | Method | Description |
 |---|---|
-| `GetVisible() → boolean` | Whether the main window is currently visible |
+| `GetVisible() → boolean` | Whether the main window is visible: `false` before it is shown, after it is closed and while the tab of this instance is in the background |
 | `GetUiInfo() → ICamApiMainFormUiInfo*` | Returns a snapshot of the current UI state (see below) |
 | `BeginFreeze(freezeType)` | Prevents user interaction. `TFreezeInterfaceType`: `afiiGeneral`, `afiiGraphicWindow`, `afiiAllowChangeSelection` |
 | `EndFreeze()` | Restores user interaction |
@@ -102,13 +102,19 @@ Register these via `ICamApiApplicationMainForm.RegisterHandler` (same pattern as
 
 | Interface | Method | Fires when |
 |---|---|---|
-| `ICamApiHandlerApplicationMainFormIsVisibleChanged` | `ApplicationMainFormIsVisibleChanged(handlerIdent, visible)` | Main window shown or hidden |
+| `ICamApiHandlerApplicationMainFormIsVisibleChanged` | `ApplicationMainFormIsVisibleChanged(handlerIdent, visible)` | Comes when `GetVisible` changes, `visible` is its new value: the main window is shown or closed, or the tab of this application instance becomes current or goes to the background |
 | `ICamApiHandlerApplicationMainFormMinimizeChanged` | `ApplicationMainFormMinimizeChanged(handlerIdent, minimized)` | Main window minimized or restored |
 | `ICamApiHandlerApplicationMainFormUiInfoChanged` | `ApplicationMainFormUiInfoChanged(handlerIdent, uiInfo)` | Any UI state change (title, modification flag, cloud state, etc.) |
 | `ICamApiHandlerApplicationMainFormSaveInCloudClicked` | `ApplicationMainFormSaveInCloudClicked(handlerIdent)` | Cloud save button clicked |
 | `ICamApiHandlerApplicationMainFormShareClicked` | `ApplicationMainFormShareClicked(handlerIdent)` | Share button clicked |
 | `ICamApiHandlerApplicationMainFormCloudChatClicked` | `ApplicationMainFormCloudChatClicked(handlerIdent)` | Cloud chat icon clicked |
 | `ICamApiHandlerApplicationMainFormReloadCloudProjectClicked` | `ApplicationMainFormReloadCloudProjectClicked(handlerIdent)` | Reload cloud project clicked |
+
+> **Tabs of the main window.** Each tab of the main window is a separate application process
+> with its own project and its own extension instances. An extension learns about tab switching
+> from `ApplicationMainFormIsVisibleChanged`. The event comes after the tab has switched.
+> [`ApplicationActiveProjectChanged`](application.md#applicationactiveprojectchanged) does not
+> come on a tab switch.
 
 ### ICamApiMainFormUiInfo — UI state snapshot
 
@@ -772,7 +778,7 @@ Provides modal dialogs and file-selection dialogs. Obtained via the `UIDialogs.C
 | Method | Returns | Description |
 |---|---|---|
 | `CreateWindow(winCaption) → ICAMAPI_UIDialogWindow*` | `ICAMAPI_UIDialogWindow*` | Creates a custom property-inspector window |
-| `CreateEmbeddedWindow(winCaption, parentWnd) → ICAMAPI_UIDialogWindow*` | `ICAMAPI_UIDialogWindow*` | Same, but the inspector is embedded as a **child** of `parentWnd` (HWND) instead of a top-level window — so the native property inspector can sit inside your own form. Fill `PropIterator` and call `Show()`; it stays embedded until released |
+| `CreateEmbeddedWindow(winCaption, parentWnd) → ICAMAPI_UIDialogWindow*` | `ICAMAPI_UIDialogWindow*` | Same, but the inspector is embedded as a **child** of `parentWnd` (HWND) instead of a top-level window — so the native property inspector can sit inside your own form. Fill `PropIterator` and call `Show()`; it stays embedded until released. Works only on the ENCY main thread — see [Embedding the inspector in your own window](#embedding-the-inspector-in-your-own-window) |
 | `MessageBox(msg, dlgType, buttons, defaultButton, title) → TUIButtonType` | `TUIButtonType` | Shows a modal message box |
 | `SelectFolderDialog(title, ref folder) → boolean` | `bool` | Opens a folder-picker dialog |
 | `SelectFileDialog(title, filter, initialFolder) → string` | `string` | Opens a single-file-picker dialog; returns empty string on cancel |
@@ -930,26 +936,61 @@ windowCom.Invoke(window =>
 });
 ```
 
-### Embedding the inspector in your own form
+### Embedding the inspector in your own window
 
-`CreateEmbeddedWindow` gives the same inspector as a child window, so you can host ENCY's
-native property editor inside your own WPF/WinForms form instead of a separate dialog:
+`CreateEmbeddedWindow` gives the same inspector as a child window, so ENCY's native property editor
+sits inside your own WPF window instead of a separate dialog. `CreateWindow` cannot do this: its
+window always has its own frame and caption.
+
+The inspector is a native ENCY window and works only on the **ENCY main thread** — the thread
+`IExtensionUtility.Run` is called on. Your WPF window cannot live there (the ENCY main thread is MTA,
+WPF needs STA), so the two sit on different threads:
+
+| What | Thread |
+|---|---|
+| WPF window, its `HwndHost` and the container HWND | the window's STA thread (`WindowHelper.ShowStaWindow`) |
+| `CreateEmbeddedWindow`, `PropIterator` / `PropIteratorGetter`, `OnClose`, `Show`, the final release | ENCY main thread |
+| `SimplePropIterator` getters / setters, `ICAMAPI_UIDialogWindowOnClose.OnClose` | ENCY main thread (called by the inspector) |
+
+What goes wrong otherwise:
+
+- **`ComWrapper.Invoke` / `InvokeAndWrap`** do not reach the main thread. Once any extension has
+  called `WindowHelper.ShowStaWindow`, they run the call on a pool thread: the inspector is created
+  there, with no message loop, and stays blank and dead. Call the interface directly on the main thread.
+- **Creating the inspector on the WPF thread** puts a VCL window on a foreign thread: it paints, but
+  editing breaks.
+- **Re-parenting the window from `CreateWindow`** into your window keeps ENCY's caption and frame.
+
+A working pattern, as in the example:
+
+1. In `Run`, create a small main-thread dispatcher — a hidden message window on the ENCY main
+   thread; actions posted to it run from the ENCY message loop.
+2. Show the WPF window with `WindowHelper.ShowStaWindow`. Its `HwndHost.BuildWindowCore` creates a
+   plain container HWND and posts the inspector creation to the main thread with that HWND as `parentWnd`.
+3. ENCY sizes the inspector to the parent only once: on every `OnWindowPositionChanged` resize the
+   inspector (the container's only child) with `SetWindowPos(..., SWP_ASYNCWINDOWPOS)`, so the WPF
+   thread never waits for a busy ENCY.
+4. Setters run on the main thread: change your data there and update WPF through `Dispatcher.BeginInvoke`.
+5. In `OnClosing`, cancel the first close, release the inspector on the main thread, then close again.
+   `OnClose` from the inspector's OK / Cancel bar closes the window through `Dispatcher.BeginInvoke`.
+
+Older ENCY builds do not commit the row being edited when OK in the inspector bar is pressed: the
+value typed without **Enter** never reaches the setter.
 
 ```csharp
+// On the ENCY main thread (posted from HwndHost.BuildWindowCore)
 using var helperCom = UIDialogs.CreateHelper();
-using var windowCom = helperCom.InvokeAndWrap(
-    helper => helper.CreateEmbeddedWindow("Parameters", myPanelHwnd));
-
-var iter = new SimplePropIterator();
-iter.AddFloatProp("feed", "Feed rate", 250.0);
-
-windowCom.Invoke(window =>
-{
-    window.PropIterator = iter.Iterator;
-    window.Show();          // embedded, non-blocking
-});
-// keep windowCom alive while the panel is on screen — releasing it destroys the child window
+#pragma warning disable CS0618 // a direct call: Invoke may move it to a pool thread
+var inspector = helperCom.Instance!.CreateEmbeddedWindow("", (long)containerHwnd);
+#pragma warning restore CS0618
+inspector.PropIteratorGetter = new PropIteratorGetter(GetProperties);
+inspector.OnClose = new CamApiInspectorWindowOnClose { OnCloseDelegate = OnInspectorButton };
+inspector.Show();
+// later, also on the ENCY main thread: Marshal.FinalReleaseComObject(inspector)
 ```
+
+> See: [`UI/ExtensionEmbeddedInspectorNet/`](../../UI/ExtensionEmbeddedInspectorNet/project/main/) —
+> `EncyMainThread.cs` (main-thread dispatcher), `InspectorHost.cs` (`HwndHost`), `StockWindow.xaml.cs`.
 
 ---
 

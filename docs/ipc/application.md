@@ -129,13 +129,36 @@ These are the IPC equivalents of the in-process application event handlers. They
 | `ICamIpcHandlerApplicationBeforeClose` | `ApplicationBeforeClose(handlerIdent, application)` | ENCY is about to close |
 | `ICamIpcHandlerApplicationAfterClose` | `ApplicationAfterClose(handlerIdent)` | ENCY has closed |
 | `ICamIpcHandlerApplicationNewProject` | `ApplicationNewProject(handlerIdent)` | A new empty project is being created |
-| `ICamIpcHandlerApplicationActiveProjectChanged` | `ApplicationActiveProjectChanged(handlerIdent, newProject)` | The active project reference changed |
+| `ICamIpcHandlerApplicationActiveProjectChanged` | `ApplicationActiveProjectChanged(handlerIdent, newProject)` | The project of this application instance is replaced: opened, created or closed — see [below](#applicationactiveprojectchanged) |
 | `ICamIpcHandlerApplicationBeforeLoadProject` | `ApplicationBeforeLoadProject(handlerIdent, project)` | A project is about to be loaded |
 | `ICamIpcHandlerApplicationAfterLoadProject` | `ApplicationAfterLoadProject(handlerIdent, project)` | A project has finished loading |
 | `ICamIpcHandlerApplicationBeforeSaveProject` | `ApplicationBeforeSaveProject(handlerIdent, project)` | The current project is about to be saved |
 | `ICamIpcHandlerApplicationAfterSaveProject` | `ApplicationAfterSaveProject(handlerIdent, project)` | Any project has been saved |
 | `ICamIpcHandlerApplicationUpdateStartProgress` | `ApplicationUpdateStartProgress(handlerIdent, caption, percent)` | Startup progress updated |
 | `ICamIpcHandlerApplicationUpdateProcessState` | `ApplicationUpdateProcessState(handlerIdent, caption, percent)` | Running process progress updated |
+
+### ApplicationActiveProjectChanged
+
+Comes when the project of this application instance changes: a project file is opened, a new
+project is created, or the application closes.
+
+- When another project is opened or created in place of an open one, the event comes twice.
+  First with `newProject` = `null`: the old project is released right after this call, so
+  release everything you hold from it here. Then with the new project.
+- When the application closes, the event comes once, with `null`.
+- With a new project, the event comes when that project is already active (`GetActiveProject`
+  returns it), but the application has not finished preparing it yet. For a project from a file,
+  `ApplicationAfterLoadProject` comes after it. The order when a project file is opened:
+  1. `ApplicationActiveProjectChanged(null)`
+  2. `ApplicationBeforeLoadProject`
+  3. `ApplicationActiveProjectChanged(project)`
+  4. `ApplicationAfterLoadProject`
+- It does not come on switching tabs of the main window: each tab has its own process and its
+  own project. Use [`ApplicationMainFormIsVisibleChanged`](ui.md#event-registration) for that.
+
+The event comes to the client's listener. The application waits for the client only if the
+handler returned a value ≥ 0 from `ICamIpcEventHandler.GetTimeOut`
+(see [connection.md](connection.md)); with a negative value it does not wait.
 
 ---
 

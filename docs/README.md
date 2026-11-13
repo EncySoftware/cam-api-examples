@@ -26,6 +26,7 @@ This documentation is written for Claude instances helping developers write plug
 ## Documentation map
 
 ### Concepts (read these first)
+- [Essentials](general/essentials.md) — the rules every extension follows, one line each, with links to the details; read before writing code
 - [Extension entry points](general/extension-entry-points.md) — all 7 plugin types, when to use each, full C# boilerplate
 - [COM lifetime management](general/com-lifetime.md) — ComWrapper, Invoke vs InvokeAndWrap, ListComWrapper, MTA, event-handler arguments, and what a forgotten `using` looks like at application shutdown
 - [Error handling](general/error-handling.md) — TResultStatus, no-exceptions rule, IExtensionLogger
@@ -45,7 +46,7 @@ This documentation is written for Claude instances helping developers write plug
 - [Feature finder](api/feature-finder.md) — automatic recognition of holes, pockets, fillets, chamfers, planes, edges
 - [Tools & machine](api/tools-machine.md) — machining tools, tool lists, machines, workpiece setup, live machine state
 - [NC & simulation](api/nc-simulation.md) — NCMaker, Simulator, CLDReceiver, ModelFormer, TechOperationSolver
-- [UI](api/ui.md) — main form, viewport, view cube, dialogs, SimplePropIterator, CamApiInspectorWindow
+- [UI](api/ui.md) — main form, viewport, view cube, dialogs, SimplePropIterator, CamApiInspectorWindow, the inspector inside your own window
 
 ### CAMIPC domain reference
 - [Connection](ipc/connection.md) — DLL loading, IIpcHelper, TExecuteContext, IAsyncResult, event listeners

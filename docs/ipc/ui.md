@@ -32,7 +32,7 @@ Handler interfaces for the main form (IPC versions mirror the in-process set):
 
 | Interface | Method | Fires when |
 |---|---|---|
-| `ICamIpcHandlerApplicationMainFormIsVisibleChanged` | `ApplicationMainFormIsVisibleChanged(handlerIdent, visible)` | Main window shown or hidden |
+| `ICamIpcHandlerApplicationMainFormIsVisibleChanged` | `ApplicationMainFormIsVisibleChanged(handlerIdent, visible)` | Comes when `GetVisible` changes, `visible` is its new value: the main window is shown or closed, or the tab of this application instance becomes current or goes to the background |
 | `ICamIpcHandlerApplicationMainFormMinimizeChanged` | `ApplicationMainFormMinimizeChanged(handlerIdent, minimized)` | Window minimized or restored |
 | `ICamIpcHandlerApplicationMainFormUiInfoChanged` | `ApplicationMainFormUiInfoChanged(handlerIdent, uiInfo)` | Any UI state change |
 | `ICamIpcHandlerApplicationMainFormSaveInCloudClicked` | `ApplicationMainFormSaveInCloudClicked(handlerIdent)` | Cloud save button clicked |
@@ -40,11 +40,17 @@ Handler interfaces for the main form (IPC versions mirror the in-process set):
 | `ICamIpcHandlerApplicationMainFormCloudChatClicked` | `ApplicationMainFormCloudChatClicked(handlerIdent)` | Cloud chat icon clicked |
 | `ICamIpcHandlerApplicationMainFormReloadCloudProjectClicked` | `ApplicationMainFormReloadCloudProjectClicked(handlerIdent)` | Reload cloud project clicked |
 
+> **Tabs of the main window.** Each tab of the main window is a separate application process
+> with its own project and its own extension instances. An extension learns about tab switching
+> from `ApplicationMainFormIsVisibleChanged`. The event comes after the tab has switched.
+> [`ApplicationActiveProjectChanged`](application.md#applicationactiveprojectchanged) does not
+> come on a tab switch.
+
 ### State methods
 
 | Method | Description |
 |---|---|
-| `GetVisible(ctx) → boolean` | Whether the main window is visible |
+| `GetVisible(ctx) → boolean` | Whether the main window is visible: `false` before it is shown, after it is closed and while the tab of this instance is in the background |
 | `GetUiInfo(ctx) → ICamIpcMainFormUiInfo*` | Current UI state snapshot |
 
 ### Project management

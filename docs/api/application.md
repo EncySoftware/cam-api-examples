@@ -156,7 +156,7 @@ Your handler class must also implement `ICamApiEventHandler` (which exposes `Get
 | `ICamApiHandlerApplicationBeforeClose` | `ApplicationBeforeClose(handlerIdent, application)` | The CAM application is about to close |
 | `ICamApiHandlerApplicationAfterClose` | `ApplicationAfterClose(handlerIdent)` | The CAM application has closed |
 | `ICamApiHandlerApplicationNewProject` | `ApplicationNewProject(handlerIdent)` | A new (empty) project is about to be created |
-| `ICamApiHandlerApplicationActiveProjectChanged` | `ApplicationActiveProjectChanged(handlerIdent, newProject)` | The active project reference has changed |
+| `ICamApiHandlerApplicationActiveProjectChanged` | `ApplicationActiveProjectChanged(handlerIdent, newProject)` | The project of this application instance is replaced: opened, created or closed — see [below](#applicationactiveprojectchanged) |
 | `ICamApiHandlerApplicationBeforeLoadProject` | `ApplicationBeforeLoadProject(handlerIdent, project)` | A project file is about to be loaded |
 | `ICamApiHandlerApplicationAfterLoadProject` | `ApplicationAfterLoadProject(handlerIdent, project)` | A project file has finished loading |
 | `ICamApiHandlerApplicationBeforeSaveProject` | `ApplicationBeforeSaveProject(handlerIdent, project)` | The current project is about to be saved |
@@ -182,6 +182,35 @@ Handlers for other objects register through the same `RegisterHandler` call:
 > `ToolpathCalculated` fires only on a real body recompute. It does **not** fire for
 > link/approach recomputes, nor when a locked operation
 > ([`ResetToolpathLocked`](project.md#icamapitechoperation)) keeps its frozen toolpath.
+
+### ApplicationActiveProjectChanged
+
+Comes when the project of this application instance changes: a project file is opened, a new
+project is created, or the application closes.
+
+- When another project is opened or created in place of an open one, the event comes twice.
+  First with `newProject` = `null`: the old project is released right after this call, so
+  release everything you hold from it here. Then with the new project.
+- When the application closes, the event comes once, with `null`.
+- With a new project, the event comes when that project is already active (`GetActiveProject`
+  returns it), but the application has not finished preparing it yet. For a project from a file,
+  `ApplicationAfterLoadProject` comes after it. The order when a project file is opened:
+  1. `ApplicationActiveProjectChanged(null)`
+  2. `ApplicationBeforeLoadProject`
+  3. `ApplicationActiveProjectChanged(project)`
+  4. `ApplicationAfterLoadProject`
+- It does not come on switching tabs of the main window: each tab has its own process and its
+  own project. Use [`ApplicationMainFormIsVisibleChanged`](ui.md#main-form-event-handlers) for that.
+
+#### Calling thread
+
+- A handler whose `ICamApiEventHandler.GetAsyncMode` returns `false` for this interface is called
+  synchronously on the thread that changes the project; when the user does it, that is the main
+  thread. The application waits for the handler.
+- If `GetAsyncMode` returns `true` (the default), the handler is called in a background task, and
+  the application does not wait for it. By the time it is called, the old project may already be
+  released, and the active project may already be a different one again. So do not rely on the
+  project object passed to such a call.
 
 ### Registration example
 

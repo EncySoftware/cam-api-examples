@@ -14,6 +14,8 @@ The inspector dialog uses `CamApiInspectorWindow` and `SimplePropIterator` from 
 
 Reference example: `UI/ExtensionUtilityDialogWindowNet/project/main/ExtensionUtilityDialogWindow.cs`
 
+The same inspector inside your own WPF window, instead of a separate dialog: [Embedding the inspector in your own window](../api/ui.md#embedding-the-inspector-in-your-own-window), example `UI/ExtensionEmbeddedInspectorNet`.
+
 ### When to Use
 
 - Collecting parameters from the user before running an operation (operation setup, export settings, etc.)

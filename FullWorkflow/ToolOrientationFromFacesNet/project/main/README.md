@@ -175,6 +175,6 @@ file can be dropped without touching the rest of the example.
 # How to build
 
 1. Compile this project with **"./commands/build.cmd"** or menu **"Terminal/Run build task"** in VSCode.
-2. Install the extension in the CAM system settings window, Extensions tab by specifying the file **bin/Debug/ToolOrientationFromFacesNet.settings.json**.
+2. Install the extension on the CAM start page: open **Extensions**, switch to **Manage** at the top, click **Install from file** on the right and select the file **bin/Debug/ToolOrientationFromFacesNet.settings.json**.
 3. Restart ENCY.
-4. In the utilities menu, select the "**Workflow: set tool orientation of operations from face normals**" item. The whole workflow runs and reports the result.
+4. In the utilities list (the **Utilities** button on the top panel or **Ctrl+Shift+E**), select the "**Workflow: set tool orientation of operations from face normals**" item. The whole workflow runs and reports the result.

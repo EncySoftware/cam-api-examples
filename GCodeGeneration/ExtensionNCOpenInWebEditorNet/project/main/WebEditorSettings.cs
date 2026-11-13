@@ -6,7 +6,7 @@ namespace ExtensionNCOpenInWebEditorNet;
 public static class WebEditorSettings
 {
     /// <summary>
-    /// Page opened in the default browser
+    /// Editor page. The program is added to it after <c>#</c>
     /// </summary>
     public const string Url = "https://cnc-technik.de/kuka/";
 
@@ -16,12 +16,22 @@ public static class WebEditorSettings
     public const string Caption = "Open in CNC-Technik KUKA editor";
 
     /// <summary>
-    /// Extension of the main program file, picked first when the postprocessor writes several files
+    /// Link parameter of the main program file, picked first when the postprocessor writes several files
     /// </summary>
-    public const string MainFileExtension = ".src";
+    public const string MainFileKey = "src";
 
     /// <summary>
-    /// What the user does in the editor to load the program
+    /// File extensions the editor accepts. Each one is also the name of the link parameter that carries the file
     /// </summary>
-    public const string PasteHint = "Press \"Read from clipboard\" in the editor.";
+    public static readonly IReadOnlyList<string> FileKeys = ["src", "dat", "sub", "mod", "prg", "sys"];
+
+    /// <summary>
+    /// Longest link passed to the browser directly. A longer link goes through a local redirect page
+    /// </summary>
+    public const int MaxDirectLinkLength = 32000;
+
+    /// <summary>
+    /// Folder in the temp folder for the redirect pages
+    /// </summary>
+    public const string RedirectFolder = "ExtensionNCOpenInWebEditorNet";
 }
