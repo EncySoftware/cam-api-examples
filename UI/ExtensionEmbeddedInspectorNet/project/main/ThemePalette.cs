@@ -8,7 +8,7 @@ namespace ExtensionEmbeddedInspectorNet;
 /// <summary>
 /// ENCY colours for the window around the inspector
 /// </summary>
-public readonly record struct ThemePalette(bool Ok, Color Background, Color Text)
+public readonly record struct ThemePalette(bool Ok, Color Background, Color Text, Color Button, Color ButtonHover)
 {
     /// <summary>
     /// Reads the palette of the current ENCY theme. Returns a palette with Ok = false when ENCY has no theme
@@ -22,7 +22,9 @@ public readonly record struct ThemePalette(bool Ok, Color Background, Color Text
                 return default;
             return new ThemePalette(true,
                 FromTColor(themeCom.GetColor(TCamApiColorKind.ckColorWindowBackground)),
-                FromTColor(themeCom.GetColor(TCamApiColorKind.ckColorText)));
+                FromTColor(themeCom.GetColor(TCamApiColorKind.ckColorText)),
+                FromTColor(themeCom.GetColor(TCamApiColorKind.ckColorFieldBackground)),
+                FromTColor(themeCom.GetColor(TCamApiColorKind.ckColorFieldHoverBackground)));
         }
         catch
         {
@@ -39,6 +41,8 @@ public readonly record struct ThemePalette(bool Ok, Color Background, Color Text
             return;
         resources["WindowBackgroundBrush"] = new SolidColorBrush(Background);
         resources["TextBrush"] = new SolidColorBrush(Text);
+        resources["ButtonBrush"] = new SolidColorBrush(Button);
+        resources["ButtonHoverBrush"] = new SolidColorBrush(ButtonHover);
     }
 
     private static Color FromTColor(int tcolor)

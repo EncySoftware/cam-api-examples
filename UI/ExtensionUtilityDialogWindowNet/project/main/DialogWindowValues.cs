@@ -24,4 +24,9 @@ public class DialogWindowValues
     /// Some sub string value
     /// </summary>
     public string SubStringValue { get; set; } = "";
+
+    /// <summary>
+    /// Depth of the pocket, mm
+    /// </summary>
+    public double Depth { get; set; } = 5;
 }

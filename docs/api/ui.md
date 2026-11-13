@@ -778,7 +778,7 @@ Provides modal dialogs and file-selection dialogs. Obtained via the `UIDialogs.C
 | Method | Returns | Description |
 |---|---|---|
 | `CreateWindow(winCaption) → ICAMAPI_UIDialogWindow*` | `ICAMAPI_UIDialogWindow*` | Creates a custom property-inspector window |
-| `CreateEmbeddedWindow(winCaption, parentWnd) → ICAMAPI_UIDialogWindow*` | `ICAMAPI_UIDialogWindow*` | Same, but the inspector is embedded as a **child** of `parentWnd` (HWND) instead of a top-level window — so the native property inspector can sit inside your own form. Fill `PropIterator` and call `Show()`; it stays embedded until released. Works only on the ENCY main thread — see [Embedding the inspector in your own window](#embedding-the-inspector-in-your-own-window) |
+| `CreateEmbeddedWindow(winCaption, parentWnd) → ICAMAPI_UIDialogWindow*` | `ICAMAPI_UIDialogWindow*` | Same, but the inspector is embedded as a **child** of `parentWnd` (HWND) instead of a top-level window — so the native property inspector can sit inside your own form. Fill `PropIterator` and call `Show()`; it stays embedded until released; `Refresh()` shows the values the extension changed itself. Works only on the ENCY main thread — see [Embedding the inspector in your own window](#embedding-the-inspector-in-your-own-window) |
 | `MessageBox(msg, dlgType, buttons, defaultButton, title) → TUIButtonType` | `TUIButtonType` | Shows a modal message box |
 | `SelectFolderDialog(title, ref folder) → boolean` | `bool` | Opens a folder-picker dialog |
 | `SelectFileDialog(title, filter, initialFolder) → string` | `string` | Opens a single-file-picker dialog; returns empty string on cancel |
@@ -854,23 +854,48 @@ if (!string.IsNullOrEmpty(file))
 
 ## SimplePropIterator
 
-`SimplePropIterator` is a helper class from `CAMAPI.UIDialogs.DotnetHelper` that builds an `IST_CustomPropIterator` — the property bag used by `ICAMAPI_UIDialogWindow`. It lets you define a form by adding typed properties one by one.
+`SimplePropIterator` is a helper class from `CAMAPI.UIDialogs.DotnetHelper` that builds an `IST_CustomPropIterator` — the property bag used by `ICAMAPI_UIDialogWindow`. It lets you define a form by adding typed properties one by one. The inspector reads and writes the values through the getter and setter you pass, while the user edits them.
 
-### AddXxxProp methods
+### Add methods
+
+Each `Add` method returns a `SimplePropIterator` for the added property: properties added through it become its children, and its `With` methods set the property up.
 
 | Method | Description |
 |---|---|
-| `AddStringProp(name, caption, value)` | Adds a text-input property |
-| `AddIntProp(name, caption, value)` | Adds an integer-input property |
-| `AddFloatProp(name, caption, value)` | Adds a floating-point-input property |
-| `AddBoolProp(name, caption, value)` | Adds a checkbox property |
-| `AddEnumProp(name, caption, value, items)` | Adds a dropdown property; `items` is a `|`-delimited string |
-| `AddFileProp(name, caption, value, filter)` | Adds a file-picker property |
-| `AddFolderProp(name, caption, value)` | Adds a folder-picker property |
-| `AddColorProp(name, caption, value)` | Adds a colour-picker property |
-| `AddSeparator(caption)` | Adds a visual section separator |
+| `AddComplexProp(caption)` | A section: its children are shown under it, the section folds |
+| `AddStringProp(caption, getter, setter)` | Text field |
+| `AddIntegerProp(caption, getter, setter)` | Integer field |
+| `AddDoubleProp(caption, getter, setter)` | Number field |
+| `AddBooleanProp(caption, getter, setter)` | Switch |
+| `AddEnumIndexedProp(caption, getter, setter, values)` | Drop-down; the value is the 0-based index of the item |
+| `AddEnumIdProp(caption, getter, setter, values)` | Drop-down; the value is the string id of the item |
 
-After building the iterator, assign it to `ICAMAPI_UIDialogWindow.PropIterator` and call `ShowModal`.
+### Setting a property up
+
+Call these on the object an `Add` method returned. They return the same object, so calls chain.
+
+| Method | Description |
+|---|---|
+| `WithHint(hint)` | Hint shown when the mouse rests on the row |
+| `WithUnits(units)` | Units after the value, e.g. `"mm"` |
+| `WithIcon(iconFile)` | Icon of the row, a PNG file |
+| `WithReadOnly(isReadOnly)` | The value is shown but cannot be edited while `isReadOnly()` returns `true` |
+| `AddButton(caption, iconFile, hint, onClick, state)` | Action button in the row; returns its index. `onClick` runs on the ENCY main thread, and the inspector reads the properties again after it |
+| `SetButtonState(index, state)` | `cpbsClickable`, `cpbsDisabled`, or a toggle: `cpbsToggleIsOff` / `cpbsToggleIsOn` |
+| `Prop` | The underlying `IST_AbstractPropHelper`, for the rest of its settings |
+
+```csharp
+using var props = new SimplePropIterator();
+var stock = props.AddComplexProp("Stock");
+stock.AddDoubleProp("Depth", () => values.Depth, v => values.Depth = v)
+    .WithUnits("mm")
+    .WithHint("Depth of the pocket from the top of the stock")
+    .AddButton("Measure", measureIconPng, "Measure the depth on the drawing", MeasureDepth);
+```
+
+> See: [`UI/ExtensionUtilityDialogWindowNet/project/main/ExtensionUtilityDialogWindow.cs`](../../UI/ExtensionUtilityDialogWindowNet/project/main/ExtensionUtilityDialogWindow.cs) — hints, a number in mm, a read-only row and a row button.
+
+Dispose the root `SimplePropIterator` after the window that shows it is released: it releases the properties it created.
 
 ---
 
@@ -878,37 +903,28 @@ After building the iterator, assign it to `ICAMAPI_UIDialogWindow.PropIterator` 
 
 `CamApiInspectorWindow` is a high-level pattern that combines `ICAMAPI_UIDialogsHelper.CreateWindow` with `SimplePropIterator` into a single class. It wraps the modal dialog lifecycle:
 
-1. Build the property iterator with `AddXxxProp` calls.
-2. Call `ShowModal()` — the ENCY inspector window appears.
-3. Read back the values after the user presses OK.
+1. Build the property iterator with `Add` calls.
+2. Call `Show()` — the ENCY inspector window appears and blocks until the user closes it.
+3. Use the values the setters received after the user presses OK.
 
 ### Typical pattern
 
 ```csharp
-using var helperCom = UIDialogs.CreateHelper();
+var outputPath = @"C:\output";
+var count = 1;
+var overwrite = false;
 
-// Create the window (wrapped)
-using var windowCom = helperCom.InvokeAndWrap(helper => helper.CreateWindow("My Settings"));
+using var window = new CamApiInspectorWindow { Caption = "My Settings" };
+using var props = new SimplePropIterator();
+props.AddStringProp("Output folder", () => outputPath, v => outputPath = v);
+props.AddIntegerProp("Number of copies", () => count, v => count = v);
+props.AddBooleanProp("Overwrite existing files", () => overwrite, v => overwrite = v);
 
-// Build a property iterator
-var iter = new SimplePropIterator();
-iter.AddStringProp("outputPath", "Output folder", @"C:\output");
-iter.AddIntProp("count", "Number of copies", 1);
-iter.AddBoolProp("overwrite", "Overwrite existing files", false);
-
-// Assign and show
-TUIButtonType result = windowCom.Invoke(window =>
+window.SetPropIterator(props);
+window.SetButtons(MessageBoxHelper.BuildButtons(TUIButtonType.btOk, TUIButtonType.btCancel));
+if (window.Show() == TUIButtonType.btOk)
 {
-    window.PropIterator = iter.Iterator;
-    return window.ShowModal();
-});
-
-if (result == TUIButtonType.btOk)
-{
-    string path   = iter.GetStringProp("outputPath");
-    int    count  = iter.GetIntProp("count");
-    bool   overwr = iter.GetBoolProp("overwrite");
-    // use values ...
+    // use outputPath, count, overwrite
 }
 ```
 
@@ -942,6 +958,11 @@ windowCom.Invoke(window =>
 sits inside your own WPF window instead of a separate dialog. `CreateWindow` cannot do this: its
 window always has its own frame and caption.
 
+It looks like the other inspectors of ENCY: sections that fold, icons, units, hints on the rows,
+switches, drop-downs and action buttons in the rows, in the theme and scale of ENCY. OK and Cancel
+under the rows come to `OnClose`; set `Buttons` before `Show` to change them. A value the user types
+reaches your setter at once, not on OK.
+
 The inspector is a native ENCY window and works only on the **ENCY main thread** — the thread
 `IExtensionUtility.Run` is called on. Your WPF window cannot live there (the ENCY main thread is MTA,
 WPF needs STA), so the two sit on different threads:
@@ -949,14 +970,15 @@ WPF needs STA), so the two sit on different threads:
 | What | Thread |
 |---|---|
 | WPF window, its `HwndHost` and the container HWND | the window's STA thread (`WindowHelper.ShowStaWindow`) |
-| `CreateEmbeddedWindow`, `PropIterator` / `PropIteratorGetter`, `OnClose`, `Show`, the final release | ENCY main thread |
-| `SimplePropIterator` getters / setters, `ICAMAPI_UIDialogWindowOnClose.OnClose` | ENCY main thread (called by the inspector) |
+| `CreateEmbeddedWindow`, `PropIterator` / `PropIteratorGetter`, `OnClose`, `Show`, `Refresh`, the final release | ENCY main thread |
+| `SimplePropIterator` getters / setters, row button actions, `ICAMAPI_UIDialogWindowOnClose.OnClose` | ENCY main thread (called by the inspector) |
 
 What goes wrong otherwise:
 
-- **`ComWrapper.Invoke` / `InvokeAndWrap`** do not reach the main thread. Once any extension has
-  called `WindowHelper.ShowStaWindow`, they run the call on a pool thread: the inspector is created
-  there, with no message loop, and stays blank and dead. Call the interface directly on the main thread.
+- **`ComWrapper.Invoke` / `InvokeAndWrap` from the WPF thread** do not reach the main thread: on an STA
+  thread they run the call on a pool thread, where the inspector is created with no message loop and
+  stays blank and dead. Post every call to the main thread instead. On the ENCY main thread, which is
+  MTA, they run the call right on it, starting with SDK 3.0.21.
 - **Creating the inspector on the WPF thread** puts a VCL window on a foreign thread: it paints, but
   editing breaks.
 - **Re-parenting the window from `CreateWindow`** into your window keeps ENCY's caption and frame.
@@ -974,23 +996,37 @@ A working pattern, as in the example:
 5. In `OnClosing`, cancel the first close, release the inspector on the main thread, then close again.
    `OnClose` from the inspector's OK / Cancel bar closes the window through `Dispatcher.BeginInvoke`.
 
+**Refresh.** When the extension changes a value itself — say, a "Measure" button measured the depth on the
+drawing — call `Refresh()` on the ENCY main thread: the inspector reads the properties again and keeps its scroll
+position. A row button does not need it: the inspector reads the properties again after the button action.
+A value typed into a row does not update the other rows: when one of them is computed from it, post `Refresh()`
+to the main thread from the setter. Do not call it inside the setter — the inspector is still handling that row.
+
 Older ENCY builds do not commit the row being edited when OK in the inspector bar is pressed: the
 value typed without **Enter** never reaches the setter.
 
 ```csharp
 // On the ENCY main thread (posted from HwndHost.BuildWindowCore)
-using var helperCom = UIDialogs.CreateHelper();
-#pragma warning disable CS0618 // a direct call: Invoke may move it to a pool thread
-var inspector = helperCom.Instance!.CreateEmbeddedWindow("", (long)containerHwnd);
-#pragma warning restore CS0618
-inspector.PropIteratorGetter = new PropIteratorGetter(GetProperties);
-inspector.OnClose = new CamApiInspectorWindowOnClose { OnCloseDelegate = OnInspectorButton };
-inspector.Show();
-// later, also on the ENCY main thread: Marshal.FinalReleaseComObject(inspector)
+var properties = BuildProperties();
+var inspectorCom = UIDialogs.CreateEmbeddedWindow((long)containerHwnd);
+properties.MoveToRoot();
+using (var iteratorCom = properties.Iterator.InvokeAndWrap(it => it as IST_CustomPropIterator))
+    inspectorCom.SetPropIterator(iteratorCom);
+inspectorCom.Invoke(inspector =>
+    inspector.OnClose = new CamApiInspectorWindowOnClose { OnCloseDelegate = OnInspectorButton });
+inspectorCom.Show();
+
+// later, on the ENCY main thread, after the extension changed a value itself
+inspectorCom.Refresh();
+
+// when the window closes, also on the ENCY main thread: the inspector first, then the properties
+inspectorCom.Dispose();
+properties.Dispose();
 ```
 
 > See: [`UI/ExtensionEmbeddedInspectorNet/`](../../UI/ExtensionEmbeddedInspectorNet/project/main/) —
-> `EncyMainThread.cs` (main-thread dispatcher), `InspectorHost.cs` (`HwndHost`), `StockWindow.xaml.cs`.
+> `EncyMainThread.cs` (main-thread dispatcher), `InspectorHost.cs` (`HwndHost`), `StockWindow.xaml.cs`
+> (**Reset** that calls `Refresh`).
 
 ---
 

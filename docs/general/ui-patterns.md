@@ -117,9 +117,14 @@ private class MyDialogValues
 | Method | Purpose |
 |---|---|
 | `AddStringProp(label, getter, setter)` | Text input field |
+| `AddIntegerProp(label, getter, setter)` | Integer field |
+| `AddDoubleProp(label, getter, setter)` | Number field |
+| `AddBooleanProp(label, getter, setter)` | Switch |
 | `AddEnumIndexedProp(label, getter, setter, fillList)` | Drop-down by integer index (0-based) |
 | `AddEnumIdProp(label, getter, setter, fillList)` | Drop-down by string ID |
 | `AddComplexProp(label)` | Returns a sub-iterator for grouped/nested properties |
+| `WithHint(hint)`, `WithUnits(units)`, `WithIcon(pngFile)`, `WithReadOnly(isReadOnly)` | Set up the property the `Add` call returned; they chain |
+| `AddButton(caption, pngFile, hint, onClick, state)` | Action button in the row of that property; `SetButtonState` switches it later |
 
 For `AddEnumIndexedProp`, `fillList` receives a list object and you call `list.Add(displayName, hint)`.
 For `AddEnumIdProp`, `fillList` receives `list.Add(id, displayName, hint)`.

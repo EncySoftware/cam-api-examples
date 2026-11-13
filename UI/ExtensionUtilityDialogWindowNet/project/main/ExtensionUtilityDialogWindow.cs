@@ -38,34 +38,52 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
             using var propIterator = new SimplePropIterator();
           
             propIterator.AddStringProp("String value",
-                () => currentValues.StringValue,
-                value => currentValues.StringValue = value);
-            
+                    () => currentValues.StringValue,
+                    value => currentValues.StringValue = value)
+                .WithHint("Any text, written to the file as is");
+
             propIterator.AddEnumIndexedProp("Enum indexed value",
-                () => currentValues.EnumIndexedValue,
-                value => currentValues.EnumIndexedValue = value,
-                list =>
-                {
-                    list.Add("Value 1", "");
-                    list.Add("Value 2", "");
-                    list.Add("Value 3", "");
-                });
-            
+                    () => currentValues.EnumIndexedValue,
+                    value => currentValues.EnumIndexedValue = value,
+                    list =>
+                    {
+                        list.Add("Value 1", "");
+                        list.Add("Value 2", "");
+                        list.Add("Value 3", "");
+                    })
+                .WithHint("The value is the index of the item, from 0");
+
             propIterator.AddEnumIdProp("Enum value",
-                () => currentValues.EnumIdValue,
-                value => currentValues.EnumIdValue = value,
-                list =>
-                {
-                    list.Add("A", "Value 1", "");
-                    list.Add("B", "Value 2", "");
-                    list.Add("C", "Value 3", "");
-                });
-            
+                    () => currentValues.EnumIdValue,
+                    value => currentValues.EnumIdValue = value,
+                    list =>
+                    {
+                        list.Add("A", "Value 1", "");
+                        list.Add("B", "Value 2", "");
+                        list.Add("C", "Value 3", "");
+                    })
+                .WithHint("The value is the id of the item: A, B or C");
+
             var group = propIterator.AddComplexProp("Group");
             group.AddStringProp("Sub string value",
                 () => currentValues.SubStringValue,
                 value => currentValues.SubStringValue = value);
-            
+
+            // number with units and a button in its row
+            var depth = propIterator.AddDoubleProp("Depth",
+                    () => currentValues.Depth,
+                    value => currentValues.Depth = value)
+                .WithUnits("mm")
+                .WithHint("Depth of the pocket from the top of the stock");
+            depth.AddButton("Round", "", "Round the depth to whole millimetres",
+                () => currentValues.Depth = Math.Round(currentValues.Depth));
+
+            propIterator.AddStringProp("Output folder",
+                    () => Path.GetTempPath(),
+                    _ => { })
+                .WithReadOnly(() => true)
+                .WithHint("Folder of the text file the values are written to on OK");
+
             window.SetPropIterator(propIterator);
             
             // show
@@ -78,7 +96,8 @@ public class ExtensionUtilityDialogWindow: IExtension, IExtensionUtility
                         $"Enum indexed value: {currentValues.EnumIndexedValue}{Environment.NewLine}" +
                         $"Enum id value: {currentValues.EnumIdValue}{Environment.NewLine}" +
                         $"String value: {currentValues.StringValue}{Environment.NewLine}" + 
-                        $"Sub string value: {currentValues.SubStringValue}");
+                        $"Sub string value: {currentValues.SubStringValue}{Environment.NewLine}" +
+                        $"Depth: {currentValues.Depth} mm");
                     Process.Start("notepad.exe", tmpFileName);
                     break;
                 case TUIButtonType.btCancel:

@@ -11,8 +11,9 @@ namespace ExtensionEmbeddedInspectorNet;
 public partial class StockWindow : Window, IDisposable
 {
     // Used only on the ENCY main thread, where the inspector reads and writes it
-    private readonly StockValues _draft;
+    private StockValues _draft;
 
+    private readonly EncyMainThread _mainThread;
     private readonly InspectorHost _inspector;
     private bool _releasing;
     private bool _released;
@@ -30,6 +31,7 @@ public partial class StockWindow : Window, IDisposable
         InitializeComponent();
         palette.ApplyTo(Resources);
 
+        _mainThread = mainThread;
         _draft = values.Copy();
         SummaryText.Text = _draft.ToString();
         _inspector = new InspectorHost(mainThread, BuildProperties, OnInspectorButton);
@@ -75,6 +77,18 @@ public partial class StockWindow : Window, IDisposable
         change();
         var summary = _draft.ToString();
         Dispatcher.BeginInvoke(() => SummaryText.Text = summary);
+    }
+
+    /// <summary>
+    /// Restores the default values on the ENCY main thread and shows them in the inspector
+    /// </summary>
+    private void OnResetClick(object sender, RoutedEventArgs e)
+    {
+        _mainThread.Post(() =>
+        {
+            Edit(() => _draft = new StockValues());
+            _inspector.Refresh();
+        });
     }
 
     /// <summary>

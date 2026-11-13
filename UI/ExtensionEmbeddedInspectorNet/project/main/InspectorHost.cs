@@ -30,7 +30,7 @@ public sealed class InspectorHost : HwndHost
 
     // Used only on the ENCY main thread
     private SimplePropIterator? _properties;
-    private ICAMAPI_UIDialogWindow? _inspector;
+    private ComWrapper<ICAMAPI_UIDialogWindow>? _inspectorCom;
 
     /// <summary>
     /// Inspector with the OK / Cancel bar
@@ -47,6 +47,16 @@ public sealed class InspectorHost : HwndHost
     }
 
     /// <summary>
+    /// Reads the properties again and shows their current values, keeping the scroll position. Call it on
+    /// the ENCY main thread after the extension changed a value itself, but not from a property setter or
+    /// a row button: the inspector is still handling that row then
+    /// </summary>
+    public void Refresh()
+    {
+        _inspectorCom?.Refresh();
+    }
+
+    /// <summary>
     /// Releases the inspector on the ENCY main thread, then calls <paramref name="onReleased"/>
     /// on the thread of this element. The window must not close before that
     /// </summary>
@@ -56,9 +66,8 @@ public sealed class InspectorHost : HwndHost
         {
             try
             {
-                if (_inspector != null)
-                    Marshal.FinalReleaseComObject(_inspector);
-                _inspector = null;
+                _inspectorCom?.Dispose();
+                _inspectorCom = null;
                 _properties?.Dispose();
                 _properties = null;
             }
@@ -108,22 +117,14 @@ public sealed class InspectorHost : HwndHost
             return;
 
         _properties = _buildProperties();
-        using var helperCom = UIDialogs.CreateHelper();
-        _inspector = DirectCall(helperCom).CreateEmbeddedWindow("", (long)container);
-        _inspector.PropIteratorGetter = new PropIteratorGetter(GetProperties);
-        _inspector.OnClose = new CamApiInspectorWindowOnClose { OnCloseDelegate = _onClose };
-        _inspector.Show();
+        _inspectorCom = UIDialogs.CreateEmbeddedWindow((long)container);
+        _properties.MoveToRoot();
+        using (var iteratorCom = _properties.Iterator.InvokeAndWrap(it => it as IST_CustomPropIterator))
+            _inspectorCom.SetPropIterator(iteratorCom);
+        _inspectorCom.Invoke(inspector =>
+            inspector.OnClose = new CamApiInspectorWindowOnClose { OnCloseDelegate = _onClose });
+        _inspectorCom.Show();
         FitInspector(container, 0);
-    }
-
-    /// <summary>
-    /// Properties from the root, each time the inspector rebuilds its rows. Runs on the ENCY main thread
-    /// </summary>
-    private IST_CustomPropIterator GetProperties()
-    {
-        var properties = _properties ?? throw new InvalidOperationException("The inspector is released");
-        properties.MoveToRoot();
-        return (IST_CustomPropIterator)DirectCall(properties.Iterator);
     }
 
     /// <summary>
@@ -135,17 +136,6 @@ public sealed class InspectorHost : HwndHost
         if (inspectorWindow != IntPtr.Zero && GetClientRect(container, out var rect))
             SetWindowPos(inspectorWindow, IntPtr.Zero, 0, 0, rect.Right, rect.Bottom,
                 SWP_NOZORDER | SWP_NOACTIVATE | flags);
-    }
-
-    /// <summary>
-    /// COM object to call on the current thread. Invoke is not used: after WindowHelper.ShowStaWindow
-    /// it runs calls on a pool thread, and the inspector works only on the ENCY main thread
-    /// </summary>
-    private static T DirectCall<T>(ComWrapper<T> wrapper)
-    {
-#pragma warning disable CS0618
-        return wrapper.Instance ?? throw new InvalidOperationException($"{typeof(T).Name} is not available");
-#pragma warning restore CS0618
     }
 
     [StructLayout(LayoutKind.Sequential)]
