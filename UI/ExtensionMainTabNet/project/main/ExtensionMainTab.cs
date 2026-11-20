@@ -17,9 +17,11 @@ public class ExtensionMainTab : IExtension, IExtensionMainTab
     /// </summary>
     public const string TabId = "Extension.MainTab.Net";
 
-    private ComWrapper<ICamApiApplication>? _applicationCom;
+    private const string ThemeHandlerIdent = TabId + ".ThemeChanged";
+
     private MainTabPageHost? _host;
     private MainTabPage? _page;
+    private object? _themeHandler;
 
     /// <inheritdoc />
     public IExtensionInfo? Info { get; set; }
@@ -30,19 +32,21 @@ public class ExtensionMainTab : IExtension, IExtensionMainTab
         resultStatus = default;
         try
         {
-            var applicationCom = _applicationCom = ComWrapper.Create(context.CamApplication);
+            // The content factory does not call ENCY: the palette and the project name come in OnShow
+            MainTabPage? createdPage = null;
+            var host = _host = MainTabPageHost.Create(context, app => createdPage = new MainTabPage(app));
+            var page = _page = createdPage!;
 
-            // The content factory gets the ENCY values read here and does not call ENCY itself
-            var palette = ThemePalette.Read(applicationCom);
-            MainTabPage? page = null;
-            _host = MainTabPageHost.Create(context.HostWindowHandle,
-                () => page = new MainTabPage(applicationCom, palette));
-            _page = page;
+            // The handler runs on the ENCY main thread: reads the new palette there and posts it to the page
+            _themeHandler = host.CamApplication.RegisterThemeChangedHandler(ThemeHandlerIdent, _ =>
+            {
+                var newPalette = ThemePalette.Read(host.CamApplication);
+                host.Dispatcher.BeginInvoke(() => page.ApplyPalette(newPalette));
+            });
         }
         catch (Exception e)
         {
-            _applicationCom?.Dispose();
-            _applicationCom = null;
+            Release();
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
         }
@@ -54,14 +58,15 @@ public class ExtensionMainTab : IExtension, IExtensionMainTab
         resultStatus = default;
         try
         {
+            var host = _host;
             var page = _page;
-            if (_host == null || page == null || _applicationCom == null)
+            if (host == null || page == null)
                 return;
-            var projectName = ActiveProjectName(_applicationCom);
-            var palette = ThemePalette.Read(_applicationCom);
+            var projectName = ActiveProjectName(host.CamApplication);
+            var palette = ThemePalette.Read(host.CamApplication);
 
             // Posts to the page thread without waiting for it
-            _host.Dispatcher.BeginInvoke(() => page.Show(projectName, palette));
+            host.Dispatcher.BeginInvoke(() => page.Show(projectName, palette));
         }
         catch (Exception e)
         {
@@ -82,29 +87,42 @@ public class ExtensionMainTab : IExtension, IExtensionMainTab
         resultStatus = default;
         try
         {
-            var host = _host;
-            var applicationCom = _applicationCom;
-            _host = null;
-            _page = null;
-            _applicationCom = null;
-            if (host == null)
-            {
-                applicationCom?.Dispose();
-                return;
-            }
-
-            // Releases the wrapper on the page thread, after the last call of the page to ENCY
-            if (applicationCom != null)
-                host.Dispatcher.InvokeAsync(applicationCom.Dispose);
-
-            // Destroys the page window on its thread without waiting; ENCY waits for the window itself
-            host.Dispose();
+            Release();
         }
         catch (Exception e)
         {
             resultStatus.Code = TResultStatusCode.rsError;
             resultStatus.Description = e.Message;
         }
+    }
+
+    /// <summary>
+    /// Unsubscribes from the theme change and destroys the page
+    /// </summary>
+    private void Release()
+    {
+        var host = _host;
+        var themeHandler = _themeHandler;
+        _host = null;
+        _page = null;
+        _themeHandler = null;
+        if (host == null)
+            return;
+
+        if (themeHandler != null)
+        {
+            try
+            {
+                host.CamApplication.UnregisterHandler(ThemeHandlerIdent);
+            }
+            catch
+            {
+                // The page is destroyed even when unsubscribing fails
+            }
+        }
+
+        // Releases CamApplication and destroys the page window on the page thread without waiting; ENCY waits for the window
+        host.Dispose();
     }
 
     /// <summary>

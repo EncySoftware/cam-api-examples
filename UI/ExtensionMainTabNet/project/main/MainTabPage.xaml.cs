@@ -14,12 +14,12 @@ public partial class MainTabPage : UserControl
     private readonly ComWrapper<ICamApiApplication> _applicationCom;
 
     /// <summary>
-    /// Page calling ENCY through the wrapper; the wrapper is released by <see cref="ExtensionMainTab"/>
+    /// Page calling ENCY through <see cref="MainTabPageHost.CamApplication"/>, which belongs to the host. The colours
+    /// of the XAML stay until the first <see cref="Show"/>
     /// </summary>
-    public MainTabPage(ComWrapper<ICamApiApplication> applicationCom, ThemePalette palette)
+    public MainTabPage(ComWrapper<ICamApiApplication> applicationCom)
     {
         InitializeComponent();
-        palette.ApplyTo(Resources);
         _applicationCom = applicationCom;
     }
 
@@ -28,8 +28,16 @@ public partial class MainTabPage : UserControl
     /// </summary>
     public void Show(string projectName, ThemePalette palette)
     {
-        palette.ApplyTo(Resources);
+        ApplyPalette(palette);
         ProjectText.Text = projectName;
+    }
+
+    /// <summary>
+    /// Repaints the page in the colours of the palette
+    /// </summary>
+    public void ApplyPalette(ThemePalette palette)
+    {
+        palette.ApplyTo(Resources);
     }
 
     private void OnModelClick(object sender, RoutedEventArgs e)

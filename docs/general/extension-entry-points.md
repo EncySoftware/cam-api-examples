@@ -462,7 +462,7 @@ public class MyCLDataConverter : IExtension, IExtensionGeomCLDataConverter
 
 **Context received:** `IExtensionMainTabContext` — `CamApplication` and `HostWindowHandle` (the window the extension creates one child window in; ENCY keeps its size). The context lives only during the call.
 
-**Implementation:** the page lives on an STA thread of its own — `MainTabPageHost` from `CAMAPI.DotnetHelper` does it:
+**Implementation:** the page lives on an STA thread of its own — `MainTabPageHost` from `CAMAPI.DotnetHelper` does it. The host wraps `context.CamApplication` into `ComWrapper`, gives it to the content factory and keeps it as `host.CamApplication`; the extension calls ENCY through it and neither creates nor releases the wrapper:
 
 ```csharp
 public void CreatePage(IExtensionMainTabContext context, out TResultStatus resultStatus)
@@ -470,14 +470,11 @@ public void CreatePage(IExtensionMainTabContext context, out TResultStatus resul
     resultStatus = default;
     try
     {
-        var applicationCom = _applicationCom = ComWrapper.Create(context.CamApplication);
-        // ENCY waits while the content is created: the factory must not call ENCY
-        _host = MainTabPageHost.Create(context.HostWindowHandle, () => new MyPage(applicationCom));
+        // ENCY waits while the content is created: the factory must not call ENCY, even through the wrapper
+        _host = MainTabPageHost.Create(context, app => new MyPage(app));
     }
     catch (Exception e)
     {
-        _applicationCom?.Dispose();
-        _applicationCom = null;
         resultStatus.Code = TResultStatusCode.rsError;
         resultStatus.Description = e.Message;
     }
@@ -487,13 +484,10 @@ public void DestroyPage(IExtensionMainTabContext context, out TResultStatus resu
 {
     resultStatus = default;
     var host = _host;
-    var applicationCom = _applicationCom;
     _host = null;
-    _applicationCom = null;
-    // the page calls ENCY through the wrapper: release it on the page thread, after its last call
-    if (host != null && applicationCom != null)
-        host.Dispatcher.InvokeAsync(applicationCom.Dispose);
-    host?.Dispose();   // does not wait: ENCY waits for the page window itself
+    // unsubscribe from ENCY events through host.CamApplication here, before Dispose releases it
+    // releases CamApplication on the page thread after the current call of the page; does not wait: ENCY waits for the page window itself
+    host?.Dispose();
 }
 ```
 
