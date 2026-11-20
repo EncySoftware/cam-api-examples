@@ -52,6 +52,7 @@
 		"../ProjectToolsList/ExtensionToolsListPopupNet/project/main/.stbuild/ExtensionToolsListPopupProject.json",
 		"../Technologist/Operation/AlignToolToFaceNet/project/main/.stbuild/AlignToolToFaceNetProject.json",
 		"../Technologist/SetFeedZone/project/main/.stbuild/SetFeedZoneProject.json",
+		"../UI/ExtensionMainTabNet/project/main/.stbuild/ExtensionMainTabNetProject.json",
 		"../UI/ExtensionManageViewNet/project/main/.stbuild/ExtensionManageViewNetProject.json",
 		"../UI/ExtensionUtilityDialogWindowNet/project/main/.stbuild/ExtensionUtilityDialogWindowNetProject.json",
 		"../UI/ExtensionUtilityMessageBoxNet/project/main/.stbuild/ExtensionUtilityMessageBoxNetProject.json",

@@ -1,0 +1,17 @@
+{
+    "name": "Main tab by C#",
+    "description": "Tab of its own in the ENCY main window, next to Model, Machining and Simulation, by C#",
+    "module_path": "${extensionJsonFolder}\\ExtensionMainTabNet.dll",
+    "extensions": [
+        {
+            "main_tab": {
+                "id": "Extension.MainTab.Net",
+                "name": "Main tab by C#",
+                "caption": "Example",
+                "hint_text": "Tab of the C# main tab example",
+                "icon_path": "",
+                "order": 400
+            }
+        }
+    ]
+}

@@ -47,6 +47,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 - **ENCY inspector inside your own window** - [**ExtensionEmbeddedInspectorNet**](./UI/ExtensionEmbeddedInspectorNet/project/main/README.md)
 
+- **Tab of your own in the main window** - [**ExtensionMainTabNet**](./UI/ExtensionMainTabNet/project/main/README.md)
+
 - **Message box examples** - [**ExtensionUtilityMessageBoxNet**](./UI/ExtensionUtilityMessageBoxNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionutilitymessagebox.mp4)
 

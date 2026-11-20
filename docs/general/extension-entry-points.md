@@ -17,6 +17,7 @@ Every plugin class must implement **`IExtension`** (to carry metadata) plus exac
 | Add items to the right-click menu on a geometry tree node | `IExtensionGeomModelNodePopup` |
 | Implement a custom toolpath calculation algorithm | `ICamApiTechOperationSolver` |
 | Post-process (transform) CLD toolpath data after calculation | `IExtensionGeomCLDataConverter` |
+| Add a tab of your own to the main window, next to Model / Machining / Simulation | `IExtensionMainTab` |
 
 ---
 
@@ -448,6 +449,64 @@ public class MyCLDataConverter : IExtension, IExtensionGeomCLDataConverter
 > **Direct access (IDL):** `IExtensionGeomCLDataConverter.GetCLDReceiverWrapper(ICamApiTechOperation*, ICamApiCLDReceiver*, out TResultStatus, return ICamApiCLDReceiver*)`
 
 **Example:** [`CLData/ExtensionGeomCLDataConverterNet/project/main/ExtensionGeomCLDataConverter.cs`](../../CLData/ExtensionGeomCLDataConverterNet/project/main/ExtensionGeomCLDataConverter.cs)
+
+---
+
+### IExtensionTypeInfoMainTab → IExtensionMainTab
+
+**Use when:** the extension needs a page of its own among the main tabs of the main window. The page takes the left panel; the 3D view stays as the last built-in tab showed it. Only the desktop application on Windows shows the tabs. Needs ENCY 3.0.22 or newer.
+
+**JSON type info fields (`"main_tab"`):** `id`, `name`, `caption` (text on the button), `hint_text`, `icon_path` (relative to the folder of the library, empty — no icon), `order` (built-in tabs: 100 model, 200 machining, 300 simulation; 1000 by default).
+
+**Lifetime:** ENCY shows the button without loading the extension, loads it when the tab is opened for the first time and keeps it until ENCY closes, the extension is disabled, or a library of extensions is installed or removed. The next opening of the tab creates the page anew. ENCY calls `CreatePage`, `OnShow`, `OnHide`, `DestroyPage` on its main thread.
+
+**Context received:** `IExtensionMainTabContext` — `CamApplication` and `HostWindowHandle` (the window the extension creates one child window in; ENCY keeps its size). The context lives only during the call.
+
+**Implementation:** the page lives on an STA thread of its own — `MainTabPageHost` from `CAMAPI.DotnetHelper` does it:
+
+```csharp
+public void CreatePage(IExtensionMainTabContext context, out TResultStatus resultStatus)
+{
+    resultStatus = default;
+    try
+    {
+        var applicationCom = _applicationCom = ComWrapper.Create(context.CamApplication);
+        // ENCY waits while the content is created: the factory must not call ENCY
+        _host = MainTabPageHost.Create(context.HostWindowHandle, () => new MyPage(applicationCom));
+    }
+    catch (Exception e)
+    {
+        _applicationCom?.Dispose();
+        _applicationCom = null;
+        resultStatus.Code = TResultStatusCode.rsError;
+        resultStatus.Description = e.Message;
+    }
+}
+
+public void DestroyPage(IExtensionMainTabContext context, out TResultStatus resultStatus)
+{
+    resultStatus = default;
+    var host = _host;
+    var applicationCom = _applicationCom;
+    _host = null;
+    _applicationCom = null;
+    // the page calls ENCY through the wrapper: release it on the page thread, after its last call
+    if (host != null && applicationCom != null)
+        host.Dispatcher.InvokeAsync(applicationCom.Dispose);
+    host?.Dispose();   // does not wait: ENCY waits for the page window itself
+}
+```
+
+Rules of the page thread:
+- the page calls ENCY only through `ComWrapper` — `Invoke` runs the call on an MTA thread and processes the page messages while it waits; never call ENCY directly from the page thread;
+- ENCY-side code (`OnShow` and the rest) only posts to the page thread with `Dispatcher.BeginInvoke`, never waits for it;
+- the page catches its exceptions: one left on the page thread closes ENCY.
+
+The active tab: `ICamApiApplicationMainForm.ActiveMainTabId` (`"model"`, `"machining"`, `"simulation"` — `MainTabIds` — or the extension id), `SetActiveMainTab(TabId)`, event `ICamApiHandlerApplicationMainFormActiveMainTabChanged` (`RegisterActiveMainTabChangedHandler`).
+
+> **Direct access (IDL):** `IExtensionMainTab.CreatePage / OnShow / OnHide / DestroyPage(IExtensionMainTabContext*, out TResultStatus)`
+
+**Example:** [`UI/ExtensionMainTabNet/project/main/ExtensionMainTab.cs`](../../UI/ExtensionMainTabNet/project/main/ExtensionMainTab.cs)
 
 ---
 
