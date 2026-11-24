@@ -31,6 +31,7 @@ call :CLEANTEMPPROJECT "Geometry\ExtensionUtilityImportSvgNet\commands\cleantemp
 call :CLEANTEMPPROJECT "Geometry\ExtensionUtilityLCSCreatorNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "Geometry\UtilityGeometryEntityReader\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "GeometryModelNodePopup\NodeFullNameAlert\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "MachineKit\ExtensionMachineKitNet\commands\cleantemp.cmd"
 @REM call :CLEANTEMPPROJECT "MachiningTools\DIN4000ImportPluginNet\commands\cleantemp.cmd"
 @REM call :CLEANTEMPPROJECT "MachiningTools\MachiningToolsCreateExampleNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "Operation\ExtensionOperationParamsNet\commands\cleantemp.cmd"

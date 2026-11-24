@@ -1,0 +1,14 @@
+{
+    "name": "MachineKit file by C#",
+    "description": "Creates a .mKit file with a connection, a sleeve and mills through the MachineKit file API, by C#",
+    "module_path": "${extensionJsonFolder}/ExtensionMachineKitNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "MachineKit file by C#",
+                "caption": "Create a MachineKit file (C#)",
+                "id": "Extension.MachineKit.Net"
+            }
+        }
+    ]
+}

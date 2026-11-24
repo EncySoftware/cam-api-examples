@@ -172,6 +172,10 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 [**Demo movie**](https://learn.encycam.com/examples/Extensionoperationtooladd.mp4)
 
 
+### MachineKit examples
+- **MachineKit file from an extension: connection, sleeve and mills created, saved and read back** - [**ExtensionMachineKitNet**](./MachineKit/ExtensionMachineKitNet/project/main/README.md)
+
+
 ### PLM examples
 - **PLM integration example** - [**PLMExtensionNet**](./PLMIntegration/PLMExtensionNet/readme.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Plmintegration.mp4)

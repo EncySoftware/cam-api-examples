@@ -39,6 +39,7 @@
 		"../Geometry/ExtensionUtilityLCSCreatorNet/project/main/.stbuild/ExtensionUtilityLCSCreatorNetProject.json",
 		"../Geometry/UtilityGeometryEntityReader/project/main/.stbuild/UtilityGeometryEntityReaderProject.json",
 		"../GeometryModelNodePopup/NodeFullNameAlert/project/main/.stbuild/NodeFullNameAlertProject.json",
+		"../MachineKit/ExtensionMachineKitNet/project/main/.stbuild/ExtensionMachineKitNetProject.json",
 		"../MachiningTools/DIN4000ImportPluginNet/.stbuild/DIN4000ImportPluginNetProject.json",
 		"../MachiningTools/MachiningToolsCreateExampleNet/.stbuild/MachiningToolsCreateExampleNetProject.json",
 		"../Operation/ExtensionOperationParamsNet/project/main/.stbuild/ExtensionOperationParamsNetProject.json",

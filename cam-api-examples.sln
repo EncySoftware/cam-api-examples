@@ -33,6 +33,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MachiningToolsCreateExample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DIN4000ImportPluginNet", "MachiningTools\DIN4000ImportPluginNet\DIN4000ImportPluginNet.csproj", "{2A3CC8E0-0D32-4C1D-BF19-0F8B457D278D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MachineKit", "MachineKit", "{B9AC02D3-FA68-48E3-ACBA-97C464AA2F88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionMachineKitNet", "MachineKit\ExtensionMachineKitNet\project\main\ExtensionMachineKitNet.csproj", "{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,9 +103,14 @@ Global
 		{2A3CC8E0-0D32-4C1D-BF19-0F8B457D278D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A3CC8E0-0D32-4C1D-BF19-0F8B457D278D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A3CC8E0-0D32-4C1D-BF19-0F8B457D278D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4CCB9AE8-C6B7-497B-8DF6-B3F1E2465CE4} = {A35F039D-AC19-402C-A7CC-AD5BE88C51B8}
 		{2A3CC8E0-0D32-4C1D-BF19-0F8B457D278D} = {A35F039D-AC19-402C-A7CC-AD5BE88C51B8}
+		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B} = {B9AC02D3-FA68-48E3-ACBA-97C464AA2F88}
 	EndGlobalSection
 EndGlobal
