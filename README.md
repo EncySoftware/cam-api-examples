@@ -173,6 +173,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Tool adding operations** - [**OperationToolAddNet**](./Technologist/Operation/OperationToolAddNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionoperationtooladd.mp4)
 
+- **Mill D10 from the component libraries installed as the tool of an operation, with its parameters and overhang** - [**LibraryToolForOperationNet**](./ToolAssemblies/LibraryToolForOperationNet/project/main/README.md)
+
 
 ### MachineKit examples
 - **MachineKit file from an extension: connection, sleeve and mills created, saved and read back** - [**ExtensionMachineKitNet**](./MachineKit/ExtensionMachineKitNet/project/main/README.md)

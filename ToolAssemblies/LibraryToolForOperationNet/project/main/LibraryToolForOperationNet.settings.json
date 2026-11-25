@@ -1,0 +1,13 @@
+{
+    "name": "Library tool for an operation by C#",
+    "description": "Finds a mill D10 in the kit of the machine and in the enabled component libraries and installs it as the tool of the operation, by C#",
+    "module_path": "${extensionJsonFolder}/LibraryToolForOperationNet.dll",
+    "extensions": [
+        {
+            "operation_popup": {
+                "name": "Library tool for an operation by C#",
+                "id": "Extension.LibraryToolForOperation.Net"
+            }
+        }
+    ]
+}

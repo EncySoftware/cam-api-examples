@@ -50,6 +50,7 @@ call :CLEANTEMPPROJECT "Technologist\Operation\OperationToolAddNet\commands\clea
 call :CLEANTEMPPROJECT "Technologist\Operation\RenameOperationsNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "UI\ExtensionUtilityDialogWindowNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "Technologist\SetFeedZone\commands\cleantemp.cmd"
+call :CLEANTEMPPROJECT "ToolAssemblies\LibraryToolForOperationNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "UI\ExtensionUtilityMessageBoxNet\commands\cleantemp.cmd"
 call :CLEANTEMPPROJECT "UI\ExtensionUtilityNotifyNet\commands\cleantemp.cmd"
 

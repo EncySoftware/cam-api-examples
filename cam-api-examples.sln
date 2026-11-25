@@ -39,6 +39,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MachineKit", "MachineKit", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionMachineKitNet", "MachineKit\ExtensionMachineKitNet\project\main\ExtensionMachineKitNet.csproj", "{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ToolAssemblies", "ToolAssemblies", "{EA076EE6-FE8B-4E3D-B7C9-39AED009DD53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryToolForOperationNet", "ToolAssemblies\LibraryToolForOperationNet\project\main\LibraryToolForOperationNet.csproj", "{E434B8C2-FFD8-45B1-B929-C46EE656BC50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,10 +117,15 @@ Global
 		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E434B8C2-FFD8-45B1-B929-C46EE656BC50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E434B8C2-FFD8-45B1-B929-C46EE656BC50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E434B8C2-FFD8-45B1-B929-C46EE656BC50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E434B8C2-FFD8-45B1-B929-C46EE656BC50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4CCB9AE8-C6B7-497B-8DF6-B3F1E2465CE4} = {A35F039D-AC19-402C-A7CC-AD5BE88C51B8}
 		{2A3CC8E0-0D32-4C1D-BF19-0F8B457D278D} = {A35F039D-AC19-402C-A7CC-AD5BE88C51B8}
 		{FD5366DD-3DB4-4F41-BA2C-DA3FDBBEC75B} = {B9AC02D3-FA68-48E3-ACBA-97C464AA2F88}
+		{E434B8C2-FFD8-45B1-B929-C46EE656BC50} = {EA076EE6-FE8B-4E3D-B7C9-39AED009DD53}
 	EndGlobalSection
 EndGlobal
