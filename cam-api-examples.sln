@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionOperationPopupNet"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityNet", "ExtensionUtility\ExtensionUtilityNet\project\main\ExtensionUtilityNet.csproj", "{3EAA6801-27F4-4F74-B729-477B35DCB2C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionLicenseInfoNet", "ExtensionUtility\ExtensionLicenseInfoNet\project\main\ExtensionLicenseInfoNet.csproj", "{4DBBC5F8-F33D-4F4D-9D60-ED061349C758}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityNcMakerNet", "GCodeGeneration\ExtensionUtilityNCMakerNet\project\main\ExtensionUtilityNcMakerNet.csproj", "{CD9D7989-807F-4FE4-BA0D-D6F2C4ACA2CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtensionUtilityGeometryImporterNet", "Geometry\ExtensionUtilityGeometryImporterNet\project\main\ExtensionUtilityGeometryImporterNet.csproj", "{574DFC2E-C3BC-412B-B2B4-739D70D6D79A}"
@@ -55,6 +57,10 @@ Global
 		{3EAA6801-27F4-4F74-B729-477B35DCB2C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EAA6801-27F4-4F74-B729-477B35DCB2C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3EAA6801-27F4-4F74-B729-477B35DCB2C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DBBC5F8-F33D-4F4D-9D60-ED061349C758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DBBC5F8-F33D-4F4D-9D60-ED061349C758}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DBBC5F8-F33D-4F4D-9D60-ED061349C758}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DBBC5F8-F33D-4F4D-9D60-ED061349C758}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CD9D7989-807F-4FE4-BA0D-D6F2C4ACA2CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CD9D7989-807F-4FE4-BA0D-D6F2C4ACA2CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD9D7989-807F-4FE4-BA0D-D6F2C4ACA2CD}.Release|Any CPU.ActiveCfg = Release|Any CPU

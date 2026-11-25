@@ -1,0 +1,14 @@
+{
+    "name": "License and account info by C#",
+    "description": "Greets the user by the name of the ENCY account and shows the edition and the term of the license, by C#",
+    "module_path": "${extensionJsonFolder}/ExtensionLicenseInfoNet.dll",
+    "extensions": [
+        {
+            "utility": {
+                "name": "License and account info by C#",
+                "caption": "Show the license and the account (C#)",
+                "id": "Extension.LicenseInfo.Net"
+            }
+        }
+    ]
+}

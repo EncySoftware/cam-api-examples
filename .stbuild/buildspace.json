@@ -18,6 +18,7 @@
 		"../ExtensionGlobal/ExtensionGlobalNet/project/main/.stbuild/ExtensionGlobalNetProject.json",
 		"../ExtensionOperationPopup/ExtensionOperationPopupNet/project/main/.stbuild/ExtensionOperationPopupNetProject.json",
 		"../ExtensionOperationPopup/ExtensionOperationPopupOnChangeNet/project/main/.stbuild/ExtensionOperationPopupOnChangeNetProject.json",
+		"../ExtensionUtility/ExtensionLicenseInfoNet/project/main/.stbuild/ExtensionLicenseInfoNetProject.json",
 		"../ExtensionUtility/ExtensionUtilityCpp/project/main/.stbuild/ExtensionUtilityCppProject.json",
 		"../ExtensionUtility/ExtensionUtilityDelphi/project/main/.stbuild/ExtensionUtilityDelphiProject.json",
 		"../ExtensionUtility/ExtensionUtilityNet/project/main/.stbuild/ExtensionUtilityNetProject.json",

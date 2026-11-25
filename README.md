@@ -40,6 +40,8 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 - **Utility extension template** - [**ExtensionUtilityNet**](./ExtensionUtility/ExtensionUtilityNet/project/main/README.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Extensionutility.mp4)
 
+- **Greeting by the ENCY account name and the edition and term of the license** - [**ExtensionLicenseInfoNet**](./ExtensionUtility/ExtensionLicenseInfoNet/project/main/README.md)
+
 
 ### UI examples
 - **Custom dialog windows** - [**ExtensionUtilityDialogWindowNet**](./UI/ExtensionUtilityDialogWindowNet/project/main/README.md)  
