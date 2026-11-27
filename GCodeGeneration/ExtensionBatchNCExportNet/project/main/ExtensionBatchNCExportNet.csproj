@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutDir>bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="EncySoftware.CAMAPI.Sdk.Net" Version="2.0.24-dev.5" />
+    <None Update="ExtensionBatchNCExportNet.settings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

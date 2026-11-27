@@ -1,4 +1,4 @@
-# cam-api-examples
+﻿# cam-api-examples
 Examples of using API of ENCY 2
 
 Documentation: https://docs.encycam.com/CAMAPI/2/en/
@@ -144,5 +144,6 @@ To do this just **run addNugetSources.cmd** script from the root of this reposit
 
 
 ### PLM examples
+- **Batch NC generation and PLM export** — [**ExtensionBatchNCExportNet**](./GCodeGeneration/ExtensionBatchNCExportNet/project/main/README.md)
 - **PLM integration example** - [**PLMExtensionNet**](./PLMIntegration/PLMExtensionNet/readme.md)  
 [**Demo movie**](https://learn.encycam.com/examples/Plmintegration.mp4)

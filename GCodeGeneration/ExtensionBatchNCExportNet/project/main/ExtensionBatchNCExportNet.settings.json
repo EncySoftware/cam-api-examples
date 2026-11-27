@@ -1,0 +1,14 @@
+﻿{
+  "name": "Batch NC generation and export",
+  "description": "Generate separate NC programs for operations or groups and pass results to a PLM exporter",
+  "module_path": "${extensionJsonFolder}\\ExtensionBatchNCExportNet.dll",
+  "extensions": [
+    {
+      "utility": {
+        "name": "BatchNCExport",
+        "id": "Extension.BatchNCExport.Net",
+        "caption": "Batch NC generation and export"
+      }
+    }
+  ]
+}

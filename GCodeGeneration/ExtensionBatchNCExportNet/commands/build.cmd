@@ -1,0 +1,11 @@
+﻿@echo off
+cd /D %~dp0
+
+call ..\.stbuild\build.cmd --Target Compile --Variant Debug --no-logo
+set "EXIT_CODE=%ERRORLEVEL%"
+
+if NOT "%nopause%"=="true" (
+    pause
+)
+
+EXIT /B %EXIT_CODE%
